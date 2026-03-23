@@ -4,6 +4,8 @@
 **Squad:** Squad 1  
 **Papel:** Produto central de identidade, autenticação, autorização, permissionamento e integração segura do ERP Modular Cloud-Native.
 
+**Escopo deste ficheiro:** PRD normativo do MVP (login e-mail/senha, JWT, RBAC, integração M2M). O ficheiro [PRD.md](PRD.md) inclui o mesmo núcleo e o **Anexo A** com planejamento de autenticação reforçada (segundo fator por app autenticador).
+
 ---
 
 ## 1. Visão geral
@@ -35,7 +37,7 @@ Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria 
 
 | Dimensão | Benefício |
 |----------|-----------|
-| **Segurança** | Hash de senha moderno (Argon2id preferencial), MFA (TOTP), rotação de refresh token, rate limiting, headers seguros (Helmet). |
+| **Segurança** | Hash de senha moderno (Argon2id preferencial), rotação de refresh token, TTL e rate limit conforme RNFs, headers seguros (Helmet). |
 | **Desacoplamento** | Squads focam em domínio; IAM, RBAC e integração ficam no Core. |
 | **Interoperabilidade** | JWT, REST, OpenAPI; consumo por qualquer stack. |
 | **Auditabilidade** | Logs e auditoria mínimos de autenticação e mudanças críticas de acesso. |
@@ -59,13 +61,12 @@ Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria 
 ### 5.1. Núcleo interno (usuários humanos)
 
 - Cadastro de usuário (registro) e login e-mail + senha.
-- Hash seguro de senha e validação de política.
+- Hash seguro de senha e validação.
 - Emissão de **access token** (JWT) e **refresh token** com rotação.
 - Endpoint `GET /v1/auth/me` (perfil + papéis/permissões efetivas conforme modelo).
 - Gestão de usuários, papéis e permissões (CRUD administrativo conforme endpoints).
 - Associação usuário ↔ papel e papel ↔ permissão.
 - **RBAC** para autorização de operações.
-- **MFA** via **TOTP (RFC 6238)** — ativação, verificação no login; obrigatoriedade configurável para perfis administrativos quando política interna exigir.
 - Proteção de rotas (Guards NestJS + validação JWT).
 - Logs e auditoria **básica** (ver seção 23).
 - Documentação **Swagger/OpenAPI 3** gerada e utilizável (“Try it out”).
@@ -82,6 +83,15 @@ Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria 
 - Stack: **TypeScript**, **NestJS**, **PostgreSQL**, **Prisma**, **JWT**, **Swagger**, **Docker**, **Jest**, **class-validator**, **class-transformer**.
 - API versionada em **`/v1`**, JSON, Bearer Token onde aplicável.
 
+### 5.4. Resumo: MVP vs fase 2
+
+| Área | MVP | Fase 2 / roadmap |
+|------|-----|------------------|
+| Login humano | E-mail + senha → JWT (access + refresh) | Autenticação reforçada — ver [PRD.md](PRD.md) Anexo A |
+| Tokens e abuso | RNF03 (TTL) e RNF07 (rate limit + lockout) | Rate limit distribuído (Redis) em cluster |
+| Integração M2M | Client credentials, escopos cadastrados, **RF18** no consumo | OAuth 2.0 / OIDC como authorization server completo |
+| HTTP | Helmet no MVP; CSP **mais permissiva em desenvolvimento** (Swagger/local) e **mais restritiva em produção** conforme o front | Endurecimento adicional |
+
 ---
 
 ## 6. Escopo fora do produto (MVP)
@@ -91,7 +101,7 @@ Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria 
 | **Multi-tenant** | **Fora de escopo** — modelo single-tenant explícito. |
 | **Login social / Google / provedores OIDC externos** | **Fora do MVP**. |
 | **Plataforma IAM completa estilo Keycloak** | **Fora do escopo** — produto propositalmente enxuto. |
-| **OAuth 2.0 / OpenID Connect como servidor de autorização completo** | **Roadmap** (ver seção 27), não requisito do MVP. |
+| **OAuth 2.0 / OpenID Connect como servidor de autorização completo** | **Roadmap** (ver §25), não requisito do MVP. |
 | **Frontend como prioridade** | **Secundário**; não bloqueia entrega do backend. |
 | **SSO corporativo (SAML, etc.)** | Fora do MVP. |
 
@@ -105,11 +115,8 @@ Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria 
 |----|-----------|
 | **RF01** | Cadastro de usuário com e-mail único, nome e senha conforme política (ver RNFs e regras de negócio). |
 | **RF02** | Autenticação de usuário com e-mail e senha; usuário inativo não autentica. |
-| **RF03** | Emissão de access token JWT após login bem-sucedido (ou após MFA quando aplicável). |
+| **RF03** | Emissão de access token JWT após login bem-sucedido (credenciais válidas e usuário ativo). |
 | **RF04** | Emissão e renovação de refresh token com **rotação**: uso único do refresh enviado; novo par access/refresh após troca válida. |
-| **RF05** | Ativação de MFA (TOTP): geração de segredo, exibição de URI/QR para app autenticador; confirmação com código. |
-| **RF06** | Desativação de MFA mediante reautenticação e/ou código TOTP (fluxo mínimo definido na implementação, consistente com segurança). |
-| **RF07** | Verificação MFA no login: se MFA ativo, após credenciais válidas exigir passo TOTP antes de emitir tokens finais. |
 | **RF08** | Endpoint `GET /v1/auth/me` retornando dados do usuário autenticado e autorizações efetivas (papéis/permissões). |
 | **RF09** | CRUD de usuários (listagem paginada, detalhe, criação, atualização, alteração de status). |
 | **RF10** | CRUD de papéis (roles). |
@@ -120,7 +127,7 @@ Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria 
 | **RF15** | Geração e **regeneração** de `client_secret`; segredo **exibível apenas** na criação ou regeneração (nunca em listagens/detalhes posteriores). |
 | **RF16** | Definição de escopos permitidos por aplicação (associação e listagem). |
 | **RF17** | Emissão de token de integração mediante `client_id` + `client_secret` (fluxo M2M); aplicação inativa não recebe token. |
-| **RF18** | Validação de escopos no consumo dos recursos protegidos por token de integração (conforme estratégia acordada no backend). |
+| **RF18** | Validação de **escopos no consumo**: em toda rota aceitando JWT de integração (`type: integration_access`), o backend verifica que o conjunto `scopes` do token **cobre** os escopos exigidos pela rota (ex.: metadata em controller + `ScopesGuard` / decorator `@RequireScopes('code1','code2')` após validação JWT). |
 | **RF19** | Endpoint de saúde `GET /v1/health` para probes (liveness/readiness conforme impl.). |
 | **RF20** | Documentação OpenAPI atualizada com todos os endpoints públicos do MVP. |
 
@@ -136,7 +143,7 @@ Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria 
 | **RNF04** | Tokens | Algoritmo JWT: **HS256** no MVP (secret forte em env); documentar migração futura para RS256 se necessário. |
 | **RNF05** | Testes | Cobertura de testes unitários **≥ 80%** em módulos de domínio crítico (auth, autorização, integração). |
 | **RNF06** | Testes | Testes e2e mínimos para fluxos: login, refresh, `/me`, token integração. |
-| **RNF07** | Rate limit | **5 tentativas/minuto** por IP **e** por e-mail em `login` e rotas análogas sensíveis; bloqueio temporário **30 min** após **5 falhas consecutivas** (valores alinhados ao PRD original). |
+| **RNF07** | Rate limit | **5 tentativas/minuto** por **IP** e, em paralelo, por **e-mail** em `POST /v1/auth/login` e rotas análogas sensíveis; bloqueio temporário **30 minutos** após **5 falhas consecutivas** em qualquer um dos eixos (contadores conforme implementação, valores configuráveis por env se necessário). |
 | **RNF08** | Senha | Argon2id (preferencial) ou Bcrypt cost ≥ 12; comprimento mínimo **10** caracteres; complexidade: maiúscula, minúscula, número e especial; lista de senhas comuns rejeitada. |
 | **RNF09** | Disponibilidade | Healthcheck utilizável por orquestrador; falha de dependência refletida de forma clara. |
 | **RNF10** | Manutenibilidade | Código TypeScript estrito; validação de entrada com class-validator; sem segredos no repositório. |
@@ -155,16 +162,15 @@ Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria 
 | **RN03** | Refresh token: **rotação obrigatória** — após uso, token antigo invalidado; tentativa de reuso deve falhar com erro de segurança claro. |
 | **RN04** | Aplicação **inativa** não obtém token de integração. |
 | **RN05** | **Escopos** limitam o que a aplicação pode fazer em nome do fluxo M2M; **permissões RBAC** limitam o que **usuários humanos** fazem nos endpoints administrativos. |
-| **RN06** | MFA é **etapa adicional** após credenciais válidas: não emitir access/refresh “finais” até MFA concluído quando MFA estiver habilitado. |
-| **RN07** | E-mail de usuário e códigos únicos (`permission.code`, `role.name`, `application.clientId` onde aplicável) devem gerar **409 Conflict** em duplicidade. |
-| **RN08** | Permissões devem existir antes de vincular a papéis; usuários devem existir antes de vincular a papéis (validação referencial). |
-| **RN09** | Papéis sugeridos para documentação: `admin`, `manager`, `operator`, `viewer` — podem ser criados via API conforme RF10. |
+| **RN06** | E-mail de usuário e códigos únicos (`permission.code`, `role.name`, `application.clientId` onde aplicável) devem gerar **409 Conflict** em duplicidade. |
+| **RN07** | Permissões devem existir antes de vincular a papéis; usuários devem existir antes de vincular a papéis (validação referencial). |
+| **RN08** | Papéis sugeridos para documentação: `admin`, `manager`, `operator`, `viewer` — podem ser criados via API conforme RF10. |
 
 ---
 
 ## 10. Casos de uso principais
 
-1. **Registrar e logar** — Usuário cria conta, faz login; se MFA ativo, completa TOTP e recebe tokens.
+1. **Registrar e logar** — Usuário cria conta e faz login; recebe tokens após credenciais válidas.
 2. **Renovar sessão** — Cliente envia refresh válido e recebe novo par com rotação.
 3. **Obter contexto** — Cliente chama `/auth/me` com Bearer access token.
 4. **Administrar acesso** — Admin gerencia usuários, papéis, permissões e vínculos.
@@ -174,24 +180,13 @@ Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria 
 
 ## 11. Fluxos principais
 
-### 11.1. Autenticação humana (sem MFA)
+### 11.1. Autenticação humana (MVP)
 
 ```
 Cliente → POST /v1/auth/login (email, password)
 Servidor valida credenciais e status → emite access + refresh
 Cliente → requisições com `Authorization: Bearer {access_token}`
 ```
-
-### 11.2. Autenticação com MFA (TOTP)
-
-```
-Cliente → POST /v1/auth/login
-Servidor → 200 com payload indicando mfa_required e mfa_challenge (token opaco de curta duração) OU 403/401 específico conforme contrato fixado na API
-Cliente → POST /v1/auth/mfa/verify (challenge + código TOTP)
-Servidor valida → emite access + refresh
-```
-
-*(O contrato exato do passo intermediário deve ser único na API; recomenda-se um `mfaPendingToken` JWT de curta duração ou string opaca armazenada com TTL.)*
 
 ### 11.3. Refresh token (rotação)
 
@@ -216,14 +211,6 @@ Servidor valida aplicação ativa, escopos solicitados ⊆ escopos cadastrados
 Emite JWT tipo integração com claims de escopos e identificação da aplicação
 ```
 
-### 11.6. Ativação MFA
-
-```
-Usuário autenticado → POST /v1/auth/mfa/enable
-Servidor gera segredo TOTP, retorna otpauth URI / dados para QR
-Usuário → POST /v1/auth/mfa/verify (primeira verificação) para confirmar e ligar mfaEnabled
-```
-
 ---
 
 ## 12. Especificação técnica
@@ -232,7 +219,7 @@ Usuário → POST /v1/auth/mfa/verify (primeira verificação) para confirmar e 
 
 | Módulo | Responsabilidade |
 |--------|------------------|
-| **Auth** | Register, login, refresh, MFA, `/me` |
+| **Auth** | Register, login, refresh, `/me` |
 | **Users** | CRUD usuários, status |
 | **Roles** | CRUD roles, vínculos usuários e permissões |
 | **Permissions** | CRUD permissões |
@@ -244,7 +231,7 @@ Usuário → POST /v1/auth/mfa/verify (primeira verificação) para confirmar e 
 ### 12.2. Componentes
 
 - **Controllers** — Rotas REST versionadas.
-- **Guards** — `JwtAuthGuard`, `PermissionsGuard`, guard para tipo de token (usuário vs integração) quando necessário.
+- **Guards** — `JwtAuthGuard`, `PermissionsGuard`, distinção de tipo de token (usuário vs integração), **`ScopesGuard` (ou equivalente)** em rotas M2M conforme RF18.
 - **Strategies** — Passport JWT para validação de assinatura e claims.
 - **Services** — Regras de negócio e orquestração.
 - **Prisma** — Persistência; transações para rotação de refresh e vínculos críticos.
@@ -260,6 +247,7 @@ HTTP → Middleware (Helmet, rate limit) → ValidationPipe → Guard → Contro
 - Catálogo global de **Scope** (`code` único, ex.: `orders.read`).
 - **ApplicationScope** vincula aplicação a um subconjunto de escopos.
 - Token de integração carrega `scopes: string[]` concedidos (interseção do pedido com o cadastrado).
+- **Consumo (RF18):** cada handler exposto ao M2M declara explicitamente os escopos mínimos; o guard compara com `scopes` do JWT (ex.: `SetMetadata('scopes', ['orders.read'])` + validação após `JwtAuthGuard`). Rotas apenas para usuários humanos usam **permissions** RBAC, não este guard de escopos.
 
 ### 12.5. Eventos assíncronos (evolução)
 
@@ -291,10 +279,8 @@ Métodos e corpos devem ser detalhados no Swagger; abaixo o contrato alvo.
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | `POST` | `/v1/auth/register` | Cadastro de usuário. |
-| `POST` | `/v1/auth/login` | Login e-mail/senha; pode retornar etapa MFA. |
+| `POST` | `/v1/auth/login` | Login e-mail/senha; emite tokens após credenciais válidas. |
 | `POST` | `/v1/auth/refresh` | Renovação com rotação de refresh token. |
-| `POST` | `/v1/auth/mfa/enable` | Inicia MFA (TOTP) — requer autenticação. |
-| `POST` | `/v1/auth/mfa/verify` | Verifica código TOTP (login pendente ou confirmação de enable). |
 | `GET` | `/v1/auth/me` | Perfil e autorizações do usuário autenticado. |
 
 ### 14.3. Usuários
@@ -362,8 +348,6 @@ erDiagram
         string password_hash
         string name
         enum status
-        boolean mfa_enabled
-        string mfa_secret_enc
     }
 
     REFRESH_TOKEN {
@@ -384,7 +368,7 @@ erDiagram
 
 | Entidade | Descrição |
 |----------|-----------|
-| **User** | Dados de conta; `passwordHash`; `status` (enum: `ACTIVE`, `INACTIVE`, …); `mfaEnabled`; segredo MFA armazenado de forma segura (criptografado em repouso recomendado). |
+| **User** | Dados de conta; `passwordHash`; `status` (enum: `ACTIVE`, `INACTIVE`, …). |
 | **Role** | Papel agregador de permissões; `name` único. |
 | **Permission** | `code` único semântico; descrição. |
 | **UserRole** | N:N usuário e papel. |
@@ -393,7 +377,7 @@ erDiagram
 | **Application** | `clientId` público único; `clientSecretHash`; `name`; `status` (`ACTIVE` / `INACTIVE`). |
 | **Scope** | Catálogo global de escopos integráveis. |
 | **ApplicationScope** | N:N aplicação e escopo. |
-| **AuthAuditLog** (opcional recomendado) | Eventos: `LOGIN_SUCCESS`, `LOGIN_FAILURE`, `TOKEN_REFRESH`, `MFA_FAIL`, `CLIENT_CREDENTIALS_SUCCESS` — com `userId`/`applicationId`, IP, user-agent, timestamp. |
+| **AuthAuditLog** (opcional recomendado) | Eventos: `LOGIN_SUCCESS`, `LOGIN_FAILURE`, `TOKEN_REFRESH`, `CLIENT_CREDENTIALS_SUCCESS` — com `userId`/`applicationId`, IP, user-agent, timestamp. |
 
 ### 15.3. Schema Prisma (referência estendida)
 
@@ -414,8 +398,6 @@ model User {
   passwordHash  String
   name          String
   status        UserStatus     @default(ACTIVE)
-  mfaEnabled    Boolean        @default(false)
-  mfaSecret     String?        // criptografado em repouso (recomendado)
   roles         UserRole[]
   refreshTokens RefreshToken[]
   createdAt     DateTime       @default(now())
@@ -515,6 +497,8 @@ model ApplicationScope {
 
 ### 16.2. JWT — integração (M2M)
 
+**Claims sugeridos** (alinhados a RF17, RF18 e CA07):
+
 ```json
 {
   "sub": "uuid-da-aplicacao",
@@ -529,7 +513,7 @@ model ApplicationScope {
 ### 16.3. Autorização
 
 - **Usuários:** checagem de **permissions** nas rotas administrativas e de gestão.
-- **Integração:** checagem de **scopes** nas rotas expostas ao M2M (pode ser subset de endpoints ou mesmos endpoints com policy diferente conforme design).
+- **Integração:** checagem de **scopes** nas rotas que aceitam JWT M2M (subset de endpoints ou mesma API com `type` distinto — ver RF18 e §12.4).
 
 ---
 
@@ -540,7 +524,7 @@ model ApplicationScope {
 3. Sistema cliente obtém token via `POST /v1/integration/token`.
 4. APIs validam JWT de integração e escopos necessários.
 
-**OAuth 2.0 / OIDC** completos ficam no **roadmap** (autorização de terceiros, discovery, etc.).
+**OAuth 2.0 / OIDC** como authorization server completo (discovery, JWKS, fluxos de terceiros) permanecem no **roadmap** (§25); o MVP cobre apenas client credentials simplificado em `/v1/integration/token`.
 
 ---
 
@@ -593,11 +577,10 @@ Recomenda-se **sempre** incluir `timestamp` (ISO 8601 UTC) e `path` da requisiç
 | 401 | `AUTH_INVALID_CREDENTIALS` | Login falho |
 | 401 | `AUTH_TOKEN_EXPIRED` | Access expirado |
 | 401 | `AUTH_TOKEN_INVALID` | Assinatura/ formato inválido |
-| 401 | `AUTH_MFA_REQUIRED` | MFA pendente |
 | 403 | `AUTHZ_FORBIDDEN` | Sem permissão/escopo |
 | 404 | `RESOURCE_NOT_FOUND` | Recurso inexistente |
 | 409 | `RESOURCE_CONFLICT` | Duplicidade |
-| 429 | `RATE_LIMIT_EXCEEDED` | Muitas tentativas |
+| 429 | `RATE_LIMIT_EXCEEDED` | Limite de tentativas (RNF07) ou throttling aplicável |
 | 500 | `INTERNAL_ERROR` | Erro interno |
 
 ---
@@ -605,10 +588,9 @@ Recomenda-se **sempre** incluir `timestamp` (ISO 8601 UTC) e `path` da requisiç
 ## 20. Segurança (consolidado)
 
 - **Senhas:** ver RNF08; Argon2id preferencial.
-- **MFA:** TOTP RFC 6238; apps compatíveis (Google Authenticator, Authy, etc.).
-- **Tokens:** rotação de refresh; secrets fortes; tempo de vida configurável.
+- **Tokens:** rotação de refresh; secrets fortes; TTL conforme RNF03.
 - **Transporte:** HTTPS em produção.
-- **Headers:** Helmet (HSTS, CSP adequado ao front, X-Frame-Options, etc.).
+- **Headers (MVP):** **Helmet** no NestJS — HSTS em produção, `X-Frame-Options`, etc.; **CSP** ajustada por ambiente: desenvolvimento mais permissiva para Swagger UI e origens locais; produção alinhada ao front real (sem `unsafe-inline` salvo necessidade documentada).
 - **Rate limiting e lockout:** ver RNF07.
 - **Armazenamento:** segredos apenas em env/secret manager; nunca em código.
 
@@ -620,7 +602,6 @@ Recomenda-se **sempre** incluir `timestamp` (ISO 8601 UTC) e `path` da requisiç
 |--------|----------------|
 | Login sucesso/falha | Log + opcional tabela `AuthAuditLog` |
 | Refresh e falha de rotação | Log |
-| MFA falha | Log |
 | Regenerate secret | Log + auditoria |
 | Mudança de status usuário/app | Log / auditoria |
 
@@ -636,12 +617,11 @@ Formato: **JSON estruturado** com `requestId`, timestamp, rota, `userId` ou `cli
 | CA02 | Dado usuário inativo, quando tenta login, então recebe erro 401 com código adequado e **não** recebe tokens. |
 | CA03 | Dado refresh válido, quando chama `/auth/refresh`, então recebe novo par e refresh antigo deixa de funcionar. |
 | CA04 | Dado refresh já usado, quando reutilizado, então erro 401 e evento logado. |
-| CA05 | Dado MFA habilitado, quando login sem TOTP, então não emite tokens finais até verificação bem-sucedida. |
-| CA06 | Dado admin, quando cria aplicação, então vê `client_secret` apenas nessa resposta. |
-| CA07 | Dado aplicação inativa, quando pede token de integração, então 401/403 com código claro. |
-| CA08 | Dado token de integração, quando escopo não inclui operação, então 403. |
-| CA09 | Dado e-mail duplicado no registro, então 409 `RESOURCE_CONFLICT`. |
-| CA10 | Swagger descreve todos os endpoints do catálogo MVP e exemplos de erro. |
+| CA05 | Dado admin, quando cria aplicação, então vê `client_secret` apenas nessa resposta. |
+| CA06 | Dado aplicação inativa, quando pede token de integração, então 401/403 com código claro. |
+| CA07 | Dado token de integração, quando escopo não inclui operação, então 403. |
+| CA08 | Dado e-mail duplicado no registro, então 409 `RESOURCE_CONFLICT`. |
+| CA09 | Swagger descreve todos os endpoints do catálogo MVP e exemplos de erro. |
 
 ---
 
@@ -664,7 +644,6 @@ Formato: **JSON estruturado** com `requestId`, timestamp, rota, `userId` ou `cli
 |----------------|-----------|
 | HS256 com secret vazado compromete todos os tokens | Rotacionar secret; planejar RS256; secrets fortes e rotação operacional. |
 | Escopo de integração mal configurado | Revisão de API; testes de autorização por escopo. |
-| MFA perda de dispositivo | Roadmap: códigos de recuperação ou fluxo admin (fora do MVP mínimo). |
 | Sem multi-tenant | Documentar claramente para clientes que precisam isolamento por tenant em outro produto ou deployment. |
 
 ---
@@ -673,7 +652,6 @@ Formato: **JSON estruturado** com `requestId`, timestamp, rota, `userId` ou `cli
 
 - **OAuth 2.0 / OpenID Connect** como servidor de autorização (Authorization Server) — fluxos adicionais, discovery, JWKS.
 - **Eventos de domínio** (Kafka/RabbitMQ) para `user.created`, `role.permissions_updated`, etc.
-- **Códigos de backup MFA** e políticas avançadas de recuperação.
 - **RS256** e rotação de chaves públicas.
 - **Frontend admin** completo (UX, dashboards de auditoria).
 - **Rate limit** distribuído (Redis) em ambientes clusterizados.
