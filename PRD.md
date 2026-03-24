@@ -1,10 +1,11 @@
 # Core Engine & Auth — Identity, Access & Integration Core (Squad 1)
 
-**Versão:** 2.0 (implementation-ready)  
+**Versão:** 2.0
+**Código:** CORE-001  
 **Squad:** Squad 1  
 **Papel:** Produto central de identidade, autenticação, autorização, permissionamento e integração segura do ERP Modular Cloud-Native.
 
-**Escopo deste ficheiro:** PRD normativo do MVP (login e-mail/senha, JWT, RBAC, integração M2M). O ficheiro [PRD.md](PRD.md) inclui o mesmo núcleo e o **Anexo A** com planejamento de autenticação reforçada (segundo fator por app autenticador).
+**Escopo deste ficheiro:** PRD normativo do **MVP**: login e-mail/senha, **OAuth 2.0 (Authorization Server)**, JWT, RBAC, integração M2M com **client credentials**, escopos e validação no consumo. **Multi-tenant**, **login social**, **SSO/SAML**, **MFA e TOTP** estão **fora do escopo** — não há “segunda fase” de produto para esses itens; evoluções pontuais ficam em **§25** (roadmap técnico).
 
 ---
 
@@ -12,7 +13,7 @@
 
 O **Core Engine & Auth** é o sistema central de **IAM (Identity and Access Management)** do ecossistema. Opera em **duas frentes complementares**:
 
-1. **Identity Core (uso interno ao ERP)** — Fornece autenticação, autorização (RBAC), gestão de usuários, papéis e permissões, e proteção de rotas para todos os módulos e squads internos, de forma transparente e padronizada.
+1. **Identity Core (uso interno ao ERP)** — Fornece autenticação (e-mail/senha no MVP), autorização (RBAC), gestão de usuários, papéis e permissões, e proteção de rotas para todos os módulos e squads internos, de forma transparente e padronizada.
 2. **Integration Core (produto para aplicações/clientes)** — Permite que sistemas de terceiros e parceiros integrem de forma segura via **credenciais de aplicação** (`client_id` / `client_secret`), **escopos** e **tokens de integração**, sem expor o modelo de usuário humano da mesma forma que o fluxo interativo.
 
 O **backend (API REST)** é a entrega principal; um **frontend administrativo** (opcional no MVP) é secundário e pode consumir os mesmos endpoints com perfis administrativos.
@@ -31,28 +32,41 @@ Squads e integradores precisam de **um único lugar** para:
 
 Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria e aumenta o custo de manutenção.
 
+### 2.1. Objetivo do produto
+
+Entregar um núcleo reutilizável de autenticação, autorização e integração segura que sustente o ecossistema do ERP Modular Cloud-Native, **reduzindo retrabalho entre squads** e elevando segurança, rastreabilidade e interoperabilidade — com **OAuth 2.0** como contrato padrão de tokens, **sem** MFA/TOTP e **sem** pretender ser um IAM completo estilo Keycloak.
+
+### 2.2. Objetivo de negócio
+
+**Valor interno:** acelerar o desenvolvimento dos demais módulos; reduzir inconsistência de login e permissões; simplificar governança de acesso; baixar custo de manutenção e suporte.
+
+**Valor comercial:** o Core pode ser posicionado como base de identidade e integração para sistemas internos, ERPs modulares, cenários **single-tenant** e integrações B2B com aplicações parceiras (credenciais + escopos), desde que o posicionamento de limites do MVP fique explícito para o cliente.
+
 ---
 
 ## 3. Proposta de valor
 
 | Dimensão | Benefício |
 |----------|-----------|
-| **Segurança** | Hash de senha moderno (Argon2id preferencial), rotação de refresh token, TTL e rate limit conforme RNFs, headers seguros (Helmet). |
+| **Segurança** | Política de senha e hash moderno (Argon2id preferencial), rotação de refresh token, TTL e rate limit conforme RNFs, headers seguros (Helmet). |
+| **Padronização** | Um único jeito de autenticar e autorizar no ecossistema; menos decisões ad hoc por squad. |
 | **Desacoplamento** | Squads focam em domínio; IAM, RBAC e integração ficam no Core. |
-| **Interoperabilidade** | JWT, REST, OpenAPI; consumo por qualquer stack. |
+| **Interoperabilidade** | JWT, **OAuth 2.0** (token endpoint e grants acordados), REST, OpenAPI; consumo por qualquer stack. |
 | **Auditabilidade** | Logs e auditoria mínimos de autenticação e mudanças críticas de acesso. |
-| **Produto vendável** | Pode ser oferecido como serviço de identidade e integração **sem** multi-tenant, **sem** OIDC completo no MVP — ainda assim útil e com roadmap claro. |
+| **Escalabilidade de produto** | Mesmo sem multi-tenant no MVP, atende uso interno e integrações controladas com escopos. |
+| **Produto vendável** | Identidade e integração com **OAuth 2.0** no núcleo; **OpenID Connect** (camada de identidade sobre OAuth) permanece **fora** até decisão explícita — ver §25. |
 
 ---
 
 ## 4. Personas
 
-| Persona | Necessidade principal |
-|---------|------------------------|
-| **Desenvolvedor de módulo (ERP interno)** | Validar JWT, obter usuário atual, checar permissões sem reimplementar IAM. |
-| **Administrador de sistema** | CRUD de usuários, papéis, permissões; ativar/desativar contas e aplicações. |
-| **Integrador / Dev externo** | Registrar aplicação, receber credenciais, configurar escopos, obter token de integração e documentação estável. |
-| **Auditor / Segurança** | Rastrear logins falhos, alterações sensíveis e eventos críticos (dentro do que o MVP cobrir). |
+| Persona | Necessidade principal | Critério de sucesso (MVP) |
+|---------|------------------------|---------------------------|
+| **Administrador de sistema** | CRUD de usuários, papéis, permissões; ativar/desativar contas e aplicações; sem editar banco à mão. | Provisionar ou revogar acesso em poucos minutos, com trilha mínima (logs / auditoria básica). |
+| **Gestor de TI / Segurança** | Política de senha aplicada, rate limit em rotas sensíveis, rastreabilidade de eventos críticos, OAuth 2.0 documentado. | Uma camada única e confiável; **sem** MFA/TOTP no escopo do produto. |
+| **Desenvolvedor de módulo (ERP interno)** | Validar JWT, obter usuário atual, checar permissões sem reimplementar IAM. | Integrar auth/RBAC em **≤ 1 dia útil** com OpenAPI e exemplos disponíveis. |
+| **Integrador / Dev externo** | Credenciais, escopos, token M2M e documentação estável. | Obter token e consumir recursos autorizados com erros previsíveis (`error.code`). |
+| **Auditor / Segurança** | Logins falhos, alterações sensíveis e eventos críticos cobertos pelo MVP. | Conseguir correlacionar eventos com `requestId` / timestamp quando implementado. |
 
 ---
 
@@ -75,22 +89,50 @@ Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria 
 
 - Cadastro de aplicações/clientes e emissão de credenciais (`client_id` + `client_secret`).
 - Escopos por aplicação (catálogo + vínculo aplicação–escopo).
-- Emissão e gestão de **token de integração** (JWT de tipo integração, claims adequados).
-- Documentação pública de integração (contratos e exemplos — pode viver no repositório e/ou Swagger).
-
+- Emissão de tokens M2M via **OAuth 2.0** `grant_type=client_credentials` no **token endpoint** (§14.7, **RF21–RF22**), com JWT de tipo integração e claims alinhados a **RF18**.
+- Documentação pública de integração (RFC 6749 + exemplos de `curl` — repositório e/ou Swagger).
 ### 5.3. Infraestrutura de entrega
 
-- Stack: **TypeScript**, **NestJS**, **PostgreSQL**, **Prisma**, **JWT**, **Swagger**, **Docker**, **Jest**, **class-validator**, **class-transformer**.
+- Stack: **TypeScript**, **NestJS**, **PostgreSQL**, **Prisma**, **JWT**, **Passport** (estratégia JWT, conforme §12), **Swagger**, **Docker**, **Jest**, **class-validator**, **class-transformer**.
 - API versionada em **`/v1`**, JSON, Bearer Token onde aplicável.
+- **CI:** pipeline com lint, testes e build (alinhar ao DoD, §23).
 
-### 5.4. Resumo: MVP vs fase 2
+### 5.4. Resumo: núcleo do MVP vs evolução técnica
 
-| Área | MVP | Fase 2 / roadmap |
-|------|-----|------------------|
-| Login humano | E-mail + senha → JWT (access + refresh) | Autenticação reforçada — ver [PRD.md](PRD.md) Anexo A |
+Não há “fase 2” de produto (sem MFA, sem promessa de roadmap em duas fases). Abaixo: **o que o MVP entrega** vs **melhorias posteriores opcionais** (§25).
+
+| Área | Núcleo do MVP | Evolução técnica (roadmap §25) |
+|------|----------------|-------------------------------|
+| Login humano | E-mail + senha → JWT (access + refresh); alinhado a **OAuth 2.0** onde aplicável (**RF21**, **RF24**) | — |
+| **OAuth 2.0** | **Authorization Server** com token endpoint (**RF21**), grants **client_credentials**, **refresh_token**, **password** (first-party, se ativado) | OIDC (discovery, `openid` scope), **authorization code + PKCE** para SPAs públicas, JWKS |
 | Tokens e abuso | RNF03 (TTL) e RNF07 (rate limit + lockout) | Rate limit distribuído (Redis) em cluster |
-| Integração M2M | Client credentials, escopos cadastrados, **RF18** no consumo | OAuth 2.0 / OIDC como authorization server completo |
-| HTTP | Helmet no MVP; CSP **mais permissiva em desenvolvimento** (Swagger/local) e **mais restritiva em produção** conforme o front | Endurecimento adicional |
+| Integração M2M | **RFC 6749** `client_credentials` + escopos + **RF18** | Endurecimento adicional de governança de clientes |
+| HTTP | Helmet; CSP por ambiente (dev vs produção) | CSP mais estrita, hardening contínuo |
+
+### 5.5. Priorização (backlog)
+
+Ordem sugerida para **cortar escopo sem travar go-live**:
+
+| Prioridade | Itens |
+|------------|--------|
+| **P0 (go-live)** | **OAuth 2.0:** token endpoint (**RF21**) com `client_credentials` e `refresh_token`; login/registro e-mail+senha e/ou `password` grant (**RF24**); access + refresh com rotação; `/auth/me`; CRUD users/roles/permissions; vínculos; RBAC; aplicações + `client_secret` + escopos; validação **RF18**; **RNF07**; OpenAPI **incluindo OAuth**; logs; `GET /health`. |
+| **P1 (ainda MVP, se couber no sprint)** | Exemplos públicos (README); matriz inicial de `permission.code` e escopos; Helmet/CSP fino por ambiente. |
+| **P2 (roadmap curto — §25)** | Logout com revogação; webhooks/eventos; RS256; frontend admin; OIDC / authorization code + PKCE. |
+
+### 5.6. Ordem sugerida de implementação (incrementos)
+
+Ordem prática para o time — **não** constitui “fase 2” de produto.
+
+1. **Base:** registro/login/refresh, usuários, roles, permissions, `/auth/me`, **token OAuth** mínimo (`client_credentials` + `refresh_token`).  
+2. **Autorização:** RBAC e guards; matriz mínima de permissões com squads.  
+3. **Integração:** aplicações, escopos, **RF18** nas rotas M2M.  
+4. **Endurecimento:** RNF07, auditoria §21, secrets e Helmet/CSP.  
+5. **Adoção:** comunicação e exemplos para módulos consumirem o Core.
+
+### 5.7. Dependências entre squads
+
+- **O Core entrega:** **OAuth 2.0** (token endpoint e grants definidos); emissão e validação do contrato JWT; RBAC para usuários humanos; escopos para M2M; OpenAPI estável.  
+- **Os módulos consumidores:** devem validar o token (assinatura, `exp`, `type`) e aplicar apenas regras de negócio locais — **sem** novo login ou matriz de permissões paralela; alinhar-se aos códigos de `permission` e escopos acordados.
 
 ---
 
@@ -99,13 +141,17 @@ Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria 
 | Item | Status |
 |------|--------|
 | **Multi-tenant** | **Fora de escopo** — modelo single-tenant explícito. |
-| **Login social / Google / provedores OIDC externos** | **Fora do MVP**. |
-| **Plataforma IAM completa estilo Keycloak** | **Fora do escopo** — produto propositalmente enxuto. |
-| **OAuth 2.0 / OpenID Connect como servidor de autorização completo** | **Roadmap** (ver §25), não requisito do MVP. |
+| **Login social / Google / provedores externos** | **Fora do escopo**. |
+| **Plataforma IAM completa estilo Keycloak** | **Fora do escopo** — produto enxuto. |
+| **OpenID Connect completo** (discovery, `id_token`, claims `openid`, etc.) | **Fora do MVP** — evolução em §25; **OAuth 2.0** (RFC 6749) está **no MVP**. |
 | **Frontend como prioridade** | **Secundário**; não bloqueia entrega do backend. |
-| **SSO corporativo (SAML, etc.)** | Fora do MVP. |
+| **SSO corporativo (SAML, etc.)** | Fora do escopo. |
+| **MFA, TOTP, WebAuthn, códigos de recuperação** | **Fora do escopo do produto** — não há plano de “segunda fase” para esses itens. |
+| **Federação de identidade** | Fora do escopo. |
+| **Auditoria avançada** (dashboard dedicado, retenção longa) | Roadmap §25; MVP cobre logs + auditoria mínima (§21). |
+| **Eventos / webhooks públicos** | Roadmap §25. |
 
-**Nota:** O produto permanece **vendável e útil** sem multi-tenant e sem OIDC: foco em JWT + RBAC + integração por credenciais e escopos.
+**Nota:** O núcleo é **JWT + OAuth 2.0 + RBAC + integração por client credentials e escopos**, sem multi-tenant e **sem** OIDC no MVP.
 
 ---
 
@@ -126,10 +172,14 @@ Sem esse núcleo, o ecossistema fragmenta regras de acesso, dificulta auditoria 
 | **RF14** | Cadastro de aplicação com nome, identificadores e status. |
 | **RF15** | Geração e **regeneração** de `client_secret`; segredo **exibível apenas** na criação ou regeneração (nunca em listagens/detalhes posteriores). |
 | **RF16** | Definição de escopos permitidos por aplicação (associação e listagem). |
-| **RF17** | Emissão de token de integração mediante `client_id` + `client_secret` (fluxo M2M); aplicação inativa não recebe token. |
+| **RF17** | Emissão de token M2M mediante **OAuth 2.0** `grant_type=client_credentials` no token endpoint (**RF21**), com `client_id` + `client_secret`; aplicação inativa não recebe token. O endpoint legado `POST /v1/integration/token` pode existir como **alias** do mesmo comportamento até remoção documentada. |
 | **RF18** | Validação de **escopos no consumo**: em toda rota aceitando JWT de integração (`type: integration_access`), o backend verifica que o conjunto `scopes` do token **cobre** os escopos exigidos pela rota (ex.: metadata em controller + `ScopesGuard` / decorator `@RequireScopes('code1','code2')` após validação JWT). |
 | **RF19** | Endpoint de saúde `GET /v1/health` para probes (liveness/readiness conforme impl.). |
-| **RF20** | Documentação OpenAPI atualizada com todos os endpoints públicos do MVP. |
+| **RF20** | Documentação OpenAPI atualizada com todos os endpoints públicos do MVP, **incluindo o token endpoint OAuth 2.0** (parâmetros, respostas e erros alinhados à RFC 6749). |
+| **RF21** | O serviço atua como **Authorization Server OAuth 2.0** (RFC 6749): expor **token endpoint** versionado (ex.: `POST /v1/oauth/token`), com `Content-Type: application/x-www-form-urlencoded` (ou JSON se o time padronizar, desde que documentado), retornando access token (JWT), opcional refresh token e metadados (`token_type`, `expires_in`) conforme o grant. |
+| **RF22** | Suportar **`grant_type=client_credentials`** para clientes confidenciais, com validação de escopos solicitados ⊆ escopos cadastrados (**RF16**, **RF18**). |
+| **RF23** | Suportar **`grant_type=refresh_token`** alinhado à **RF04** (rotação obrigatória do refresh). |
+| **RF24** | Suportar **`grant_type=password`** apenas para **clientes first-party** internos (ex.: mesma organização), **ou** manter `POST /v1/auth/login` e `POST /v1/auth/refresh` como rotas de conveniência que produzem os **mesmos** tokens e semântica que os grants OAuth equivalentes — documentar uma das abordagens no OpenAPI para evitar dois comportamentos divergentes. |
 
 ---
 
@@ -226,6 +276,7 @@ Emite JWT tipo integração com claims de escopos e identificação da aplicaç�
 | **Applications** | CRUD apps, escopos, regenerate secret |
 | **Integration** | Emissão de token M2M |
 | **Health** | Healthcheck |
+| **Audit** (opcional no MVP) | Persistência ou agregação mínima de eventos críticos alinhados a §21; pode ser módulo fino ou serviço interno ao `Auth` até evoluir. |
 | **Common** | Filtros de exceção, envelope resposta, interceptors, requestId |
 
 ### 12.2. Componentes
@@ -645,13 +696,15 @@ Formato: **JSON estruturado** com `requestId`, timestamp, rota, `userId` ou `cli
 | HS256 com secret vazado compromete todos os tokens | Rotacionar secret; planejar RS256; secrets fortes e rotação operacional. |
 | Escopo de integração mal configurado | Revisão de API; testes de autorização por escopo. |
 | Sem multi-tenant | Documentar claramente para clientes que precisam isolamento por tenant em outro produto ou deployment. |
+| Indisponibilidade do Core bloqueia todos os módulos | Healthcheck e monitoramento; estratégia de deploy e, se necessário, janela de contingência documentada (o MVP assume dependência forte — é aceitável se explícito). |
+| Crescimento de integrações sem governança | Convenção de nomes de escopos e `permission.code`; revisão periódica; documentação obrigatória para novos clientes M2M. |
 
 ---
 
 ## 25. Roadmap futuro
 
 - **OAuth 2.0 / OpenID Connect** como servidor de autorização (Authorization Server) — fluxos adicionais, discovery, JWKS.
-- **Eventos de domínio** (Kafka/RabbitMQ) para `user.created`, `role.permissions_updated`, etc.
+- **Eventos de domínio** — começar por **webhooks** ou fila leve se necessário; **Kafka/RabbitMQ** apenas quando volume e equipe justificarem.
 - **RS256** e rotação de chaves públicas.
 - **Frontend admin** completo (UX, dashboards de auditoria).
 - **Rate limit** distribuído (Redis) em ambientes clusterizados.
@@ -660,7 +713,28 @@ Formato: **JSON estruturado** com `requestId`, timestamp, rota, `userId` ou `cli
 
 ## 26. Referências e consistência
 
-Este documento preserva e amplia a visão do **Core Engine & Auth** como **Identity, Access & Integration Core**, mantém a stack **TypeScript, NestJS, PostgreSQL, Prisma, JWT, Swagger, Docker, Jest**, REST pragmático com **`/v1`**, padrão de envelope e `error.code`, modelo **User, Role, Permission, Application** com **RefreshToken**, **Scope** e **ApplicationScope**, foco em **segurança**, **backend como entrega principal**, **sem multi-tenant**, e **OAuth/OIDC apenas como evolução**.
+Este documento consolida a visão do **Core Engine & Auth** como **Identity, Access & Integration Core** (alinhamento com revisão CORE-001). Stack: **TypeScript, NestJS, PostgreSQL, Prisma, JWT, Passport (JWT), Swagger, Docker, Jest**, REST em **`/v1`**, envelope e `error.code`, modelo **User, Role, Permission, Application** com **RefreshToken**, **Scope** e **ApplicationScope**. **MVP deliberadamente enxuto:** sem MFA, sem multi-tenant, **OAuth/OIDC completo apenas como evolução** (§25, §27).
+
+---
+
+## 27. Anexo A — Autenticação reforçada e evolução (pós-MVP)
+
+Este anexo substitui referências órfãs a “Anexo A” e define o que **não** entra no MVP mas deve ficar claro para produto e engenharia.
+
+### A.1. MFA com TOTP (fase sugerida: após go-live estável)
+
+- Fluxo típico: `login` retorna estado `mfaRequired` + token temporário **ou** sessão de passo 2; `POST /v1/auth/mfa/verify` conclui e emite access/refresh finais.  
+- Endpoints adicionais prováveis: `mfa/setup`, `mfa/disable` (sempre com reautenticação).  
+- **Códigos de recuperação** e UX de “perdi o dispositivo” ficam na mesma épica ou imediatamente após — evitar MFA sem plano de recuperação em produção.
+
+### A.2. Por que MFA não está no MVP deste documento
+
+- Aumenta superfície (estado intermediário de login, suporte, testes e2e).  
+- O valor do primeiro release está em **um JWT + RBAC + M2M coerentes** para todo o ERP; MFA pode ser priorizado quando a base já estiver em uso.
+
+### A.3. Itens relacionados (roadmap)
+
+- Logout com revogação; auditoria com dashboard; **HS256 → RS256**; rate limit com Redis; OAuth/OIDC completo — ver §25.
 
 ---
 
