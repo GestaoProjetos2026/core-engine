@@ -1,0 +1,9 @@
+Retome o proximo item de desenvolvimento deste projeto com base em contexto persistido.
+
+Passos:
+1) Leia `PRD.md` (fonte normativa).
+2) Leia `Sprints.md` (fonte oficial de backlog).
+3) Leia `docs/CONTEXT.md` (estado da ultima sessao).
+4) Identifique o proximo item logico do backlog.
+5) Resuma impacto tecnico e plano curto de execucao.
+6) Aguarde confirmacao antes de codar.

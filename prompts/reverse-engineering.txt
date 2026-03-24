@@ -1,0 +1,31 @@
+O projeto precisa de reverse engineering orientado a contexto.
+
+Objetivo:
+- Entender o estado real do sistema e propor organizacao documental minima para continuidade com IA.
+
+Tarefas obrigatorias:
+1) Mapear stack real pelo codigo e configuracoes (package.json, prisma, docker, scripts, tooling).
+2) Mapear estrutura de pastas e modulos realmente existentes.
+3) Listar features ja implementadas e features parcialmente implementadas.
+4) Identificar pontos criticos tecnicos (ex.: seguranca, autenticacao, integracao, inconsistencias).
+5) Comparar implementacao atual com o `PRD.md` (fonte normativa) e apontar gaps.
+6) Comparar execucao atual com `Sprints.md` (fonte oficial de backlog) e apontar itens em aberto.
+7) Propor uma organizacao inicial de contexto persistente para as proximas sessoes:
+   - memoria curta;
+   - fluxo de abertura/fechamento de sessao;
+   - prompts de continuidade.
+
+Formato de saida esperado:
+- Stack real identificada
+- Estrutura atual do repositorio
+- Estado de implementacao por modulo
+- Gaps vs PRD
+- Gaps vs Sprints
+- Riscos e prioridades imediatas
+- Proposta de organizacao documental (acoes praticas)
+
+Regras:
+- Nao inventar features.
+- Nao assumir modulo inexistente.
+- Nao alterar backlog.
+- Basear conclusoes em evidencia do repositorio.
