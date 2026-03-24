@@ -1,214 +1,132 @@
-# 🔐 Core Engine & Auth (CORE-001)
-
-## 📌 Visão Geral
-
-O **Core Engine & Auth** é o módulo central responsável por autenticação, autorização e controle de acesso dentro de um sistema modular (ERP ou SaaS).
-
-Ele garante **segurança, padronização e integração consistente** entre diferentes módulos.
+# 🔐 PRD: Core Engine & Auth (CORE-001) - Versão 2.0
 
 ---
 
-## 🚨 Problema
+## 📌 1. Visão Geral & Contexto
 
-Sistemas modulares sem uma camada central de autenticação:
+O **Core Engine & Auth** é o provedor de identidade (IdP) e o barramento de permissões central. Ele não apenas autentica, mas gerencia o ciclo de vida completo da identidade dentro do ecossistema.
 
-- Duplicam lógica de segurança
-- Criam inconsistência entre módulos
-- Aumentam riscos de vulnerabilidades
-- Dificultam manutenção
+- **Status:** Em Definição  
+- **Stakeholders:** Equipe de Engenharia, Segurança da Informação, Gestores de Produto  
 
 ---
 
-## 💡 Proposta de Valor
+## 🚨 2. Análise de Segurança e Continuidade Operacional
 
-Fornecer uma solução centralizada para:
+Para garantir que o Core Engine & Auth seja resiliente e atenda aos padrões modernos de mercado, esta análise foca em pilares de segurança e experiência do usuário:
 
-- Autenticação de usuários
-- Gerenciamento de usuários
-- Controle de permissões (RBAC)
-- Integração segura entre módulos
+- **Autonomia no Acesso:**  
+  Implementação de fluxos de autoatendimento para recuperação de credenciais, reduzindo a carga operacional de suporte técnico.
 
----
+- **Segurança Adaptativa:**  
+  Incorporação de Multi-Fator de Autenticação (MFA) como camada essencial para proteção de dados sensíveis em ambientes ERP.
 
-## 💰 Oportunidade de Venda
+- **Gestão de Ciclo de Vida da Sessão:**  
+  Controle granular sobre a expiração e revogação de tokens, garantindo o encerramento imediato de acessos em caso de desligamento ou comprometimento de conta.
 
-Este módulo pode ser utilizado como produto independente para:
-
-- Pequenas e médias empresas
-- Sistemas internos
-- Plataformas SaaS
+- **Rastreabilidade e Auditoria:**  
+  Estrutura de logs detalhada para conformidade com normas de proteção de dados (LGPD) e auditorias de segurança cibernética.
 
 ---
 
-## 👥 Personas
+## 👥 3. Personas (Refinadas)
 
-### 🧑‍💻 Gestor de TI
-- Controlar acesso por módulo
-- Definir permissões por usuário
-
-### 🛠️ Administrador do Sistema
-- Gerenciar usuários
-- Controlar acessos e permissões
-
-### 👨‍💻 Desenvolvedor
-- Integrar módulos com autenticação central
+| Persona                 | Necessidade Principal |
+|------------------------|----------------------|
+| Desenvolvedor Externo  | Consumir a API para validar permissões sem gerenciar banco de usuários |
+| Auditor de Segurança   | Rastrear alterações de permissões e histórico |
+| Usuário Final          | Recuperar acesso e usar SSO entre módulos |
 
 ---
 
-## ⚙️ Requisitos Funcionais
+## ⚙️ 4. Requisitos Funcionais (Expandidos)
 
-| Código | Descrição |
-|--------|----------|
-| RF01 | Cadastro de usuários |
-| RF02 | Autenticação via e-mail e senha |
-| RF03 | Emissão de token |
-| RF04 | Validação de token |
-| RF05 | Controle de acesso por cargos |
-| RF06 | Controle de permissões |
-| RF07 | Consulta de usuário autenticado |
-| RF08 | Gestão de usuários |
-| RF09 | Gestão de cargos e permissões |
-| RF10 | Integração com módulos externos |
-
----
-
-## 🧱 Requisitos Não Funcionais
-
-### 🔐 Segurança
-- Senhas com hash seguro
-- Tokens com expiração
-- Endpoints protegidos com autenticação
-
-### ⚡ Performance
-- Baixa latência em autenticação e validação
-
-### 📈 Escalabilidade
-- Suporte a crescimento de usuários
-
-### 🟢 Disponibilidade
-- Serviço crítico (alta disponibilidade)
-
-### 📊 Monitoramento
-- Logs de:
-  - Login
-  - Falhas de autenticação
-  - Erros de autorização
+| ID   | Requisito                 | Descrição                                                                 | Prioridade |
+|------|--------------------------|---------------------------------------------------------------------------|------------|
+| RF01 | Cadastro de Usuários     | Registro com e-mail único e senha segura                                 | Alta       |
+| RF02 | Autenticação Segura      | Login com proteção contra força bruta (bloqueio após 5 tentativas)       | Alta       |
+| RF03 | Emissão de Tokens        | Access Token + Refresh Token                                             | Alta       |
+| RF04 | Validação de Acesso      | Verificação automática de token                                          | Alta       |
+| RF05 | Controle por Cargos      | Agrupamento de usuários por funções                                      | Alta       |
+| RF06 | Permissões Granulares    | Definição de ações específicas                                           | Alta       |
+| RF07 | Consulta de Perfil       | Endpoint `/me`                                                           | Média      |
+| RF08 | Gestão de Usuários       | Painel administrativo                                                    | Alta       |
+| RF09 | Gestão de Matriz         | Configuração dinâmica de cargos                                          | Alta       |
+| RF10 | Sincronização Modular    | Webhooks para eventos                                                    | Média      |
+| RF11 | Recuperação de Senha     | Fluxo de reset via e-mail                                                | Alta       |
+| RF12 | Multi-Fator (MFA)        | Suporte a TOTP ou e-mail                                                 | Alta       |
+| RF13 | Revogação de Sessão      | Logout com invalidação de token                                          | Alta       |
+| RF14 | Audit Log Profundo       | Registro detalhado de alterações                                         | Alta       |
+| RF15 | Auto-registro (Opcional) | Permitir cadastro público                                                | Baixa      |
 
 ---
 
-## 🔌 API - Endpoints
+## 🧱 5. Requisitos Não Funcionais (Técnicos)
 
-### 🔑 Autenticação
-POST /v1/auth/register
-POST /v1/auth/login
-POST /v1/auth/refresh
-POST /v1/auth/validate
-GET /v1/auth/me
+### 🔐 Segurança & Criptografia
 
-### 👤 Usuários
-GET /v1/users
-POST /v1/users
-PATCH /v1/users/:id
+- **Hashing:**  
+  Utilizar Argon2id ou Bcrypt (custo mínimo 12).  
+  ❌ Nunca usar MD5 ou SHA1.
 
-### 🛡️ Roles & Permissões
-GET /v1/roles
-POST /v1/roles
-GET /v1/permissions
-POST /v1/permissions
+- **Padrão de Token:**  
+  - JWT para Access Tokens  
+  - Opaque Tokens para Refresh Tokens (armazenados em banco)
 
+- **Protocolo:**  
+  OAuth2 + OpenID Connect (OIDC)
 
 ---
 
-## 🔗 Integração com Outros Módulos
+### 📜 Conformidade (LGPD)
 
-Os módulos devem:
-
-- Enviar token no header das requisições
-- Consultar permissões do usuário autenticado
-- Restringir funcionalidades com base em papéis/permissões
+- **Anonimização:**  
+  Capacidade de desativar usuários removendo dados sensíveis, mantendo histórico com ID anônimo.
 
 ---
 
-## 📡 Eventos / Webhooks
+## 🔌 6. Definição da API (Arquitetura RESTful)
 
-### 🆕 user.created
-Disparado ao criar um usuário
+### 🔑 Auth & Session
 
+- `POST /v1/auth/login`  
+  Retorna `accessToken`, `refreshToken`, `expiresIn`
+
+- `POST /v1/auth/forgot-password`  
+  Dispara e-mail de recuperação
+
+- `POST /v1/auth/reset-password`  
+  Redefine senha via token
+
+- `POST /v1/auth/logout`  
+  Invalida o token atual
+
+---
+
+### 🛡️ Gestão de Acessos (RBAC)
+
+**Estrutura:** Usuário → Roles → Permissões
+
+- `GET /v1/roles/:id/permissions`  
+  Lista permissões do cargo
+
+- `POST /v1/users/:id/roles`  
+  Atribui cargo ao usuário
+
+---
+
+## 📡 7. Webhooks & Integridade (Event-Driven)
+
+### ⚠️ security.login_failed
+
+Disparado após 3 tentativas de login falhas.
+
+```json
 {
-  "event": "user.created",
-  "timestamp": "2026-03-12T21:00:00Z",
-  "source": "core-auth",
+  "event": "security.login_failed",
   "data": {
-    "userId": "uuid",
-    "name": "João Silva",
-    "email": "joao@email.com",
-    "status": "active"
+    "email": "user@target.com",
+    "ip": "192.168.1.1",
+    "attempts": 3
   }
 }
-
-Consumidores:
-
-CRM
-Service Desk
-
-### user.disabled
-Disparado ao desativar usuário
-
-{
-  "event": "user.disabled",
-  "timestamp": "2026-03-12T21:00:00Z",
-  "source": "core-auth",
-  "data": {
-    "userId": "uuid",
-    "status": "disabled"
-  }
-}
-
-### 🔄 permission.updated
-
-Disparado ao alterar permissões
-
-{
-  "event": "permission.updated",
-  "timestamp": "2026-03-12T21:00:00Z",
-  "source": "core-auth",
-  "data": {
-    "permissionId": "uuid",
-    "code": "finance.write",
-    "description": "Permite modificar registros financeiros"
-  }
-}
-
-🧩 role.updated
-
-Disparado ao alterar roles
-
-{
-  "event": "role.updated",
-  "timestamp": "2026-03-12T21:00:00Z",
-  "source": "core-auth",
-  "data": {
-    "roleId": "uuid",
-    "name": "finance_manager",
-    "permissions": [
-      "finance.read",
-      "finance.write"
-    ]
-  }
-}
-
-### User Stories
-Como administrador, quero cadastrar usuários para permitir acesso ao sistema
-Como usuário, quero fazer login para acessar meus módulos
-Como gestor de TI, quero controlar permissões para proteger áreas sensíveis
-Como desenvolvedor, quero uma API central de autenticação
-Como administrador, quero desativar usuários para evitar acessos indevidos
-
-### ✅ Definição de Pronto (DoD)
- Código revisado
- Testes unitários implementados
- Documentação atualizada
- Pipeline CI/CD funcionando
- Endpoints testados
- Regras de acesso validadas
- Issue atualizada no Plane
