@@ -199,6 +199,7 @@ Estimativa: 3 SP
 Label: openapi, swagger, sprint-2
 
 5) Docker Compose e variáveis para desenvolvimento
+Status: done
 
 Pertence a: Module 7 — Infraestrutura
 Título: Orquestrar app + PostgreSQL para desenvolvimento
@@ -213,6 +214,7 @@ Estimativa: 3 SP
 Label: docker, infra, sprint-2
 
 6) Alinhar schema Prisma ao modelo alvo do PRD (migração)
+Status: done
 
 Pertence a: Module 5 — Banco de Dados
 Título: Evoluir schema para RefreshToken, Application, Scope e Permission semântica
