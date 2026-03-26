@@ -19,6 +19,8 @@ type ErrorEnvelope = {
 
 const STATUS_ERROR_CODE: Record<number, string> = {
   [HttpStatus.BAD_REQUEST]: 'VALIDATION_ERROR',
+  // Default 401 fallback for routes protected by token.
+  // Auth endpoints should override with AUTH_INVALID_CREDENTIALS when applicable.
   [HttpStatus.UNAUTHORIZED]: 'AUTH_TOKEN_INVALID',
   [HttpStatus.FORBIDDEN]: 'AUTHZ_FORBIDDEN',
   [HttpStatus.NOT_FOUND]: 'RESOURCE_NOT_FOUND',
@@ -75,12 +77,17 @@ export class ApiExceptionFilter implements ExceptionFilter {
       status === HttpStatus.BAD_REQUEST && !isProd
         ? (payload.message ?? payload)
         : undefined;
+    const customErrorCode =
+      typeof payload.errorCode === 'string'
+        ? payload.errorCode
+        : typeof payload.code === 'string'
+          ? payload.code
+          : undefined;
 
     return {
       success: false,
       error: {
-        code:
-          typeof payload.errorCode === 'string' ? payload.errorCode : defaultCode,
+        code: customErrorCode ?? defaultCode,
         message:
           typeof payload.message === 'string'
             ? payload.message
