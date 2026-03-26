@@ -1,6 +1,6 @@
 Sprint 1 — 13/03/2026 a 20/03/2026
 1) PRD do Core/Auth
-
+Status: done
 Pertence a: Planejamento inicial do produto
 Título: Criar PRD do Core/Auth
 Descrição: Documentar objetivo do produto, escopo inicial, módulos, premissas, dependências, fluxos principais de autenticação/autorização e visão de MVP.
@@ -18,7 +18,7 @@ Estimativa: 3 SP
 Label: prd, planning, core-auth, sprint-1
 
 2) MVP do banco de dados
-
+Status: done
 Pertence a: Module 5 — Banco de Dados
 Título: Criar MVP do banco de dados
 Descrição: Definir a primeira versão funcional da base relacional do Core/Auth, suficiente para suportar autenticação, usuários, papéis e permissões.
@@ -36,7 +36,7 @@ Estimativa: 5 SP
 Label: database, mvp, prisma, core-auth, sprint-1
 
 3) Modelar entidade User
-
+Status: done
 Pertence a: Module 5 — Banco de Dados / Issue: Definir modelo de dados do Core/Auth
 Título: Modelar entidade User
 Descrição: Definir campos, regras e atributos da tabela de usuários.
@@ -50,7 +50,7 @@ Estimativa: 1 SP
 Label: database, user, modeling, sprint-1
 
 4) Modelar entidade Role
-
+Status: done
 Pertence a: Module 5 — Banco de Dados / Issue: Definir modelo de dados do Core/Auth
 Título: Modelar entidade Role
 Descrição: Definir estrutura da tabela de papéis.
@@ -64,7 +64,7 @@ Estimativa: 1 SP
 Label: database, role, modeling, sprint-1
 
 5) Modelar entidade Permission
-
+Status: done
 Pertence a: Module 5 — Banco de Dados / Issue: Definir modelo de dados do Core/Auth
 Título: Modelar entidade Permission
 Descrição: Definir estrutura da tabela de permissões com código e descrição.
@@ -78,7 +78,7 @@ Estimativa: 1 SP
 Label: database, permission, modeling, sprint-1
 
 6) Modelar tabelas de relacionamento
-
+Status: done
 Pertence a: Module 5 — Banco de Dados / Issue: Definir modelo de dados do Core/Auth
 Título: Modelar tabelas de relacionamento
 Descrição: Definir user_roles e role_permissions com regras de integridade.
@@ -94,7 +94,7 @@ Estimativa: 2 SP
 Label: database, relations, rbac, sprint-1
 
 7) Configurar .env e .env.example
-
+Status: done
 Pertence a: Module 7 — Infraestrutura e Documentação / Issue: Configurar estrutura base do projeto
 Título: Configurar .env e .env.example
 Descrição: Estruturar variáveis de ambiente do backend e do banco.
@@ -110,7 +110,7 @@ Estimativa: 1 SP
 Label: infra, env, setup, sprint-1
 
 8) Definir prefixo global /v1
-
+Status: done
 Pertence a: Module 6 — APIs / Issue: Padronizar estrutura das APIs
 Título: Definir prefixo global /v1
 Descrição: Versionar a API desde o início para evitar retrabalho futuro.
@@ -139,6 +139,7 @@ Notas de calendário (sprints semanais: sábado a sexta-feira)
 Sprint 2 — 22/03/2026 a 27/03/2026
 
 1) Bootstrap NestJS e módulos base (Common, Health)
+Status: done
 
 Pertence a: Module 6 — APIs / Infraestrutura
 Título: Subir aplicação NestJS com prefixo global /v1
@@ -153,6 +154,7 @@ Estimativa: 5 SP
 Label: nestjs, bootstrap, health, sprint-2
 
 2) Envelope de resposta e filtro de erros com error.code
+Status: done
 
 Pertence a: Module 6 — APIs / Common
 Título: Padronizar sucesso e erro (§18 e §19 do PRD)
@@ -167,6 +169,7 @@ Estimativa: 3 SP
 Label: api, errors, envelope, sprint-2
 
 3) Documentação inicial de contrato e catálogo de erros (consumo externo)
+Status: done
 
 Pertence a: Module 7 — Infraestrutura e Documentação
 Título: Publicar guia de integração e catálogo error.code
@@ -181,6 +184,7 @@ Estimativa: 2 SP
 Label: docs, errors, integration, sprint-2
 
 4) Swagger/OpenAPI 3 configurado e convencionado
+Status: done
 
 Pertence a: Module 6 — APIs
 Título: Configurar Swagger em `/v1/docs` (ou convenção equivalente)

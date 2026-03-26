@@ -6,19 +6,25 @@ Objetivo:
 Instrucoes:
 1) Resuma claramente o que foi feito nesta sessao (sem floreio).
 2) Liste os arquivos modificados e o motivo de cada alteracao.
-3) Atualize `docs/CONTEXT.md` com:
+3) Atualize status de execucao no `Sprints.md` para os itens concluidos nesta sessao:
+   - adicionar `Status: done` logo abaixo do titulo de cada task finalizada;
+   - nunca criar item novo e nunca mover item entre sprints;
+   - se uma task estiver parcial, registrar no `docs/CONTEXT.md` como pendencia (nao marcar done).
+4) Atualize `docs/CONTEXT.md` com:
    - ultima acao realizada;
    - estado atual;
    - pendencias/debitos;
    - riscos/atencoes;
    - proximo foco.
-4) Aponte o proximo item logico com base no `Sprints.md` (sem criar backlog novo).
-5) Se houver divergencia entre `PRD.md`, `Sprints.md` e implementacao atual, registre no handoff.
-6) Entregue um bloco final "Pronto para proxima sessao" com os proximos passos imediatos.
+   - tasks concluidas na sessao (ID e titulo da sprint).
+5) Aponte o proximo item logico com base no `Sprints.md` (sem criar backlog novo).
+6) Se houver divergencia entre `PRD.md`, `Sprints.md` e implementacao atual, registre no handoff.
+7) Entregue um bloco final "Pronto para proxima sessao" com os proximos passos imediatos.
 
 Regras de encerramento:
 - `PRD.md` continua como fonte normativa.
 - `Sprints.md` continua como fonte oficial de backlog.
 - Nao mover sprint.
 - Nao inventar item.
+- Sempre sincronizar status `done` em `Sprints.md` para tasks realmente concluidas.
 - Nao encerrar sem atualizar `docs/CONTEXT.md`.
