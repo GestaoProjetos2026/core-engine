@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const auth_response_dto_1 = require("./dto/auth-response.dto");
 const login_dto_1 = require("./dto/login.dto");
+const refresh_dto_1 = require("./dto/refresh.dto");
 const register_dto_1 = require("./dto/register.dto");
 const auth_service_1 = require("./auth.service");
 let AuthController = class AuthController {
@@ -29,6 +30,9 @@ let AuthController = class AuthController {
     }
     async login(dto) {
         return this.auth.login(dto);
+    }
+    async refresh(dto) {
+        return this.auth.refresh(dto);
     }
 };
 exports.AuthController = AuthController;
@@ -96,6 +100,52 @@ __decorate([
     __metadata("design:paramtypes", [login_dto_1.LoginDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
+__decorate([
+    (0, common_1.Post)('refresh'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Refresh access token',
+        description: 'RF04 / RN03: issues a new access + refresh pair and invalidates the submitted refresh token. Reuse of an old refresh returns 401 AUTH_REFRESH_REUSED.',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'New tokens issued',
+        type: auth_response_dto_1.AuthTokensDto,
+    }),
+    (0, swagger_1.ApiUnauthorizedResponse)({
+        description: 'Invalid or expired refresh (AUTH_REFRESH_INVALID), or reuse/revoked/concurrent race (AUTH_REFRESH_REUSED)',
+        schema: {
+            examples: {
+                invalid: {
+                    value: {
+                        success: false,
+                        error: {
+                            code: 'AUTH_REFRESH_INVALID',
+                            message: 'Invalid or expired refresh token',
+                        },
+                        timestamp: '2026-04-08T12:00:00.000Z',
+                        path: '/v1/auth/refresh',
+                    },
+                },
+                reused: {
+                    value: {
+                        success: false,
+                        error: {
+                            code: 'AUTH_REFRESH_REUSED',
+                            message: 'Refresh token was already used or revoked',
+                        },
+                        timestamp: '2026-04-08T12:00:00.000Z',
+                        path: '/v1/auth/refresh',
+                    },
+                },
+            },
+        },
+    }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [refresh_dto_1.RefreshDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "refresh", null);
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)('Auth'),
     (0, common_1.Controller)('auth'),

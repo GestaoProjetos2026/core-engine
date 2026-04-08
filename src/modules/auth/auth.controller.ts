@@ -9,6 +9,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthTokensDto, RegisteredUserDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
+import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthService } from './auth.service';
 
@@ -76,5 +77,51 @@ export class AuthController {
   })
   async login(@Body() dto: LoginDto): Promise<AuthTokensDto> {
     return this.auth.login(dto);
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description:
+      'RF04 / RN03: issues a new access + refresh pair and invalidates the submitted refresh token. Reuse of an old refresh returns 401 AUTH_REFRESH_REUSED.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'New tokens issued',
+    type: AuthTokensDto,
+  })
+  @ApiUnauthorizedResponse({
+    description:
+      'Invalid or expired refresh (AUTH_REFRESH_INVALID), or reuse/revoked/concurrent race (AUTH_REFRESH_REUSED)',
+    schema: {
+      examples: {
+        invalid: {
+          value: {
+            success: false,
+            error: {
+              code: 'AUTH_REFRESH_INVALID',
+              message: 'Invalid or expired refresh token',
+            },
+            timestamp: '2026-04-08T12:00:00.000Z',
+            path: '/v1/auth/refresh',
+          },
+        },
+        reused: {
+          value: {
+            success: false,
+            error: {
+              code: 'AUTH_REFRESH_REUSED',
+              message: 'Refresh token was already used or revoked',
+            },
+            timestamp: '2026-04-08T12:00:00.000Z',
+            path: '/v1/auth/refresh',
+          },
+        },
+      },
+    },
+  })
+  async refresh(@Body() dto: RefreshDto): Promise<AuthTokensDto> {
+    return this.auth.refresh(dto);
   }
 }

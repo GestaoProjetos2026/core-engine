@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var AuthService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
@@ -29,9 +30,10 @@ const userAuthInclude = {
         },
     },
 };
-let AuthService = class AuthService {
+let AuthService = AuthService_1 = class AuthService {
     prisma;
     jwt;
+    logger = new common_1.Logger(AuthService_1.name);
     constructor(prisma, jwt) {
         this.prisma = prisma;
         this.jwt = jwt;
@@ -94,6 +96,66 @@ let AuthService = class AuthService {
             expiresIn: this.accessExpiresSeconds(),
         };
     }
+    /**
+     * RF04 / RN03 — rotate refresh: old token invalidated; reuse → AUTH_REFRESH_REUSED.
+     */
+    async refresh(dto) {
+        const tokenHash = (0, crypto_1.createHash)('sha256').update(dto.refreshToken).digest('hex');
+        const result = await this.prisma.$transaction(async (tx) => {
+            const existing = await tx.refreshToken.findUnique({
+                where: { tokenHash },
+                include: {
+                    user: { include: userAuthInclude },
+                },
+            });
+            if (!existing) {
+                this.throwRefreshInvalid();
+            }
+            if (existing.revokedAt !== null) {
+                this.logger.warn(`AUTH_REFRESH_REUSED: reuse attempt refreshTokenId=${existing.id}`);
+                this.throwRefreshReused();
+            }
+            if (existing.expiresAt <= new Date()) {
+                this.throwRefreshInvalid();
+            }
+            if (existing.user.status !== client_1.UserStatus.ACTIVE) {
+                this.throwRefreshInvalid();
+            }
+            const { raw: newRefreshRaw, id: newId } = await this.insertRefreshTokenRow(existing.userId, tx);
+            const rotated = await tx.refreshToken.updateMany({
+                where: { id: existing.id, revokedAt: null },
+                data: {
+                    revokedAt: new Date(),
+                    replacedById: newId,
+                },
+            });
+            if (rotated.count === 0) {
+                await tx.refreshToken.delete({ where: { id: newId } });
+                this.logger.warn(`AUTH_REFRESH_REUSED: concurrent rotation lost for refreshTokenId=${existing.id}`);
+                this.throwRefreshReused();
+            }
+            return { user: existing.user, refreshToken: newRefreshRaw };
+        });
+        const accessToken = await this.signAccessToken(result.user);
+        return {
+            accessToken,
+            refreshToken: result.refreshToken,
+            tokenType: 'Bearer',
+            expiresIn: this.accessExpiresSeconds(),
+        };
+    }
+    throwRefreshInvalid() {
+        throw new common_1.UnauthorizedException({
+            message: 'Invalid or expired refresh token',
+            errorCode: 'AUTH_REFRESH_INVALID',
+        });
+    }
+    throwRefreshReused() {
+        throw new common_1.UnauthorizedException({
+            message: 'Refresh token was already used or revoked',
+            errorCode: 'AUTH_REFRESH_REUSED',
+        });
+    }
     async signAccessToken(user) {
         const payload = this.buildAccessPayload(user);
         return this.jwt.signAsync(payload);
@@ -115,17 +177,21 @@ let AuthService = class AuthService {
         };
     }
     async createRefreshToken(userId) {
+        const { raw } = await this.insertRefreshTokenRow(userId, this.prisma);
+        return raw;
+    }
+    async insertRefreshTokenRow(userId, db) {
         const raw = (0, crypto_1.randomBytes)(48).toString('base64url');
         const tokenHash = (0, crypto_1.createHash)('sha256').update(raw).digest('hex');
         const expiresAt = (0, auth_time_util_1.parseDurationToDate)(process.env.REFRESH_TOKEN_EXPIRES_IN ?? '7d');
-        await this.prisma.refreshToken.create({
+        const row = await db.refreshToken.create({
             data: {
                 tokenHash,
                 userId,
                 expiresAt,
             },
         });
-        return raw;
+        return { raw, id: row.id };
     }
     accessExpiresSeconds() {
         return (0, auth_time_util_1.parseDurationToSeconds)(process.env.JWT_EXPIRES_IN ?? '15m', 900);
@@ -142,7 +208,7 @@ let AuthService = class AuthService {
     }
 };
 exports.AuthService = AuthService;
-exports.AuthService = AuthService = __decorate([
+exports.AuthService = AuthService = AuthService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         jwt_1.JwtService])

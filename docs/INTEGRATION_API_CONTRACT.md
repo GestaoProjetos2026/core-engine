@@ -76,6 +76,8 @@ Uso recomendado:
 | 401 | `AUTH_INVALID_CREDENTIALS` | Login falho |
 | 401 | `AUTH_TOKEN_EXPIRED` | Access token expirado |
 | 401 | `AUTH_TOKEN_INVALID` | Token invalido/assinatura/formato |
+| 401 | `AUTH_REFRESH_INVALID` | Refresh inexistente, expirado ou usuario inativo |
+| 401 | `AUTH_REFRESH_REUSED` | Refresh ja revogado ou reuso (CA04); possivel corrida concorrente |
 | 403 | `AUTHZ_FORBIDDEN` | Sem permissao ou escopo |
 | 404 | `RESOURCE_NOT_FOUND` | Recurso inexistente |
 | 409 | `RESOURCE_CONFLICT` | Duplicidade |
@@ -85,7 +87,9 @@ Uso recomendado:
 Convencao atual para 401:
 - fallback generico: `AUTH_TOKEN_INVALID` (rotas protegidas por token);
 - para login falho: usar override explicito `AUTH_INVALID_CREDENTIALS`;
-- para token expirado: usar override explicito `AUTH_TOKEN_EXPIRED`.
+- para token expirado: usar override explicito `AUTH_TOKEN_EXPIRED`;
+- para refresh invalido/expirado: `AUTH_REFRESH_INVALID`;
+- para refresh reusado ou revogado: `AUTH_REFRESH_REUSED`.
 
 ## 5) Referencia cruzada com Swagger
 
