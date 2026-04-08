@@ -1,69 +1,65 @@
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../generated/prisma";
-import * as dotenv from "dotenv";
+import { PrismaClient } from '@prisma/client';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
+
+const permissionDefs: { code: string; description: string }[] = [
+  { code: 'users:list', description: 'List users' },
+  { code: 'users:read', description: 'Read users' },
+  { code: 'users:create', description: 'Create users' },
+  { code: 'users:update', description: 'Update users' },
+  { code: 'users:delete', description: 'Delete users' },
+  { code: 'invoice:create', description: 'Create invoices' },
+  { code: 'invoice:read', description: 'Read invoices' },
+  { code: 'crm:read', description: 'Read CRM' },
+  { code: 'crm:create', description: 'Create CRM records' },
+  { code: 'tickets:read', description: 'Read tickets' },
+  { code: 'tickets:create', description: 'Create tickets' },
+  { code: 'tickets:delete', description: 'Delete tickets' },
+  { code: 'roles:manage', description: 'Manage roles' },
+];
 
 async function main() {
-  // Criando permissões padrão
-  const permissions = await Promise.all([
-    // Users
-    prisma.permission.upsert({ where: { name: "users:list" },   update: {}, create: { name: "users:list",   resource: "users", action: "list" } }),
-    prisma.permission.upsert({ where: { name: "users:read" },   update: {}, create: { name: "users:read",   resource: "users", action: "read" } }),
-    prisma.permission.upsert({ where: { name: "users:create" }, update: {}, create: { name: "users:create", resource: "users", action: "create" } }),
-    prisma.permission.upsert({ where: { name: "users:update" }, update: {}, create: { name: "users:update", resource: "users", action: "update" } }),
-    prisma.permission.upsert({ where: { name: "users:delete" }, update: {}, create: { name: "users:delete", resource: "users", action: "delete" } }),
+  const permissions = await Promise.all(
+    permissionDefs.map((p) =>
+      prisma.permission.upsert({
+        where: { code: p.code },
+        update: {},
+        create: { code: p.code, description: p.description },
+      }),
+    ),
+  );
 
-    // Fiscal (Squad 2)
-    prisma.permission.upsert({ where: { name: "invoice:create" }, update: {}, create: { name: "invoice:create", resource: "invoice", action: "create" } }),
-    prisma.permission.upsert({ where: { name: "invoice:read" },   update: {}, create: { name: "invoice:read",   resource: "invoice", action: "read" } }),
+  console.log(`✅ ${permissions.length} permissions upserted`);
 
-    // CRM (Squad 3)
-    prisma.permission.upsert({ where: { name: "crm:read" },   update: {}, create: { name: "crm:read",   resource: "crm", action: "read" } }),
-    prisma.permission.upsert({ where: { name: "crm:create" }, update: {}, create: { name: "crm:create", resource: "crm", action: "create" } }),
-
-    // Tickets (Squad 4)
-    prisma.permission.upsert({ where: { name: "tickets:read" },   update: {}, create: { name: "tickets:read",   resource: "tickets", action: "read" } }),
-    prisma.permission.upsert({ where: { name: "tickets:create" }, update: {}, create: { name: "tickets:create", resource: "tickets", action: "create" } }),
-    prisma.permission.upsert({ where: { name: "tickets:delete" }, update: {}, create: { name: "tickets:delete", resource: "tickets", action: "delete" } }),
-
-    // Roles
-    prisma.permission.upsert({ where: { name: "roles:manage" }, update: {}, create: { name: "roles:manage", resource: "roles", action: "manage" } }),
-  ]);
-
-  console.log(`✅ ${permissions.length} permissões criadas`);
-
-  // Criando roles padrão
   const adminRole = await prisma.role.upsert({
-    where: { name: "admin" },
+    where: { name: 'admin' },
     update: {},
-    create: { name: "admin", description: "Acesso total ao sistema" },
+    create: { name: 'admin' },
   });
 
   const viewerRole = await prisma.role.upsert({
-    where: { name: "viewer" },
+    where: { name: 'viewer' },
     update: {},
-    create: { name: "viewer", description: "Somente leitura" },
+    create: { name: 'viewer' },
   });
 
   const accountantRole = await prisma.role.upsert({
-    where: { name: "accountant" },
+    where: { name: 'accountant' },
     update: {},
-    create: { name: "accountant", description: "Acesso ao módulo fiscal" },
+    create: { name: 'accountant' },
   });
 
   const salesRole = await prisma.role.upsert({
-    where: { name: "sales_rep" },
+    where: { name: 'sales_rep' },
     update: {},
-    create: { name: "sales_rep", description: "Acesso ao módulo CRM" },
+    create: { name: 'sales_rep' },
   });
 
-  console.log("✅ 4 roles criadas");
+  console.log('✅ 4 roles upserted');
 
-  // Vinculando TODAS as permissões ao admin
   for (const permission of permissions) {
     await prisma.rolePermission.upsert({
       where: {
@@ -80,10 +76,11 @@ async function main() {
     });
   }
 
-  console.log("✅ Admin recebeu todas as permissões");
+  console.log('✅ Admin linked to all permissions');
 
-  // Viewer só lê
-  const viewerPerms = permissions.filter(p => p.action === "read" || p.action === "list");
+  const viewerPerms = permissions.filter(
+    (p) => p.code.endsWith(':read') || p.code.endsWith(':list'),
+  );
   for (const permission of viewerPerms) {
     await prisma.rolePermission.upsert({
       where: {
@@ -100,10 +97,9 @@ async function main() {
     });
   }
 
-  console.log("✅ Viewer recebeu permissões de leitura");
+  console.log('✅ Viewer linked to read/list permissions');
 
-  // Accountant acessa fiscal
-  const accountantPerms = permissions.filter(p => p.resource === "invoice");
+  const accountantPerms = permissions.filter((p) => p.code.startsWith('invoice:'));
   for (const permission of accountantPerms) {
     await prisma.rolePermission.upsert({
       where: {
@@ -120,10 +116,9 @@ async function main() {
     });
   }
 
-  console.log("✅ Accountant recebeu permissões fiscais");
+  console.log('✅ Accountant linked to invoice permissions');
 
-  // Sales acessa CRM
-  const salesPerms = permissions.filter(p => p.resource === "crm");
+  const salesPerms = permissions.filter((p) => p.code.startsWith('crm:'));
   for (const permission of salesPerms) {
     await prisma.rolePermission.upsert({
       where: {
@@ -140,8 +135,8 @@ async function main() {
     });
   }
 
-  console.log("✅ Sales Rep recebeu permissões de CRM");
-  console.log("\n🎉 Seed concluído com sucesso!");
+  console.log('✅ Sales rep linked to CRM permissions');
+  console.log('\n🎉 Seed completed');
 }
 
 main()
