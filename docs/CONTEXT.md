@@ -7,45 +7,44 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 2 avancou e concluiu as tasks 5 e 6: configuracao do docker-compose com variaveis dev, e alinhamento do schema Prisma com os modelos do PRD.
+- Sprint 3: concluidas as tasks 1 e 2 — `POST /v1/auth/register`, `POST /v1/auth/login` e `POST /v1/auth/refresh` com rotação de refresh (RF04/RN03); catalogo de erros ampliado para refresh; testes Vitest no `AuthService`.
 
 ## Arquivos modificados recentemente
-- `.env.example`
-- `prisma/schema.prisma`
-- `src/server/prisma/prisma.service.ts`
+- `src/modules/auth/*` — modulo Auth (DTOs, serviço, controlador, política de senha, util de TTL, specs).
+- `src/server/app.module.ts` — import do `AuthModule`.
+- `package.json` — dependencia `@nestjs/jwt`.
+- `.env.example` — `BCRYPT_ROUNDS` e variaveis JWT/refresh já usadas pelo auth.
+- `prisma/seed.ts` — alinhado ao schema atual (`Permission.code`, `Role` sem description extra).
+- `docs/INTEGRATION_API_CONTRACT.md` — codigos `AUTH_REFRESH_INVALID` e `AUTH_REFRESH_REUSED`.
+- `Sprints/Sprints.md` — `Status: done` nas tasks 1 e 2 da Sprint 3.
 
 ## Estado atual
-- API base NestJS ativa com prefixo global `/v1`.
-- Endpoint `GET /v1/health` funcional com envelope de sucesso.
-- Setup de variáveis dev pronto e schema Prisma aderente ao modelo do PRD (RBAC, RefreshToken, Integration, OAuth scopes listos no prisma).
+- API NestJS + Fastify com prefixo `/v1`; `Health` e `Auth` ativos.
+- Endpoints: `POST /v1/auth/register`, `POST /v1/auth/login`, `POST /v1/auth/refresh`; envelope de sucesso/erro global; Swagger em dev em `/v1/docs`.
+- Access JWT (HS256) via `@nestjs/jwt` com claims alinhados ao PRD §16.1 no login/refresh; refresh opaco persistido com hash SHA-256; rotação com transação Prisma e `revokedAt`/`replacedById`.
 
 ## Pendencias e debitos
-- Remover `dist/` do workspace/staging antes de novos commits (`dist/` e artefato gerado).
-- Confirmar consistencia do `README.md` com a stack atual.
+- Remover `dist/` do staging antes de commits quando aparecer como alterado local.
+- Confirmar `README.md` e exemplos de quick start com os novos endpoints.
+- Sprint 3 task 4 (Passport + `JwtAuthGuard`) ainda nao implementada — rotas protegidas por Bearer e `/me` dependem disso.
+- Testes e2e (Sprint 3 task 6) ainda nao existem; apenas unitarios em `auth.service` e `auth-time.util`.
 
 ## Riscos e atencoes
-- Risco de confusao por commits fora da ordem de fechamento da sessao (operacional, sem impacto tecnico direto).
-- Risco de regressao no contrato de erro 401 se futuros handlers nao aplicarem override correto (`AUTH_INVALID_CREDENTIALS` / `AUTH_TOKEN_EXPIRED` quando cabivel).
-- Risco de documentacao divergente se Swagger e `docs/INTEGRATION_API_CONTRACT.md` nao forem mantidos juntos.
-- Risco de `README.md` permanecer desatualizado em relacao ao estado real da API.
+- Manter Swagger e `INTEGRATION_API_CONTRACT.md` sincronizados para codigos 401 de auth/refresh.
+- Item 4 da sprint pede Passport explicitamente; hoje a emissão JWT é Nest JWT sem Passport — nao é bug da task 1/2, mas há gap ate fechar task 4.
+- Rate limit (RNF07) continua fora do escopo imediato das tasks 1–2; prever antes de go-live.
 
 ## Proximo foco
-- Revisão de DoD e encerramento MVP (§23) se aplicável, ou passar para a Sprint 3: Registro e login e-mail/senha.
+- Sprint 3, task 3: `GET /v1/auth/me` (RF08) com Bearer access e resposta documentada no Swagger — naturalmente apos/exige guard JWT (overlap com task 4; ordem pratica: guard + `/me` ou alinhar com backlog do time).
 
 ## Tasks concluidas na sessao
-- Sprint 2 - Task 1: Bootstrap NestJS e modulos base (Common, Health) - Status `done`
-- Sprint 2 - Task 2: Envelope de resposta e filtro de erros com `error.code` - Status `done`
-- Sprint 2 - Task 3: Documentacao inicial de contrato e catalogo de erros - Status `done`
-- Sprint 2 - Task 4: Swagger/OpenAPI 3 configurado e convencionado - Status `done`
-- Sprint 2 - Task 5: Docker Compose e variaveis para desenvolvimento - Status `done`
-- Sprint 2 - Task 6: Alinhar schema Prisma ao PRD - Status `done`
+- Sprint 3 - Task 1: Registro e login e-mail/senha — `POST /v1/auth/register` e `POST /v1/auth/login` — Status `done`
+- Sprint 3 - Task 2: Refresh token com rotação obrigatória — `POST /v1/auth/refresh` — Status `done`
 
 ## Observacoes uteis para a proxima sessao
-- Sempre tratar `PRD.md` como contrato de produto e regras.
-- Sempre tratar `Sprints.md` como contrato de execucao e prioridade.
-- Se houver divergencia entre PRD e implementacao atual, registrar gap antes de propor alteracoes.
-- Usar erros/logs reais do terminal e testes como insumo de prompt para depuracao e refinamento.
-- Para erros 401: usar override de `error.code` no endpoint/guard quando necessario; fallback global atual e `AUTH_TOKEN_INVALID`.
+- Tratar `PRD.md` e `Sprints.md` como contratos; nao mover itens de sprint nem inventar tasks.
+- Para 401: login usa `AUTH_INVALID_CREDENTIALS`; refresh usa `AUTH_REFRESH_INVALID` / `AUTH_REFRESH_REUSED`; rotas com Bearer ainda cairao em `AUTH_TOKEN_INVALID` ate guards com overrides (`AUTH_TOKEN_EXPIRED`, etc.).
+- Commits: usar `git commit -m "mensagem"` (sem `-m`, o Git interpreta o texto como pathspec).
 
 ## Template de atualizacao rapida (copiar e preencher)
 ```md
