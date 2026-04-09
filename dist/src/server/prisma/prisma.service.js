@@ -5,24 +5,37 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrismaService = void 0;
 const common_1 = require("@nestjs/common");
+const adapter_pg_1 = require("@prisma/adapter-pg");
 const client_1 = require("@prisma/client");
+const pg_1 = require("pg");
 let PrismaService = class PrismaService extends client_1.PrismaClient {
+    pool;
+    constructor() {
+        const url = process.env.DATABASE_URL;
+        if (!url) {
+            throw new Error('DATABASE_URL environment variable is required');
+        }
+        const pool = new pg_1.Pool({ connectionString: url });
+        super({ adapter: new adapter_pg_1.PrismaPg(pool) });
+        this.pool = pool;
+    }
     async onModuleInit() {
-        if (!process.env.DATABASE_URL)
-            return;
         await this.$connect();
     }
     async onModuleDestroy() {
-        if (!process.env.DATABASE_URL)
-            return;
         await this.$disconnect();
+        await this.pool.end();
     }
 };
 exports.PrismaService = PrismaService;
 exports.PrismaService = PrismaService = __decorate([
-    (0, common_1.Injectable)()
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [])
 ], PrismaService);
 //# sourceMappingURL=prisma.service.js.map

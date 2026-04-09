@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { PrismaModule } from '../../server/prisma/prisma.module';
 import { parseDurationToSeconds } from './auth-time.util';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
 @Module({
   imports: [
+    PrismaModule,
     JwtModule.register({
       global: false,
       secret: process.env.JWT_SECRET ?? 'dev-insecure-change-me',

@@ -5,8 +5,9 @@ services:
       POSTGRES_DB: erp_core
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin123
+    # Host 5433 avoids clash when another Postgres already uses 5432 locally
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   redis:
     image: redis:7

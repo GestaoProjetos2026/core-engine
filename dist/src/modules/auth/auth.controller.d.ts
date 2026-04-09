@@ -1,4 +1,4 @@
-import { AuthTokensDto, RegisteredUserDto } from './dto/auth-response.dto';
+import type { AuthTokensDto, RegisteredUserDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';

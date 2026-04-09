@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -44,8 +45,8 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly jwt: JwtService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(JwtService) private readonly jwt: JwtService,
   ) {}
 
   async register(dto: RegisterDto): Promise<RegisteredUserDto> {

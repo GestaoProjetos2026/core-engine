@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthModule = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
+const prisma_module_1 = require("../../server/prisma/prisma.module");
 const auth_time_util_1 = require("./auth-time.util");
 const auth_controller_1 = require("./auth.controller");
 const auth_service_1 = require("./auth.service");
@@ -18,6 +19,7 @@ exports.AuthModule = AuthModule;
 exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            prisma_module_1.PrismaModule,
             jwt_1.JwtModule.register({
                 global: false,
                 secret: process.env.JWT_SECRET ?? 'dev-insecure-change-me',

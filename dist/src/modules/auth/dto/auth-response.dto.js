@@ -19,7 +19,7 @@ class RegisteredUserDto {
 }
 exports.RegisteredUserDto = RegisteredUserDto;
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ type: String, format: 'uuid' }),
     __metadata("design:type", String)
 ], RegisteredUserDto.prototype, "id", void 0);
 __decorate([

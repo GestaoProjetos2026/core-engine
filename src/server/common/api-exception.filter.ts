@@ -43,6 +43,14 @@ export class ApiExceptionFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    if (
+      !(exception instanceof HttpException) &&
+      process.env.NODE_ENV !== 'production'
+    ) {
+      // Helps diagnose 500s during local HTTP tests (Postman/curl).
+      console.error('[ApiExceptionFilter] unhandled:', exception);
+    }
+
     const responseBody = this.createErrorBody(exception, status, req.url);
     res.status(status).send(responseBody);
   }

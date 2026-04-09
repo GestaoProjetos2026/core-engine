@@ -7,44 +7,48 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 3: concluidas as tasks 1 e 2 — `POST /v1/auth/register`, `POST /v1/auth/login` e `POST /v1/auth/refresh` com rotação de refresh (RF04/RN03); catalogo de erros ampliado para refresh; testes Vitest no `AuthService`.
+- Estabilizacao local do auth via HTTP: correcao de injecao de dependencias no Nest (`@Inject` em `AuthController` e `AuthService` para `AuthService`, `PrismaService`, `JwtService`); `PrismaModule` importado no `AuthModule`.
+- `PrismaService` alinhado ao Prisma 7 com `@prisma/adapter-pg` + `pg` `Pool` (antes `new PrismaClient()` falhava em runtime).
+- `docker-compose`: Postgres exposto em **5433** no host para evitar conflito com outra instancia em 5432; `.env.example` com `DATABASE_URL` em 5433.
+- Swagger: respostas de auth documentadas com `schema.example` para evitar dependencia circular de metadata; `ApiExceptionFilter` regista `console.error` de excecoes nao-HTTP em ambiente nao-prod.
+- Script `scripts/smoke-auth.ps1` validado (register, login, refresh, reuso de refresh).
+- Orientacao para testes Postman/curl (JSON valido, POST, e-mail sem espacos no meio, UTF-8 sem BOM no Windows).
 
 ## Arquivos modificados recentemente
-- `src/modules/auth/*` — modulo Auth (DTOs, serviço, controlador, política de senha, util de TTL, specs).
-- `src/server/app.module.ts` — import do `AuthModule`.
-- `package.json` — dependencia `@nestjs/jwt`.
-- `.env.example` — `BCRYPT_ROUNDS` e variaveis JWT/refresh já usadas pelo auth.
-- `prisma/seed.ts` — alinhado ao schema atual (`Permission.code`, `Role` sem description extra).
-- `docs/INTEGRATION_API_CONTRACT.md` — codigos `AUTH_REFRESH_INVALID` e `AUTH_REFRESH_REUSED`.
-- `Sprints/Sprints.md` — `Status: done` nas tasks 1 e 2 da Sprint 3.
+- `src/modules/auth/auth.controller.ts` / `auth.service.ts` / `auth.module.ts` — DI explicita e import do Prisma.
+- `src/server/prisma/prisma.service.ts` — adapter PostgreSQL Prisma 7.
+- `src/server/common/api-exception.filter.ts` — log de diagnosticos em dev.
+- `docker-compose.yml` — mapeamento `5433:5432` para o servico postgres.
+- `.env.example` — `DATABASE_URL` com porta 5433.
+- `scripts/smoke-auth.ps1` — smoke end-to-end auth.
 
 ## Estado atual
-- API NestJS + Fastify com prefixo `/v1`; `Health` e `Auth` ativos.
-- Endpoints: `POST /v1/auth/register`, `POST /v1/auth/login`, `POST /v1/auth/refresh`; envelope de sucesso/erro global; Swagger em dev em `/v1/docs`.
-- Access JWT (HS256) via `@nestjs/jwt` com claims alinhados ao PRD §16.1 no login/refresh; refresh opaco persistido com hash SHA-256; rotação com transação Prisma e `revokedAt`/`replacedById`.
+- Com `npm run dev`, Postgres acessiveis conforme `.env` e schema sincronizado (`prisma db push` ou migrate aplicavel), os endpoints `POST /v1/auth/register`, `login` e `refresh` respondem com envelope padrao.
+- A migracao historica `20260310213417_init` pode divergir do `schema.prisma` atual; em dev costuma usar-se `db push` ate existir migracao nova alinhada.
 
 ## Pendencias e debitos
-- Remover `dist/` do staging antes de commits quando aparecer como alterado local.
-- Confirmar `README.md` e exemplos de quick start com os novos endpoints.
-- Sprint 3 task 4 (Passport + `JwtAuthGuard`) ainda nao implementada — rotas protegidas por Bearer e `/me` dependem disso.
-- Testes e2e (Sprint 3 task 6) ainda nao existem; apenas unitarios em `auth.service` e `auth-time.util`.
+- Gerar migracao Prisma oficial que substitua/alinhe o init antigo ao modelo atual (evitar apenas `db push` em ambientes partilhados).
+- `README.md`: quick start com Docker (porta 5433), `migrate`/`db push`, `npm run dev`, link para `scripts/smoke-auth.ps1`.
+- Sprint 3 tasks 3 e 4: `/me` e `JwtAuthGuard`/Passport ainda em aberto.
+- Testes e2e (task 6) ausentes; unitarios Vitest em auth mantem-se.
+- Remover `dist/` do staging antes de commits quando aparecer como alterado.
 
 ## Riscos e atencoes
-- Manter Swagger e `INTEGRATION_API_CONTRACT.md` sincronizados para codigos 401 de auth/refresh.
-- Item 4 da sprint pede Passport explicitamente; hoje a emissão JWT é Nest JWT sem Passport — nao é bug da task 1/2, mas há gap ate fechar task 4.
-- Rate limit (RNF07) continua fora do escopo imediato das tasks 1–2; prever antes de go-live.
+- Reiniciar `npm run dev` apos mudancas em providers/DI para nao ficar processo antigo na porta 3000.
+- No Windows, ficheiros JSON para `curl --data-binary @ficheiro` devem ser **UTF-8 sem BOM**; PowerShell `ConvertTo-Json` + `Set-Content` pode introduzir BOM e quebrar o parse no Fastify.
+- PRD cita Passport na stack; task 4 da sprint ainda formaliza o guard — ate la, consumo por Bearer depende da proxima implementacao.
 
 ## Proximo foco
-- Sprint 3, task 3: `GET /v1/auth/me` (RF08) com Bearer access e resposta documentada no Swagger — naturalmente apos/exige guard JWT (overlap com task 4; ordem pratica: guard + `/me` ou alinhar com backlog do time).
+- Sprint 3, task 4: `JwtAuthGuard` (e Passport se for obrigatorio ao contrato) + task 3: `GET /v1/auth/me` com Bearer e Swagger.
 
 ## Tasks concluidas na sessao
-- Sprint 3 - Task 1: Registro e login e-mail/senha — `POST /v1/auth/register` e `POST /v1/auth/login` — Status `done`
-- Sprint 3 - Task 2: Refresh token com rotação obrigatória — `POST /v1/auth/refresh` — Status `done`
+- Nenhuma **nova** linha de backlog fechada nesta sessao (tasks 1 e 2 ja estavam entregues funcionalmente); esta sessao corrigiu **regressao de DI** e **stack local** para os mesmos endpoints funcionarem via HTTP/Postman.
+- `Sprints/Sprints.md` e `Sprints.md`: `Status: done` mantido/sincronizado nas **Sprint 3 — tasks 1 e 2**.
 
 ## Observacoes uteis para a proxima sessao
-- Tratar `PRD.md` e `Sprints.md` como contratos; nao mover itens de sprint nem inventar tasks.
-- Para 401: login usa `AUTH_INVALID_CREDENTIALS`; refresh usa `AUTH_REFRESH_INVALID` / `AUTH_REFRESH_REUSED`; rotas com Bearer ainda cairao em `AUTH_TOKEN_INVALID` ate guards com overrides (`AUTH_TOKEN_EXPIRED`, etc.).
-- Commits: usar `git commit -m "mensagem"` (sem `-m`, o Git interpreta o texto como pathspec).
+- Tratar `PRD.md` e `Sprints.md` como contratos; nao mover sprint nem inventar item.
+- `git commit -m "mensagem"` para mensagem de commit; mensagens em ingles se for convencao do repo.
+- Erros auth: login `AUTH_INVALID_CREDENTIALS`; refresh `AUTH_REFRESH_INVALID` / `AUTH_REFRESH_REUSED`.
 
 ## Template de atualizacao rapida (copiar e preencher)
 ```md

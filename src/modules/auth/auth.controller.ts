@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Inject, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -7,7 +7,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { AuthTokensDto, RegisteredUserDto } from './dto/auth-response.dto';
+import type { AuthTokensDto, RegisteredUserDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -16,7 +16,7 @@ import { AuthService } from './auth.service';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly auth: AuthService) {}
+  constructor(@Inject(AuthService) private readonly auth: AuthService) {}
 
   @Post('register')
   @ApiOperation({
@@ -25,8 +25,15 @@ export class AuthController {
   })
   @ApiResponse({
     status: 201,
-    description: 'User created',
-    type: RegisteredUserDto,
+    description: 'User created (envelope wraps this object in `data`)',
+    schema: {
+      example: {
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        email: 'user@company.com',
+        name: 'User Name',
+        status: 'ACTIVE',
+      },
+    },
   })
   @ApiBadRequestResponse({
     description: 'Password policy or validation failed (RNF08)',
@@ -58,8 +65,15 @@ export class AuthController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Tokens issued',
-    type: AuthTokensDto,
+    description: 'Tokens issued (envelope wraps this object in `data`)',
+    schema: {
+      example: {
+        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        refreshToken: 'opaque-refresh-token',
+        tokenType: 'Bearer',
+        expiresIn: 900,
+      },
+    },
   })
   @ApiUnauthorizedResponse({
     description: 'Invalid credentials or inactive user (RN01)',
@@ -88,36 +102,28 @@ export class AuthController {
   })
   @ApiResponse({
     status: 200,
-    description: 'New tokens issued',
-    type: AuthTokensDto,
+    description: 'New tokens issued (envelope wraps this object in `data`)',
+    schema: {
+      example: {
+        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        refreshToken: 'new-opaque-refresh-token',
+        tokenType: 'Bearer',
+        expiresIn: 900,
+      },
+    },
   })
   @ApiUnauthorizedResponse({
     description:
-      'Invalid or expired refresh (AUTH_REFRESH_INVALID), or reuse/revoked/concurrent race (AUTH_REFRESH_REUSED)',
+      'AUTH_REFRESH_INVALID (invalid/expired/inactive) or AUTH_REFRESH_REUSED (revoked or concurrent rotation). Example payload shape matches other 401 errors.',
     schema: {
-      examples: {
-        invalid: {
-          value: {
-            success: false,
-            error: {
-              code: 'AUTH_REFRESH_INVALID',
-              message: 'Invalid or expired refresh token',
-            },
-            timestamp: '2026-04-08T12:00:00.000Z',
-            path: '/v1/auth/refresh',
-          },
+      example: {
+        success: false,
+        error: {
+          code: 'AUTH_REFRESH_REUSED',
+          message: 'Refresh token was already used or revoked',
         },
-        reused: {
-          value: {
-            success: false,
-            error: {
-              code: 'AUTH_REFRESH_REUSED',
-              message: 'Refresh token was already used or revoked',
-            },
-            timestamp: '2026-04-08T12:00:00.000Z',
-            path: '/v1/auth/refresh',
-          },
-        },
+        timestamp: '2026-04-08T12:00:00.000Z',
+        path: '/v1/auth/refresh',
       },
     },
   })
