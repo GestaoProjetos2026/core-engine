@@ -1,17 +1,19 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { AuthTokensDto, RegisteredUserDto } from './dto/auth-response.dto';
+import { AuthTokensDto, RegisteredUserDto, UserProfileDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -123,5 +125,38 @@ export class AuthController {
   })
   async refresh(@Body() dto: RefreshDto): Promise<AuthTokensDto> {
     return this.auth.refresh(dto);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('bearer')
+  @ApiOperation({
+    summary: 'Get current user profile',
+    description: 'RF08: Returns user profile and effective roles/perms using a Bearer token.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Valid user profile',
+    type: UserProfileDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Missing, invalid, or non-user token',
+  })
+  getMe(@Req() req: any): UserProfileDto {
+    const user = req.user;
+    if (user?.type !== 'user_access') {
+      throw new UnauthorizedException({
+        message: 'Endpoint restricted to user access tokens',
+        errorCode: 'AUTH_TOKEN_INVALID',
+      });
+    }
+
+    return {
+      userId: user.userId,
+      email: user.email,
+      roles: user.roles,
+      perms: user.perms,
+      type: user.type,
+    };
   }
 }

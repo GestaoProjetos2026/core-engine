@@ -30,3 +30,20 @@ export class AuthTokensDto {
   })
   expiresIn!: number;
 }
+
+export class UserProfileDto {
+  @ApiProperty()
+  userId!: string;
+
+  @ApiProperty()
+  email!: string;
+
+  @ApiProperty({ type: [String] })
+  roles!: string[];
+
+  @ApiProperty({ type: [String] })
+  perms!: string[];
+
+  @ApiProperty({ example: 'user_access' })
+  type!: string;
+}
