@@ -1,4 +1,5 @@
 Sprint 1 — 13/03/2026 a 20/03/2026
+
 1) PRD do Core/Auth
 
 Pertence a: Planejamento inicial do produto
@@ -294,7 +295,7 @@ Critérios de aceitação:
 
 - documento linkado no README
 - exemplos de JWT decodificado
-- orientação de não duplicar matriz de permissões fora do Core
+- orientações de não duplicar matriz de permissões fora do Core
 Prioridade: High
 Estimativa: 2 SP
 Label: docs, jwt, rbac, sprint-3
@@ -326,14 +327,20 @@ Prioridade: Medium
 Estimativa: 2 SP
 Label: rbac, spike, devx, sprint-3
 
-Resumo Sprint 3
-Auth completo (register/login/refresh/me) + JWT + docs para consumidores + e2e + spike RBAC
+8) PermissionsGuard e decorator de permissão nas rotas admin
 
----
+Pertence a: Module 6 — APIs / AuthZ
+Título: Implementar `PermissionsGuard` + `@RequirePermissions(...)`
+Descrição: Após JwtAuthGuard, verificar `perms` do token contra metadados da rota; negado → 403 `AUTHZ_FORBIDDEN` (PRD §19).
+Critérios de aceitação:
 
-Sprint 4 — 18/04/2026 a 24/04/2026
+- rotas admin sem permissão retornam 403 com código estável
+- matriz de teste documentada
+Prioridade: Urgent
+Estimativa: 5 SP
+Label: guards, rbac, sprint-3
 
-1) CRUD de usuários (RF09) com permissões administrativas
+9) CRUD de usuários (RF09) com permissões administrativas
 
 Pertence a: Module 2 — Users
 Título: Endpoints `GET/POST/PATCH` `/v1/users` e status
@@ -345,9 +352,16 @@ Critérios de aceitação:
 - duplicidade de e-mail 409
 Prioridade: Urgent
 Estimativa: 5 SP
-Label: users, crud, sprint-4
+Label: users, crud, sprint-3
 
-2) CRUD de papéis e permissões (RF10, RF11)
+Resumo Sprint 3
+Auth completo (register/login/refresh/me) + JWT + docs para consumidores + e2e + spike RBAC + PermissionsGuard + CRUD de Usuários
+
+---
+
+Sprint 4 — 18/04/2026 a 24/04/2026
+
+1) CRUD de papéis e permissões (RF10, RF11)
 
 Pertence a: Module 3 — Roles / Module 4 — Permissions
 Título: Endpoints de roles e permissions e catálogo listável
@@ -360,7 +374,7 @@ Prioridade: Urgent
 Estimativa: 5 SP
 Label: roles, permissions, sprint-4
 
-3) Vínculos usuário–papel e papel–permissão (RF12, RF13)
+2) Vínculos usuário–papel e papel–permissão (RF12, RF13)
 
 Pertence a: Module 3 — Roles
 Título: Associar e remover usuários e permissões aos papéis
@@ -374,20 +388,7 @@ Prioridade: Urgent
 Estimativa: 5 SP
 Label: rbac, links, sprint-4
 
-4) PermissionsGuard e decorator de permissão nas rotas admin
-
-Pertence a: Module 6 — APIs / AuthZ
-Título: Implementar `PermissionsGuard` + `@RequirePermissions(...)`
-Descrição: Após JwtAuthGuard, verificar `perms` do token contra metadados da rota; negado → 403 `AUTHZ_FORBIDDEN` (PRD §19).
-Critérios de aceitação:
-
-- rotas admin sem permissão retornam 403 com código estável
-- matriz de teste documentada
-Prioridade: Urgent
-Estimativa: 5 SP
-Label: guards, rbac, sprint-4
-
-5) Seed de papéis/permissões iniciais e teste e2e 403
+3) Seed de papéis/permissões iniciais e teste e2e 403
 
 Pertence a: Module 8 — Qualidade
 Título: Matriz mínima e testes de autorização
@@ -401,7 +402,7 @@ Prioridade: High
 Estimativa: 3 SP
 Label: seed, e2e, rbac, sprint-4
 
-6) Mapear permissões por endpoint (reuso por outros squads)
+4) Mapear permissões por endpoint (reuso por outros squads)
 
 Pertence a: Module 6 — APIs / Documentação
 Título: Publicar matriz de permissões por endpoint administrativo
@@ -416,7 +417,7 @@ Estimativa: 2 SP
 Label: rbac, permissions-matrix, docs, sprint-4
 
 Resumo Sprint 4
-RBAC completo em API + guards + vínculos + testes de permissão
+RBAC focando no CRUD de papéis e permissões + vínculos + testes de permissão e matriz
 
 ---
 
@@ -687,8 +688,8 @@ Resumo geral (Sprints 2 a 8 até 29/05/2026)
 | Sprint | Período | Foco principal |
 |--------|---------|----------------|
 | 2 | 22/03–27/03 | Nest, envelope, Swagger, docs de erros, Docker, Prisma alinhado ao PRD |
-| 3 | 28/03–17/04 | Auth (register/login/refresh/me), JWT, docs JWT, e2e humano, spike RBAC |
-| 4 | 18/04–24/04 | Users/Roles/Permissions CRUD, vínculos, PermissionsGuard, seed e e2e 403 |
+| 3 | 28/03–17/04 | Auth (register/login/refresh/me), JWT, docs JWT, e2e humano, spike RBAC, PermissionsGuard, CRUD de Usuários |
+| 4 | 18/04–24/04 | Roles/Permissions CRUD, vínculos, seed e e2e 403, matriz docs |
 | 5 | 25/04–08/05 | Apps, escopos, token M2M, OAuth token endpoint, ScopesGuard, docs integradores |
 | 6 | 09/05–15/05 | Rate limit, logs requestId, auditoria mínima, health com DB |
 | 7 | 16/05–22/05 | CI, cobertura, Helmet/CSP |

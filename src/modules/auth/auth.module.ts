@@ -5,6 +5,7 @@ import { parseDurationToSeconds } from './auth-time.util';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
+import { PermissionsGuard } from './guards/permissions.guard';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { JwtStrategy } from './jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, PermissionsGuard],
+  exports: [AuthService, JwtStrategy, PermissionsGuard],
 })
 export class AuthModule {}
