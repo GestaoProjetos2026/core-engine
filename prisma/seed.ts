@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import * as dotenv from 'dotenv';
+import * as bcrypt from 'bcrypt';
 
 dotenv.config();
 
@@ -136,6 +137,65 @@ async function main() {
   }
 
   console.log('✅ Sales rep linked to CRM permissions');
+
+  // Criar usuários semente
+  const defaultPassword = 'Password123!';
+  const passwordHash = await bcrypt.hash(defaultPassword, 12);
+
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: { passwordHash },
+    create: {
+      email: 'admin@example.com',
+      name: 'Admin User',
+      passwordHash,
+      status: 'ACTIVE',
+    },
+  });
+
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId: {
+        userId: adminUser.id,
+        roleId: adminRole.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: adminUser.id,
+      roleId: adminRole.id,
+    },
+  });
+
+  const viewerUser = await prisma.user.upsert({
+    where: { email: 'viewer@example.com' },
+    update: { passwordHash },
+    create: {
+      email: 'viewer@example.com',
+      name: 'Viewer User',
+      passwordHash,
+      status: 'ACTIVE',
+    },
+  });
+
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId: {
+        userId: viewerUser.id,
+        roleId: viewerRole.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: viewerUser.id,
+      roleId: viewerRole.id,
+    },
+  });
+
+  console.log('✅ Default users created and linked to roles');
+  console.log('   - admin@example.com / Password123!');
+  console.log('   - viewer@example.com / Password123!');
+  
   console.log('\n🎉 Seed completed');
 }
 

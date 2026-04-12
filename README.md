@@ -47,6 +47,24 @@ npx prisma db seed
 npm run dev
 ```
 
+## Testando a Autenticação (Spike Sprint 3)
+
+Com a seed executada (`npx prisma db seed`), dois usuários já estão prontos para uso:
+- **Admin:** `admin@example.com` / `Password123!` (Possui a role 'admin')
+- **Viewer:** `viewer@example.com` / `Password123!` (Possui a role 'viewer')
+
+1. **Login:** Faça um `POST` para `/v1/auth/login` com o corpo:
+   ```json
+   { "email": "admin@example.com", "password": "Password123!" }
+   ```
+   *Vocé receberá um `access_token` no retorno.*
+   
+2. **Consultar Perfil:** Envie um `GET` para `/v1/auth/me` incluindo o cabeçalho:
+   ```
+   Authorization: Bearer <seu_access_token>
+   ```
+   *O retorno listará os dados do usuário e confirmará as permissões injetadas conforme suas roles.*
+
 ## Variáveis de Ambiente
 ```env
 DATABASE_URL="postgresql://admin:admin123@localhost:5432/erp_core"
