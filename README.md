@@ -75,26 +75,26 @@ REFRESH_EXPIRES_IN="7d"
 PORT=3000
 ```
 
-## Endpoints
+## Endpoints (Sprint 3 — estado atual)
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-Não realizadas:
-| POST | `/v1/auth/register` | Criar usuário |
-| POST | `/v1/auth/login` | Autenticar |
-| POST | `/v1/auth/logout` | Encerrar sessão |
-| POST | `/v1/auth/refresh` | Renovar token |
-| GET | `/v1/auth/me` | Usuário autenticado |
-| GET | `/v1/users` | Listar usuários |
-| GET | `/v1/roles` | Listar roles |
-| GET | `/v1/permissions` | Listar permissões |
-
-Em desenvolvimento:
-| GET | `/v1/health` | Health check com envelope padrão |
-| GET | `/v1/docs` | Swagger UI (desenvolvimento) |
-| GET | `/v1/docs-json` | OpenAPI JSON (desenvolvimento) |
-
-Observação: os endpoints de Auth/RBAC do PRD ainda estão em construção por sprint.
+| Método | Rota | Descrição | Status |
+|--------|------|-----------|--------|
+| GET | `/v1/health` | Health check com envelope padrão | ✅ |
+| GET | `/v1/docs` | Swagger UI (apenas em desenvolvimento) | ✅ |
+| POST | `/v1/auth/register` | Registrar usuário (RF01) | ✅ |
+| POST | `/v1/auth/login` | Login e-mail/senha, emite tokens (RF02, RF03) | ✅ |
+| POST | `/v1/auth/refresh` | Renovar par de tokens com rotação (RF04, RN03) | ✅ |
+| GET | `/v1/auth/me` | Perfil e permissões do usuário autenticado (RF08) | ✅ |
+| GET | `/v1/users` | Listar usuários paginados (RF09) | ✅ |
+| POST | `/v1/users` | Criar usuário via admin (RF09) | ✅ |
+| GET | `/v1/users/:id` | Detalhe do usuário (RF09) | ✅ |
+| PATCH | `/v1/users/:id` | Atualizar usuário (RF09) | ✅ |
+| PATCH | `/v1/users/:id/status` | Ativar/desativar usuário (RF09, RN01) | ✅ |
+| GET | `/v1/roles` | Listar papéis | Sprint 4 |
+| POST | `/v1/roles` | Criar papel | Sprint 4 |
+| GET | `/v1/permissions` | Listar permissões | Sprint 4 |
+| POST | `/v1/permissions` | Criar permissão | Sprint 4 |
+| POST | `/v1/integration/token` | Token M2M client credentials (RF17, RF21) | Sprint 5 |
 
 ## Padrão de resposta da API (MVP atual)
 
@@ -121,8 +121,13 @@ Observação: os endpoints de Auth/RBAC do PRD ainda estão em construção por 
 }
 ```
 
-Referência completa para consumo externo:
-- `docs/INTEGRATION_API_CONTRACT.md`
+## Documentação para Consumidores
+
+| Documento | Conteúdo |
+|-----------|----------|
+| [`docs/JWT_GUIDE.md`](docs/JWT_GUIDE.md) | Guia completo de JWT: claims, validação, uso de `perms`, exemplos de payload decodificado |
+| [`docs/INTEGRATION_API_CONTRACT.md`](docs/INTEGRATION_API_CONTRACT.md) | Envelope de resposta, catálogo de `error.code` e referência ao Swagger |
+| `GET /v1/docs` | Swagger UI interativo (disponível apenas em desenvolvimento) |
 
 ## Fluxo de Trabalho
 ```bash

@@ -8,7 +8,16 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConflictResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,6 +26,33 @@ import { ListUsersQueryDto } from './dto/list-users-query.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
+
+const unauthorizedExample = {
+  example: {
+    success: false,
+    error: { code: 'AUTH_TOKEN_INVALID', message: 'Invalid or missing bearer token' },
+    timestamp: '2026-04-15T10:00:00.000Z',
+    path: '/v1/users',
+  },
+};
+
+const forbiddenExample = {
+  example: {
+    success: false,
+    error: { code: 'AUTHZ_FORBIDDEN', message: 'Insufficient permissions' },
+    timestamp: '2026-04-15T10:00:00.000Z',
+    path: '/v1/users',
+  },
+};
+
+const notFoundExample = {
+  example: {
+    success: false,
+    error: { code: 'RESOURCE_NOT_FOUND', message: 'User not found' },
+    timestamp: '2026-04-15T10:00:00.000Z',
+    path: '/v1/users/:id',
+  },
+};
 
 @ApiTags('Users')
 @ApiBearerAuth('bearer')
@@ -27,35 +63,97 @@ export class UsersController {
 
   @Post()
   @RequirePermissions('users:write')
-  @ApiOperation({ summary: 'Create a new user' })
+  @ApiOperation({
+    summary: 'Create a new user (admin)',
+    description:
+      'RF09: Creates a new user. Requires permission `users:write`. E-mail must be unique (RN06).',
+  })
+  @ApiResponse({ status: 201, description: 'User created successfully.' })
+  @ApiConflictResponse({
+    description: 'E-mail already registered (RN06).',
+    schema: {
+      example: {
+        success: false,
+        error: { code: 'RESOURCE_CONFLICT', message: 'Email already registered' },
+        timestamp: '2026-04-15T10:00:00.000Z',
+        path: '/v1/users',
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks `users:write` permission.', schema: forbiddenExample })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
   @RequirePermissions('users:read')
-  @ApiOperation({ summary: 'List all users' })
+  @ApiOperation({
+    summary: 'List users (paginated)',
+    description: 'RF09: Returns a paginated list of users. Requires permission `users:read`. Supports filtering by email and status.',
+  })
+  @ApiResponse({ status: 200, description: 'Paginated list of users.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks `users:read` permission.', schema: forbiddenExample })
   async findAll(@Query() query: ListUsersQueryDto) {
     return this.usersService.findAll(query);
   }
 
   @Get(':id')
   @RequirePermissions('users:read')
-  @ApiOperation({ summary: 'Get a user by ID' })
+  @ApiOperation({
+    summary: 'Get a user by ID',
+    description: 'RF09: Returns a single user by UUID. Requires permission `users:read`.',
+  })
+  @ApiResponse({ status: 200, description: 'User found.' })
+  @ApiNotFoundResponse({ description: 'User not found.', schema: notFoundExample })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks `users:read` permission.', schema: forbiddenExample })
   async findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
   @RequirePermissions('users:write')
-  @ApiOperation({ summary: 'Update a user' })
+  @ApiOperation({
+    summary: 'Update a user',
+    description: 'RF09: Partially updates user fields. Requires permission `users:write`.',
+  })
+  @ApiResponse({ status: 200, description: 'User updated successfully.' })
+  @ApiNotFoundResponse({ description: 'User not found.', schema: notFoundExample })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks `users:write` permission.', schema: forbiddenExample })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
   @Patch(':id/status')
   @RequirePermissions('users:write')
-  @ApiOperation({ summary: 'Change user status' })
+  @ApiOperation({
+    summary: 'Change user status (activate / deactivate)',
+    description:
+      'RF09 / RN01: Sets user status to ACTIVE or INACTIVE. Inactive users cannot authenticate.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Status updated.',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          email: 'usuario@empresa.com',
+          name: 'João Silva',
+          status: 'INACTIVE',
+        },
+        timestamp: '2026-04-15T10:00:00.000Z',
+        path: '/v1/users/550e8400-e29b-41d4-a716-446655440000/status',
+      },
+    },
+  })
+  @ApiNotFoundResponse({ description: 'User not found.', schema: notFoundExample })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks `users:write` permission.', schema: forbiddenExample })
   async changeStatus(
     @Param('id') id: string,
     @Body() changeStatusDto: ChangeUserStatusDto,

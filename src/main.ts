@@ -30,18 +30,46 @@ async function bootstrap() {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Core Engine & Auth API')
       .setDescription(
-        'Core/Auth REST API for authentication, authorization (RBAC), and secure integrations.',
+        [
+          'Central IAM (Identity, Access & Integration) REST API for the ERP Modular Cloud-Native.',
+          '',
+          '## Authentication',
+          'Most endpoints require a Bearer JWT. Use `POST /v1/auth/login` to obtain tokens.',
+          'Two token types are issued:',
+          '- **`user_access`** — for human users; carries `roles` and `perms` claims.',
+          '- **`integration_access`** — for M2M applications (client credentials); carries `scopes` claim.',
+          '',
+          '## Response envelope',
+          'All responses follow a standard envelope:',
+          '```json',
+          '{ "success": true, "data": {}, "timestamp": "...", "path": "..." }',
+          '```',
+          'Errors use `error.code` for stable programmatic handling (see `docs/INTEGRATION_API_CONTRACT.md`).',
+          '',
+          '## Documentation',
+          '- JWT guide for module consumers: `docs/JWT_GUIDE.md`',
+          '- Error codes and envelope contract: `docs/INTEGRATION_API_CONTRACT.md`',
+          '- Product requirements: `PRD.md`',
+        ].join('\n'),
       )
       .setVersion('1.0.0')
-      .addTag('Health', 'Service health and readiness endpoints')
-      .addTag('Auth', 'Authentication and token lifecycle endpoints')
-      .addTag('Users', 'User management endpoints')
+      .setContact('Squad 1 — Core/Auth', '', 'vinicius5.lopes@hotmail.com')
+      .setLicense('Internal — ERP Modular Cloud-Native', '')
+      .addServer('http://localhost:3000', 'Local development')
+      .addTag('Health', 'Service health and readiness probes (RF19)')
+      .addTag('Auth', 'Authentication and token lifecycle: register, login, refresh, /me (RF01–RF08)')
+      .addTag('Users', 'User management CRUD and status control (RF09)')
+      .addTag('Roles', 'Role management and user–role bindings (RF10, RF12)')
+      .addTag('Permissions', 'Permission management and role–permission bindings (RF11, RF13)')
+      .addTag('Applications', 'Application credentials and scope management (RF14–RF16)')
+      .addTag('Integration', 'Machine-to-machine token endpoint (RF17, RF21, RF22)')
       .addBearerAuth(
         {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description: 'JWT access token for protected routes',
+          description:
+            'JWT access token. Obtain via `POST /v1/auth/login` (user_access) or `POST /v1/integration/token` (integration_access).',
         },
         'bearer',
       )
@@ -49,7 +77,14 @@ async function bootstrap() {
 
     const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('v1/docs', app, swaggerDocument, {
-      swaggerOptions: { persistAuthorization: true },
+      swaggerOptions: {
+        persistAuthorization: true,
+        tagsSorter: 'alpha',
+        operationsSorter: 'alpha',
+        docExpansion: 'list',
+        filter: true,
+      },
+      customSiteTitle: 'Core/Auth API Docs',
     });
   }
 

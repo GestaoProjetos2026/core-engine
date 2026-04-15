@@ -1,0 +1,911 @@
+openapi: 3.0.3
+info:
+  title: Core Engine & Auth API
+  description: |
+    Central IAM (Identity, Access & Integration) REST API for the ERP Modular Cloud-Native.
+
+    ## Authentication
+    Most endpoints require a Bearer JWT. Use `POST /v1/auth/login` to obtain tokens.
+    Two token types are issued:
+    - **`user_access`** — for human users; carries `roles` and `perms` claims.
+    - **`integration_access`** — for M2M applications (client credentials); carries `scopes` claim.
+
+    ## Response Envelope
+    All responses follow a standard envelope:
+    ```json
+    { "success": true, "data": {}, "timestamp": "...", "path": "..." }
+    ```
+    Errors use `error.code` for stable programmatic handling.
+
+    ## Internal Documentation
+    - JWT guide for module consumers: `docs/JWT_GUIDE.md`
+    - Error codes and envelope contract: `docs/INTEGRATION_API_CONTRACT.md`
+    - Product requirements: `PRD.md`
+  version: 1.0.0
+  contact:
+    name: Squad 1 — Core/Auth
+    email: vinicius5.lopes@hotmail.com
+  license:
+    name: Internal — ERP Modular Cloud-Native
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: Health
+    description: Service health and readiness probes (RF19)
+  - name: Auth
+    description: "Authentication and token lifecycle: register, login, refresh, /me (RF01–RF08)"
+  - name: Users
+    description: User management CRUD and status control (RF09)
+  - name: Roles
+    description: Role management and user–role bindings (RF10, RF12) — Sprint 4
+  - name: Permissions
+    description: Permission management and role–permission bindings (RF11, RF13) — Sprint 4
+  - name: Applications
+    description: Application credentials and scope management (RF14–RF16) — Sprint 5
+  - name: Integration
+    description: Machine-to-machine token endpoint (RF17, RF21, RF22) — Sprint 5
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        JWT access token. Obtain via `POST /v1/auth/login` (user_access)
+        or `POST /v1/integration/token` (integration_access).
+
+  schemas:
+    SuccessEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-04-15T10:00:00.000Z"
+        path:
+          type: string
+          example: "/v1/health"
+
+    ErrorEnvelope:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Stable error code for programmatic handling.
+              example: AUTH_TOKEN_INVALID
+            message:
+              type: string
+              description: Human-readable message.
+              example: Invalid or missing bearer token
+            details:
+              description: Optional validation details (omitted in production).
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-04-15T10:00:00.000Z"
+        path:
+          type: string
+          example: "/v1/auth/login"
+
+    RegisteredUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+
+    AuthTokens:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token (user_access). TTL default 15 min.
+        refreshToken:
+          type: string
+          description: Opaque refresh token. TTL default 7 days. Use once — rotation is mandatory (RN03).
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          description: Access token lifetime in seconds.
+          example: 900
+
+    UserProfile:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        roles:
+          type: array
+          items:
+            type: string
+          example: ["admin", "manager"]
+        perms:
+          type: array
+          items:
+            type: string
+          example: ["users:write", "users:read", "roles:read"]
+        type:
+          type: string
+          example: user_access
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ── Error examples ──────────────────────────────────────────
+    Error400:
+      type: object
+      example:
+        success: false
+        error:
+          code: VALIDATION_ERROR
+          message: Payload validation failed
+          details: ["name should not be empty", "password is too short"]
+        timestamp: "2026-04-15T10:00:00.000Z"
+        path: "/v1/auth/register"
+
+    Error401InvalidCredentials:
+      type: object
+      example:
+        success: false
+        error:
+          code: AUTH_INVALID_CREDENTIALS
+          message: Invalid email or password
+        timestamp: "2026-04-15T10:00:00.000Z"
+        path: "/v1/auth/login"
+
+    Error401TokenInvalid:
+      type: object
+      example:
+        success: false
+        error:
+          code: AUTH_TOKEN_INVALID
+          message: Invalid or missing bearer token
+        timestamp: "2026-04-15T10:00:00.000Z"
+        path: "/v1/auth/me"
+
+    Error401TokenExpired:
+      type: object
+      example:
+        success: false
+        error:
+          code: AUTH_TOKEN_EXPIRED
+          message: Token has expired
+        timestamp: "2026-04-15T10:00:00.000Z"
+        path: "/v1/auth/me"
+
+    Error401RefreshInvalid:
+      type: object
+      example:
+        success: false
+        error:
+          code: AUTH_REFRESH_INVALID
+          message: Invalid or expired refresh token
+        timestamp: "2026-04-15T10:00:00.000Z"
+        path: "/v1/auth/refresh"
+
+    Error401RefreshReused:
+      type: object
+      example:
+        success: false
+        error:
+          code: AUTH_REFRESH_REUSED
+          message: Refresh token was already used or revoked
+        timestamp: "2026-04-15T10:00:00.000Z"
+        path: "/v1/auth/refresh"
+
+    Error403:
+      type: object
+      example:
+        success: false
+        error:
+          code: AUTHZ_FORBIDDEN
+          message: Insufficient permissions
+        timestamp: "2026-04-15T10:00:00.000Z"
+        path: "/v1/users"
+
+    Error404:
+      type: object
+      example:
+        success: false
+        error:
+          code: RESOURCE_NOT_FOUND
+          message: User not found
+        timestamp: "2026-04-15T10:00:00.000Z"
+        path: "/v1/users/uuid"
+
+    Error409:
+      type: object
+      example:
+        success: false
+        error:
+          code: RESOURCE_CONFLICT
+          message: Email already registered
+        timestamp: "2026-04-15T10:00:00.000Z"
+        path: "/v1/auth/register"
+
+paths:
+  # ── Health ────────────────────────────────────────────────────
+  /v1/health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Returns service status. Used by liveness/readiness probes (RF19).
+      responses:
+        "200":
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+              example:
+                success: true
+                data:
+                  status: ok
+                timestamp: "2026-04-15T10:00:00.000Z"
+                path: "/v1/health"
+
+  # ── Auth ──────────────────────────────────────────────────────
+  /v1/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user (RF01)
+      description: |
+        Creates a user account. Password policy (RNF08): minimum 10 characters,
+        must include uppercase, lowercase, number and special character.
+        E-mail must be unique (RN06).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, name, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: usuario@empresa.com
+                name:
+                  type: string
+                  example: João Silva
+                password:
+                  type: string
+                  format: password
+                  example: "Senha@Forte123"
+      responses:
+        "201":
+          description: User created successfully.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/RegisteredUser"
+        "400":
+          description: Validation error or password policy violation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error400"
+        "409":
+          description: E-mail already registered (RN06).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error409"
+
+  /v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with e-mail and password (RF02, RF03)
+      description: |
+        Validates credentials and emits access + refresh tokens.
+        Inactive users cannot authenticate (RN01).
+        Failed login does **not** reveal whether the e-mail exists.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: usuario@empresa.com
+                password:
+                  type: string
+                  format: password
+                  example: "Senha@Forte123"
+      responses:
+        "200":
+          description: Tokens issued.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/AuthTokens"
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error400"
+        "401":
+          description: Invalid credentials or inactive user.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error401InvalidCredentials"
+
+  /v1/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh tokens with mandatory rotation (RF04, RN03)
+      description: |
+        Issues a new access + refresh pair and **invalidates** the submitted refresh token.
+        Reuse of an already-revoked refresh returns `AUTH_REFRESH_REUSED` (CA04).
+        Concurrent races are detected and also return `AUTH_REFRESH_REUSED`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        "200":
+          description: New tokens issued; old refresh invalidated.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/AuthTokens"
+        "401":
+          description: Invalid/expired refresh (`AUTH_REFRESH_INVALID`) or reused/revoked (`AUTH_REFRESH_REUSED`).
+          content:
+            application/json:
+              examples:
+                invalid:
+                  summary: Refresh inválido ou expirado
+                  value:
+                    success: false
+                    error:
+                      code: AUTH_REFRESH_INVALID
+                      message: Invalid or expired refresh token
+                    timestamp: "2026-04-15T10:00:00.000Z"
+                    path: "/v1/auth/refresh"
+                reused:
+                  summary: Refresh já revogado (reuso ou race condition)
+                  value:
+                    success: false
+                    error:
+                      code: AUTH_REFRESH_REUSED
+                      message: Refresh token was already used or revoked
+                    timestamp: "2026-04-15T10:00:00.000Z"
+                    path: "/v1/auth/refresh"
+
+  /v1/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user profile and effective permissions (RF08)
+      description: |
+        Returns the authenticated user's profile, roles and effective permissions.
+        Requires a valid `user_access` Bearer token. Integration tokens (`integration_access`) are rejected.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: User profile with roles and permissions.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UserProfile"
+              example:
+                success: true
+                data:
+                  userId: "550e8400-e29b-41d4-a716-446655440000"
+                  email: "admin@empresa.com"
+                  roles: ["admin"]
+                  perms: ["users:write", "users:read", "roles:read", "roles:write"]
+                  type: user_access
+                timestamp: "2026-04-15T10:00:00.000Z"
+                path: "/v1/auth/me"
+        "401":
+          description: Missing, invalid, expired, or wrong-type token.
+          content:
+            application/json:
+              examples:
+                invalid:
+                  summary: Token inválido
+                  value:
+                    success: false
+                    error:
+                      code: AUTH_TOKEN_INVALID
+                      message: Invalid or missing bearer token
+                    timestamp: "2026-04-15T10:00:00.000Z"
+                    path: "/v1/auth/me"
+                expired:
+                  summary: Token expirado
+                  value:
+                    success: false
+                    error:
+                      code: AUTH_TOKEN_EXPIRED
+                      message: Token has expired
+                    timestamp: "2026-04-15T10:00:00.000Z"
+                    path: "/v1/auth/me"
+
+  # ── Users ─────────────────────────────────────────────────────
+  /v1/users:
+    get:
+      tags: [Users]
+      summary: List users (paginated) (RF09)
+      description: Returns a paginated list of users. Requires permission `users:read`.
+      security:
+        - bearer: []
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          description: Filter by e-mail (partial match).
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [ACTIVE, INACTIVE]
+          description: Filter by user status.
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paginated list of users.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/User"
+                          total:
+                            type: integer
+                          page:
+                            type: integer
+                          limit:
+                            type: integer
+        "401":
+          description: Missing or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error401TokenInvalid"
+        "403":
+          description: Token lacks `users:read` permission.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error403"
+
+    post:
+      tags: [Users]
+      summary: Create a user (admin) (RF09)
+      description: Creates a new user. Requires permission `users:write`. E-mail must be unique (RN06).
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, name, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                name:
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        "201":
+          description: User created.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/User"
+        "401":
+          description: Missing or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error401TokenInvalid"
+        "403":
+          description: Token lacks `users:write` permission.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error403"
+        "409":
+          description: E-mail already registered (RN06).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error409"
+
+  /v1/users/{id}:
+    get:
+      tags: [Users]
+      summary: Get a user by ID (RF09)
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: User found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/User"
+        "401":
+          description: Missing or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error401TokenInvalid"
+        "403":
+          description: Token lacks `users:read` permission.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error403"
+        "404":
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error404"
+
+    patch:
+      tags: [Users]
+      summary: Update a user (RF09)
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+      responses:
+        "200":
+          description: User updated.
+        "401":
+          description: Missing or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error401TokenInvalid"
+        "403":
+          description: Token lacks `users:write` permission.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error403"
+        "404":
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error404"
+
+  /v1/users/{id}/status:
+    patch:
+      tags: [Users]
+      summary: Change user status — activate or deactivate (RF09, RN01)
+      description: |
+        Sets user status to `ACTIVE` or `INACTIVE`.
+        Inactive users cannot authenticate (RN01).
+        Requires permission `users:write`.
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [ACTIVE, INACTIVE]
+            example:
+              status: INACTIVE
+      responses:
+        "200":
+          description: Status updated successfully.
+          content:
+            application/json:
+              example:
+                success: true
+                data:
+                  id: "550e8400-e29b-41d4-a716-446655440000"
+                  email: "usuario@empresa.com"
+                  name: "João Silva"
+                  status: INACTIVE
+                timestamp: "2026-04-15T10:00:00.000Z"
+                path: "/v1/users/550e8400-e29b-41d4-a716-446655440000/status"
+        "401":
+          description: Missing or invalid token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error401TokenInvalid"
+        "403":
+          description: Token lacks `users:write` permission.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error403"
+        "404":
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error404"
+
+  # ── Roles & Permissions — Sprint 4 ──────────────────────────
+  /v1/roles:
+    get:
+      tags: [Roles]
+      summary: List roles (RF10) — Sprint 4
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: List of roles.
+        "401":
+          description: Missing or invalid token.
+    post:
+      tags: [Roles]
+      summary: Create a role (RF10) — Sprint 4
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: manager
+                description:
+                  type: string
+      responses:
+        "201":
+          description: Role created.
+        "409":
+          description: Role name already exists (RN06).
+
+  /v1/permissions:
+    get:
+      tags: [Permissions]
+      summary: List permissions (RF11) — Sprint 4
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: List of permissions.
+    post:
+      tags: [Permissions]
+      summary: Create a permission (RF11) — Sprint 4
+      description: |
+        `code` must be unique and follow the convention `resource:action[:scope]`
+        (e.g. `orders:read`, `users:write`). Returns 409 on duplicate (RN06).
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, description]
+              properties:
+                code:
+                  type: string
+                  example: orders:read
+                description:
+                  type: string
+                  example: Read access to orders
+      responses:
+        "201":
+          description: Permission created.
+        "409":
+          description: Permission code already exists (RN06).
+
+  # ── Integration — Sprint 5 ────────────────────────────────────
+  /v1/integration/token:
+    post:
+      tags: [Integration]
+      summary: Issue M2M token via client credentials (RF17, RF21, RF22) — Sprint 5
+      description: |
+        OAuth 2.0 `grant_type=client_credentials` (RFC 6749).
+        Returns a `integration_access` JWT with granted scopes.
+        Application must be `ACTIVE` (RN04). Requested scopes must be ⊆ registered scopes (RF22).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [clientId, clientSecret, grantType]
+              properties:
+                grantType:
+                  type: string
+                  enum: [client_credentials]
+                  example: client_credentials
+                clientId:
+                  type: string
+                  example: app_orders_service
+                clientSecret:
+                  type: string
+                  format: password
+                scope:
+                  type: string
+                  description: Space-separated list of requested scopes.
+                  example: "orders.read orders.write"
+      responses:
+        "200":
+          description: M2M access token issued.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          accessToken:
+                            type: string
+                          tokenType:
+                            type: string
+                            example: Bearer
+                          expiresIn:
+                            type: integer
+                            example: 900
+                          scopes:
+                            type: array
+                            items:
+                              type: string
+                            example: ["orders.read", "orders.write"]
+        "401":
+          description: Invalid credentials or inactive application (RN04).
+        "403":
+          description: Requested scopes exceed registered scopes (RF22).
