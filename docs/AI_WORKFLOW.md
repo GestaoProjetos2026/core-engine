@@ -7,7 +7,8 @@ Padronizar como usar IA neste repositorio com contexto persistente entre sessoes
 1. **Visao normativa do produto:** `PRD.md`
 2. **Execucao e backlog por sprint:** `Sprints.md`
 3. **Memoria curta da ultima sessao:** `docs/CONTEXT.md`
-4. **Codigo e estrutura atual do repositorio:** arquivos reais versionados
+4. **Historico de longo prazo:** `docs/PRD_DEVELOPMENT.md` (tracking de tasks, sprints e arquitetura)
+5. **Codigo e estrutura atual do repositorio:** arquivos reais versionados
 
 ## Quando abrir uma nova sessao
 - Sempre que iniciar um novo item de backlog.
@@ -16,7 +17,7 @@ Padronizar como usar IA neste repositorio com contexto persistente entre sessoes
 
 ## Procedimento de inicio de sessao
 1. Executar `prompts/bootstrap.txt`.
-2. Ler primeiro: `PRD.md`, `Sprints.md`, `docs/CONTEXT.md`.
+2. Ler primeiro: `PRD.md`, `Sprints.md`, `docs/CONTEXT.md` e `docs/PRD_DEVELOPMENT.md`.
 3. Mapear estrutura real do repositorio e status atual de implementacao.
 4. Identificar item alvo no `Sprints.md` (sem inventar backlog).
 5. Resumir impacto tecnico e aguardar confirmacao antes de implementar.
@@ -38,7 +39,7 @@ Padronizar como usar IA neste repositorio com contexto persistente entre sessoes
    - o que ficou pendente;
    - riscos/atencoes;
    - proximo item logico do `Sprints.md`.
-3. Atualizar `docs/CONTEXT.md` antes de finalizar.
+3. Atualizar `docs/CONTEXT.md` e `docs/PRD_DEVELOPMENT.md` ativamente antes de finalizar.
 
 ## Como registrar handoff sem perda de contexto
 - Toda sessao deve terminar com `docs/CONTEXT.md` atualizado.

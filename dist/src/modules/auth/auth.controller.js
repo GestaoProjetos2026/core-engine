@@ -20,6 +20,7 @@ const login_dto_1 = require("./dto/login.dto");
 const refresh_dto_1 = require("./dto/refresh.dto");
 const register_dto_1 = require("./dto/register.dto");
 const auth_service_1 = require("./auth.service");
+const jwt_auth_guard_1 = require("./jwt-auth.guard");
 let AuthController = class AuthController {
     auth;
     constructor(auth) {
@@ -33,6 +34,22 @@ let AuthController = class AuthController {
     }
     async refresh(dto) {
         return this.auth.refresh(dto);
+    }
+    getMe(req) {
+        const user = req.user;
+        if (user?.type !== 'user_access') {
+            throw new common_1.UnauthorizedException({
+                message: 'Endpoint restricted to user access tokens',
+                errorCode: 'AUTH_TOKEN_INVALID',
+            });
+        }
+        return {
+            userId: user.userId,
+            email: user.email,
+            roles: user.roles,
+            perms: user.perms,
+            type: user.type,
+        };
     }
 };
 exports.AuthController = AuthController;
@@ -146,6 +163,27 @@ __decorate([
     __metadata("design:paramtypes", [refresh_dto_1.RefreshDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "refresh", null);
+__decorate([
+    (0, common_1.Get)('me'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)('bearer'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Get current user profile',
+        description: 'RF08: Returns user profile and effective roles/perms using a Bearer token.',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Valid user profile',
+        type: auth_response_dto_1.UserProfileDto,
+    }),
+    (0, swagger_1.ApiUnauthorizedResponse)({
+        description: 'Missing, invalid, or non-user token',
+    }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", auth_response_dto_1.UserProfileDto)
+], AuthController.prototype, "getMe", null);
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)('Auth'),
     (0, common_1.Controller)('auth'),

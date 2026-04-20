@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AuthTokensDto = exports.RegisteredUserDto = void 0;
+exports.UserProfileDto = exports.AuthTokensDto = exports.RegisteredUserDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 class RegisteredUserDto {
     id;
@@ -60,4 +60,32 @@ __decorate([
     }),
     __metadata("design:type", Number)
 ], AuthTokensDto.prototype, "expiresIn", void 0);
+class UserProfileDto {
+    userId;
+    email;
+    roles;
+    perms;
+    type;
+}
+exports.UserProfileDto = UserProfileDto;
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UserProfileDto.prototype, "userId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], UserProfileDto.prototype, "email", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [String] }),
+    __metadata("design:type", Array)
+], UserProfileDto.prototype, "roles", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [String] }),
+    __metadata("design:type", Array)
+], UserProfileDto.prototype, "perms", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'user_access' }),
+    __metadata("design:type", String)
+], UserProfileDto.prototype, "type", void 0);
 //# sourceMappingURL=auth-response.dto.js.map

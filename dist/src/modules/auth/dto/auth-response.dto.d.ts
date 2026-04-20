@@ -10,4 +10,11 @@ export declare class AuthTokensDto {
     tokenType: string;
     expiresIn: number;
 }
+export declare class UserProfileDto {
+    userId: string;
+    email: string;
+    roles: string[];
+    perms: string[];
+    type: string;
+}
 //# sourceMappingURL=auth-response.dto.d.ts.map

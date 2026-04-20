@@ -7,7 +7,7 @@ Passos obrigatorios:
 1) Localize e leia o documento normativo principal do produto.
    - Neste repositorio, trate `PRD.md` como fonte normativa atual (visao, escopo, arquitetura e regras).
 2) Leia `Sprints.md` como fonte oficial de backlog, execucao e priorizacao.
-3) Leia `docs/CONTEXT.md` para recuperar a memoria curta da ultima sessao.
+3) Leia `docs/CONTEXT.md` para recuperar a memoria curta da ultima sessao e `docs/PRD_DEVELOPMENT.md` para obter o historico consolidado do que foi desenvolvido.
 4) Analise a estrutura atual do repositorio e stack real implementada.
 5) Identifique o item de sprint mais aderente para a continuidade (sem inventar backlog).
 6) Gere um resumo de impacto tecnico contendo:

@@ -4,6 +4,7 @@
 - [ ] Ler `PRD.md` (fonte normativa principal).
 - [ ] Ler `Sprints.md` (fonte oficial de backlog e prioridade).
 - [ ] Ler `docs/CONTEXT.md` (handoff da ultima sessao).
+- [ ] Ler `docs/PRD_DEVELOPMENT.md` (tracking de tasks e sprints concluidas).
 - [ ] Mapear estrutura atual do repositorio e diferencas entre documentacao e codigo.
 - [ ] Definir item alvo da sprint (sem inventar ou mover backlog).
 - [ ] Resumir impacto tecnico e aguardar confirmacao antes de codar.
@@ -15,3 +16,4 @@
 - [ ] Registrar riscos e pontos de atencao.
 - [ ] Sugerir proximo item logico com base no `Sprints.md`.
 - [ ] Atualizar `docs/CONTEXT.md` com handoff completo.
+- [ ] Atualizar `docs/PRD_DEVELOPMENT.md` (tasks concluidas e historico mudancas).

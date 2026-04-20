@@ -17,9 +17,10 @@ Instrucoes:
    - riscos/atencoes;
    - proximo foco.
    - tasks concluidas na sessao (ID e titulo da sprint).
-5) Aponte o proximo item logico com base no `Sprints.md` (sem criar backlog novo).
-6) Se houver divergencia entre `PRD.md`, `Sprints.md` e implementacao atual, registre no handoff.
-7) Entregue um bloco final "Pronto para proxima sessao" com os proximos passos imediatos.
+5) Atualize `docs/PRD_DEVELOPMENT.md` com as tasks/sprints concluidas nesta sessao, bem como dados valiosos e incidentes solucionados.
+6) Aponte o proximo item logico com base no `Sprints.md` (sem criar backlog novo).
+7) Se houver divergencia entre `PRD.md`, `Sprints.md` e implementacao atual, registre no handoff.
+8) Entregue um bloco final "Pronto para proxima sessao" com os proximos passos imediatos.
 
 Regras de encerramento:
 - `PRD.md` continua como fonte normativa.
@@ -27,4 +28,4 @@ Regras de encerramento:
 - Nao mover sprint.
 - Nao inventar item.
 - Sempre sincronizar status `done` em `Sprints.md` para tasks realmente concluidas.
-- Nao encerrar sem atualizar `docs/CONTEXT.md`.
+- Nao encerrar sem atualizar `docs/CONTEXT.md` e `docs/PRD_DEVELOPMENT.md`.

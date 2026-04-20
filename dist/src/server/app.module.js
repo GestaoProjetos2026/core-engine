@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const auth_module_1 = require("../modules/auth/auth.module");
+const users_module_1 = require("../modules/users/users.module");
 const health_module_1 = require("./health/health.module");
 const prisma_module_1 = require("./prisma/prisma.module");
 let AppModule = class AppModule {
@@ -16,7 +17,7 @@ let AppModule = class AppModule {
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, health_module_1.HealthModule, auth_module_1.AuthModule],
+        imports: [prisma_module_1.PrismaModule, health_module_1.HealthModule, auth_module_1.AuthModule, users_module_1.UsersModule],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

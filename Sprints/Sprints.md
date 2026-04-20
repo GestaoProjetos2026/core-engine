@@ -7,13 +7,10 @@ Título: Criar PRD do Core/Auth
 Descrição: Documentar objetivo do produto, escopo inicial, módulos, premissas, dependências, fluxos principais de autenticação/autorização e visão de MVP.
 Critérios de aceitação:
 
-escopo do Core/Auth documentado
-
-objetivos e não objetivos definidos
-
-fluxos principais descritos
-
-módulos e entregas priorizados
+- escopo do Core/Auth documentado
+- objetivos e não objetivos definidos
+- fluxos principais descritos
+- módulos e entregas priorizados
 Prioridade: Urgent
 Estimativa: 3 SP
 Label: prd, planning, core-auth, sprint-1
@@ -25,13 +22,10 @@ Título: Criar MVP do banco de dados
 Descrição: Definir a primeira versão funcional da base relacional do Core/Auth, suficiente para suportar autenticação, usuários, papéis e permissões.
 Critérios de aceitação:
 
-modelagem inicial definida
-
-entidades principais identificadas
-
-relações mínimas mapeadas
-
-pronto para virar schema Prisma
+- modelagem inicial definida
+- entidades principais identificadas
+- relações mínimas mapeadas
+- pronto para virar schema Prisma
 Prioridade: Urgent
 Estimativa: 5 SP
 Label: database, mvp, prisma, core-auth, sprint-1
@@ -43,9 +37,8 @@ Título: Modelar entidade User
 Descrição: Definir campos, regras e atributos da tabela de usuários.
 Critérios de aceitação:
 
-estrutura aprovada pelo squad
-
-contempla nome, e-mail, senha hash, status e timestamps
+- estrutura aprovada pelo squad
+- contempla nome, e-mail, senha hash, status e timestamps
 Prioridade: Urgent
 Estimativa: 1 SP
 Label: database, user, modeling, sprint-1
@@ -57,9 +50,8 @@ Título: Modelar entidade Role
 Descrição: Definir estrutura da tabela de papéis.
 Critérios de aceitação:
 
-estrutura aprovada
-
-suporta administração de acesso
+- estrutura aprovada
+- suporta administração de acesso
 Prioridade: High
 Estimativa: 1 SP
 Label: database, role, modeling, sprint-1
@@ -71,9 +63,8 @@ Título: Modelar entidade Permission
 Descrição: Definir estrutura da tabela de permissões com código e descrição.
 Critérios de aceitação:
 
-estrutura aprovada
-
-preparada para RBAC
+- estrutura aprovada
+- preparada para RBAC
 Prioridade: High
 Estimativa: 1 SP
 Label: database, permission, modeling, sprint-1
@@ -85,11 +76,9 @@ Título: Modelar tabelas de relacionamento
 Descrição: Definir user_roles e role_permissions com regras de integridade.
 Critérios de aceitação:
 
-relacionamentos aprovados
-
-cardinalidades corretas
-
-duplicidade controlável por constraint
+- relacionamentos aprovados
+- cardinalidades corretas
+- duplicidade controlável por constraint
 Prioridade: High
 Estimativa: 2 SP
 Label: database, relations, rbac, sprint-1
@@ -101,11 +90,9 @@ Título: Configurar .env e .env.example
 Descrição: Estruturar variáveis de ambiente do backend e do banco.
 Critérios de aceitação:
 
-arquivo example criado
-
-variáveis mínimas documentadas
-
-projeto consegue subir com configuração padrão
+- arquivo example criado
+- variáveis mínimas documentadas
+- projeto consegue subir com configuração padrão
 Prioridade: High
 Estimativa: 1 SP
 Label: infra, env, setup, sprint-1
@@ -117,7 +104,7 @@ Título: Definir prefixo global /v1
 Descrição: Versionar a API desde o início para evitar retrabalho futuro.
 Critérios de aceitação:
 
-todas as rotas base preparadas para usar /v1
+- todas as rotas base preparadas para usar /v1
 Prioridade: High
 Estimativa: 1 SP
 Label: api, versioning, v1, sprint-1
@@ -131,9 +118,8 @@ PRD + MVP do banco + setup inicial
 Notas de calendário (sprints semanais: sábado a sexta-feira)
 
 - **Sprint 3 (estendida):** 28/03/2026 a 17/04/2026 — janela maior para fundação de auth, documentação de contrato e primeiros fluxos testáveis.
-- **Sprint 5 (estendida):** 25/04/2026 a 08/05/2026 — integração M2M, OAuth token endpoint e escopos; documentação para integradores.
+- **Sprint 4:** 18/04/2026 a 24/04/2026 — une RBAC completo, integração M2M, OAuth token endpoint e escopos; documentação para integradores.
 - **Sprint 2** é semana curta (6 dias) até o início da Sprint 3 em 28/03.
-- **Sprint 4** é semana curta (7 dias) entre o fim da Sprint 3 (17/04) e o início da Sprint 5 (25/04).
 
 ---
 
@@ -359,7 +345,7 @@ Auth completo (register/login/refresh/me) + JWT + docs para consumidores + e2e +
 
 ---
 
-Sprint 4 — 18/04/2026 a 24/04/2026
+Sprint 4 (estendida) — 18/04/2026 a 08/05/2026
 
 1) CRUD de papéis e permissões (RF10, RF11)
 
@@ -416,14 +402,7 @@ Prioridade: High
 Estimativa: 2 SP
 Label: rbac, permissions-matrix, docs, sprint-4
 
-Resumo Sprint 4
-RBAC focando no CRUD de papéis e permissões + vínculos + testes de permissão e matriz
-
----
-
-Sprint 5 (estendida) — 25/04/2026 a 08/05/2026
-
-1) CRUD de aplicações e regeneração de secret (RF14, RF15)
+5) CRUD de aplicações e regeneração de secret (RF14, RF15)
 
 Pertence a: Module 5 — Applications
 Título: `POST/GET/PATCH` `/v1/applications` e `regenerate-secret`
@@ -435,9 +414,9 @@ Critérios de aceitação:
 - app inativa não emite token na integração
 Prioridade: Urgent
 Estimativa: 5 SP
-Label: applications, oauth-client, sprint-5
+Label: applications, oauth-client, sprint-4
 
-2) Catálogo de escopos e vínculo aplicação–escopo (RF16)
+6) Catálogo de escopos e vínculo aplicação–escopo (RF16)
 
 Pertence a: Module 5 — Applications
 Título: `GET/POST` `/v1/applications/:id/scopes`
@@ -449,9 +428,9 @@ Critérios de aceitação:
 - documentado no Swagger
 Prioridade: Urgent
 Estimativa: 5 SP
-Label: scopes, integration, sprint-5
+Label: scopes, integration, sprint-4
 
-3) Token M2M e OAuth token endpoint (RF17, RF21, RF22, RF23)
+7) Token M2M e OAuth token endpoint (RF17, RF21, RF22, RF23)
 
 Pertence a: Module 5 — Integration
 Título: `POST /v1/integration/token` e `POST /v1/oauth/token`
@@ -463,9 +442,9 @@ Critérios de aceitação:
 - alias ou equivalência documentada entre rotas de conveniência
 Prioridade: Urgent
 Estimativa: 8 SP
-Label: oauth, m2m, token-endpoint, sprint-5
+Label: oauth, m2m, token-endpoint, sprint-4
 
-4) JWT integração e ScopesGuard (RF18, CA07)
+8) JWT integração e ScopesGuard (RF18, CA07)
 
 Pertence a: Module 6 — APIs / Integration
 Título: Validar escopos no consumo (`@RequireScopes`)
@@ -477,9 +456,9 @@ Critérios de aceitação:
 - comportamento documentado
 Prioridade: Urgent
 Estimativa: 5 SP
-Label: scopes-guard, jwt, sprint-5
+Label: scopes-guard, jwt, sprint-4
 
-5) Documentação pública de integração M2M (RFC 6749 + exemplos)
+9) Documentação pública de integração M2M (RFC 6749 + exemplos)
 
 Pertence a: Module 7 — Documentação
 Título: Guia de integração para parceiros e módulos
@@ -491,9 +470,9 @@ Critérios de aceitação:
 - erros previsíveis com `error.code` mencionados
 Prioridade: Urgent
 Estimativa: 3 SP
-Label: docs, m2m, oauth, sprint-5
+Label: docs, m2m, oauth, sprint-4
 
-6) OpenAPI: token endpoint OAuth e erros alinhados à RFC (RF20)
+10) OpenAPI: token endpoint OAuth e erros alinhados à RFC (RF20)
 
 Pertence a: Module 6 — APIs
 Título: Completar Swagger com OAuth 2.0 token endpoint
@@ -505,9 +484,9 @@ Critérios de aceitação:
 - segurança documentada
 Prioridade: High
 Estimativa: 3 SP
-Label: openapi, oauth, sprint-5
+Label: openapi, oauth, sprint-4
 
-7) Testes e2e M2M e spike manual com aplicação de teste
+11) Testes e2e M2M e spike manual com aplicação de teste
 
 Pertence a: Module 8 — Qualidade
 Título: e2e client credentials e negação por escopo
@@ -518,14 +497,14 @@ Critérios de aceitação:
 - cenários descritos na doc de testes
 Prioridade: High
 Estimativa: 5 SP
-Label: e2e, testing, sprint-5
+Label: e2e, testing, sprint-4
 
-Resumo Sprint 5
-Aplicações + escopos + tokens M2M + OAuth token endpoint + docs integradores + RF18
+Resumo Sprint 4
+RBAC completo (CRUD, vínculos, seed e matriz docs) + Integrações M2M (Apps, escopos, tokens, OAuth endpoint, ScopesGuard e docs)
 
 ---
 
-Sprint 6 — 09/05/2026 a 15/05/2026
+Sprint 5 — 25/04/2026 a 01/05/2026
 
 1) Rate limit e lockout (RNF07)
 
@@ -539,7 +518,7 @@ Critérios de aceitação:
 - testes básicos de limite
 Prioridade: Urgent
 Estimativa: 5 SP
-Label: rate-limit, security, sprint-6
+Label: rate-limit, security, sprint-5
 
 2) Logs estruturados JSON com requestId (RNF11)
 
@@ -553,7 +532,7 @@ Critérios de aceitação:
 - alinhado a PRD §21
 Prioridade: High
 Estimativa: 3 SP
-Label: logging, observability, sprint-6
+Label: logging, observability, sprint-5
 
 3) Auditoria mínima de eventos críticos (§21)
 
@@ -567,7 +546,7 @@ Critérios de aceitação:
 - não bloquear fluxos em caso de falha de auditoria
 Prioridade: High
 Estimativa: 5 SP
-Label: audit, logging, sprint-6
+Label: audit, logging, sprint-5
 
 4) Healthcheck com dependências (RF19, RNF09)
 
@@ -580,14 +559,14 @@ Critérios de aceitação:
 - documentado no Swagger
 Prioridade: High
 Estimativa: 2 SP
-Label: health, kubernetes, sprint-6
+Label: health, kubernetes, sprint-5
 
-Resumo Sprint 6
+Resumo Sprint 5
 Segurança operacional (rate limit) + observabilidade + auditoria mínima + health robusto
 
 ---
 
-Sprint 7 — 16/05/2026 a 22/05/2026
+Sprint 6 — 02/05/2026 a 08/05/2026
 
 1) Pipeline CI: lint, testes, build (DoD)
 
@@ -601,7 +580,7 @@ Critérios de aceitação:
 - documentado no README
 Prioridade: Urgent
 Estimativa: 5 SP
-Label: ci, devops, sprint-7
+Label: ci, devops, sprint-6
 
 2) Cobertura de testes em módulos críticos (RNF05)
 
@@ -614,7 +593,7 @@ Critérios de aceitação:
 - relatório no CI
 Prioridade: High
 Estimativa: 8 SP
-Label: testing, coverage, sprint-7
+Label: testing, coverage, sprint-6
 
 3) Helmet e CSP por ambiente (P1 PRD §20)
 
@@ -628,14 +607,14 @@ Critérios de aceitação:
 - notas em documentação
 Prioridade: Medium
 Estimativa: 3 SP
-Label: helmet, security, sprint-7
+Label: helmet, security, sprint-6
 
-Resumo Sprint 7
+Resumo Sprint 6
 CI + qualidade (cobertura) + hardening HTTP
 
 ---
 
-Sprint 8 — 23/05/2026 a 29/05/2026
+Sprint 7 — 09/05/2026 a 15/05/2026
 
 1) README e exemplos públicos (README, §23 DoD)
 
@@ -649,7 +628,7 @@ Critérios de aceitação:
 - checklist DoD atualizado
 Prioridade: Urgent
 Estimativa: 3 SP
-Label: docs, readme, sprint-8
+Label: docs, readme, sprint-7
 
 2) Seed final de papéis e matriz de permission.code (P1)
 
@@ -663,7 +642,7 @@ Critérios de aceitação:
 - owners definidos para evolução
 Prioridade: High
 Estimativa: 3 SP
-Label: seed, governance, sprint-8
+Label: seed, governance, sprint-7
 
 3) Revisão de DoD e encerramento MVP (§23)
 
@@ -676,21 +655,20 @@ Critérios de aceitação:
 - feedback de squads consumidores registrado
 Prioridade: High
 Estimativa: 2 SP
-Label: dod, release, sprint-8
+Label: dod, release, sprint-7
 
-Resumo Sprint 8
+Resumo Sprint 7
 Adoção + exemplos + governança de permissões/escopos + fechamento MVP
 
 ---
 
-Resumo geral (Sprints 2 a 8 até 29/05/2026)
+Resumo geral (Sprints 2 a 7 até 29/05/2026)
 
 | Sprint | Período | Foco principal |
 |--------|---------|----------------|
 | 2 | 22/03–27/03 | Nest, envelope, Swagger, docs de erros, Docker, Prisma alinhado ao PRD |
 | 3 | 28/03–17/04 | Auth (register/login/refresh/me), JWT, docs JWT, e2e humano, spike RBAC, PermissionsGuard, CRUD de Usuários |
-| 4 | 18/04–24/04 | Roles/Permissions CRUD, vínculos, seed e e2e 403, matriz docs |
-| 5 | 25/04–08/05 | Apps, escopos, token M2M, OAuth token endpoint, ScopesGuard, docs integradores |
-| 6 | 09/05–15/05 | Rate limit, logs requestId, auditoria mínima, health com DB |
-| 7 | 16/05–22/05 | CI, cobertura, Helmet/CSP |
-| 8 | 23/05–29/05 | README exemplos, seed/matriz final, DoD e fechamento MVP |
+| 4 | 18/04–08/05 | RBAC completo (CRUD, vínculos) + Integrações M2M (Apps, tokens, OAuth) |
+| 5 | 09/05–15/05 | Rate limit, logs requestId, auditoria mínima, health com DB |
+| 6 | 16/05–22/05 | CI, cobertura, Helmet/CSP |
+| 7 | 23/05–29/05 | README exemplos, seed/matriz final, DoD e fechamento MVP |
