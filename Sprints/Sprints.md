@@ -345,7 +345,7 @@ Auth completo (register/login/refresh/me) + JWT + docs para consumidores + e2e +
 
 ---
 
-Sprint 4 (estendida) — 18/04/2026 a 08/05/2026
+Sprint 4 (estendida) — 18/04/2026 a 24/04/2026
 
 1) CRUD de papéis e permissões (RF10, RF11)
 
