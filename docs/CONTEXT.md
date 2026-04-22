@@ -7,31 +7,31 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 3: concluida task 7 — `Spike de teste manual: papéis e permissões em ambiente de dev`. Foi implementada a criação dos usuários testes ('admin', 'viewer') na `prisma/seed.ts` e atualizada a documentação (`README.md`) para propiciar o fluxo end-to-end local do RBAC utilizando o `GET /v1/auth/me`.
+- Sprint 4: concluída task 1 — `CRUD de papéis e permissões (RF10, RF11)`. Implementados os módulos `Roles` e `Permissions` com endpoints de criação e listagem, protegidos por `JwtAuthGuard` e `PermissionsGuard`. Removida pasta residual `rbac`.
 
 ## Arquivos modificados recentemente
-- `prisma/seed.ts` — Importado o `bcrypt` e adicionado mock users atrelados com suas respectivas roles.
-- `README.md` — Adicionado tutorial de teste de login + auth/me usando os dados da semente.
+- `src/modules/roles/*` — Criado módulo de papéis.
+- `src/modules/permissions/*` — Criado módulo de permissões.
+- `src/server/app.module.ts` — Registrados os novos módulos.
+- `prisma/seed.ts` — Adicionadas permissões de gerenciamento de roles/permissions.
 - `docs/CONTEXT.md` — Atualizado nesta sessão.
 
 ## Estado atual
-- Os tokens JWT gerados via Auth já podem ter seu contexto lido localmente via endpoint `/v1/auth/me`.
-- Tratamentos de Unauthorized para acessos vazios e limitadores de scope/type garantidos.
-- Os testes the API restam 100% no vitest validando controllers de rotas.
+- Os CRUDs básicos de Roles e Permissions estão operacionais e documentados no Swagger.
+- O sistema de autorização via `@RequirePermissions` está integrado aos novos endpoints.
+- Seed do banco de dados atualizado para facilitar testes administrativos.
 
 ## Pendencias e debitos
-- Retirado pacote star-gap \`@fastify/jwt\` antigo do package.json, restando talvez dependências de tipos associados que não ferem a API e devem ser revisitadas num cleanup posterior.
+- Implementar os vínculos usuário-papel e papel-permissão (Sprint 4, Task 2).
 
 ## Riscos e atencoes
-- O Swagger de autenticação para JWT continua aplicável às demais proteções.
-- Os testes \`test/auth.e2e-spec.ts\` foram incorporados garantindo o fluxo e2e total entre app.inject do fastify com nest e o Prisma limpando os bancos por email isolado de test.
-- Evite rodar vitest sem a flag de exclusão \`dist/**\` como sinalizado.
+- Certifique-se de rodar `npx prisma db seed` para atualizar as permissões do usuário admin no banco local.
 
 ## Proximo foco
-- Assegurar os fluxos RBAC (Sprints posteriores, roles e permissions seed completas e validação de 403 das chamadas HTTP via testes).
+- Implementar os vínculos relacionais (RF12, RF13) para completar o sistema RBAC.
 
 ## Tasks concluidas na sessao
-- Sprint 3 - Task 6: Testes e2e mínimos: login, refresh, `/me` — Status `done` e implementados garantindo RNF06 e comportamentos vitais.
+- Sprint 4 - Task 1: CRUD de papéis e permissões — Status `done`.
 
 ## Observacoes uteis para a proxima sessao
 - Tratar \`PRD.md\` e \`Sprints.md\` como contratos.

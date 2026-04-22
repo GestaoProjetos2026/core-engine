@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Inject,
   Patch,
   Post,
   Query,
@@ -59,7 +60,7 @@ const notFoundExample = {
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(@Inject(UsersService) private readonly usersService: UsersService) {}
 
   @Post()
   @RequirePermissions('users:write')

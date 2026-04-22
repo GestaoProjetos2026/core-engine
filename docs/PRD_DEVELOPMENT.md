@@ -42,32 +42,37 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 ## 🚀 Sprints em Andamento / Próximas
 
 ### Sprint 4: RBAC Completo e Integrações Restritivas
-**Status**: ⏳ Próxima
-- Criação e manutenção do CRUD de Papéis e de Permissões.
-- Gerenciamento de vínculos relacionais fortes M2M (Usuário-Papel e Papel-Permissão).
-- Testagens isoladas em cenários Forbiddens (403) provando segurança robusta.
+**Status**: ⏳ Em andamento
+- **Task 1**: Criação e manutenção do CRUD de Papéis e de Permissões. ✔️ (Concluído em 22/04/2026)
+- **Task 2**: Gerenciamento de vínculos relacionais fortes M2M (Usuário-Papel e Papel-Permissão). ⏳
+- Testagens isoladas em cenários Forbiddens (403) provando segurança robusta. ⏳
 
 ---
 
 ## 🛠️ Alterações, Modificações e Implementações Técnicas
 
-Durante o desenvolvimento das Sprints 1 a 3, diversas tomadas de decisão cruciais e refatorações se mostraram necessárias:
+Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão cruciais e refatorações se mostraram necessárias:
 
-- Criação controlada de seeders automatizados e fixação das strict property initializations do TypeScript nos DTOs do Swagger, especialmente o `AuthResponseDto` e o `CreateUserDto`.
-- Estruturação do prisma services (`prisma.service.ts`) para lidar com a injeção apropriada.
-- Geração da migration raiz `20260417231629_migration_test` para fixar os padrões.
+- **Implementação do RolesModule e PermissionsModule**: Criação de controladores, serviços e DTOs para gestão de RBAC.
+- **Segurança de Rotas**: Proteção dos novos endpoints com `JwtAuthGuard` e `PermissionsGuard` utilizando o decorador `@RequirePermissions`.
+- **Workaround de Swagger**: Remoção temporária da propriedade `type` nos decoradores `@ApiResponse` dos novos módulos para mitigar um erro crítico de "Circular Dependency" no motor do Swagger/Fastify no ambiente de desenvolvimento Node 25.
 
 ---
 
 ## ⚠️ Dificuldades Encontradas e Soluções Adotadas
 
 1. **Dependência Circular em Parsers do OpenAPI (@nestjs/swagger)**
-   - **Problema**: Ocorreram conflitos em processamento de metadata de DTOs auto-referenciados / interdependentes durante a startup do Nest gerando erros dentro do `@nestjs/swagger/dist/services/schema-object-factory.js`.
-   - **Solução Contornada**: Ajuste na declaração de campos para tipos menos circulares, limpeza de referências explícitas e correções sintáticas via `@ApiProperty` na checagem dos DTOs envolvidos no Auth Payload.
+   - **Problema**: Ocorreram conflitos em processamento de metadata de DTOs durante a startup do Nest, gerando erros de `Circular dependency detected` no motor do Swagger, impedindo o boot da aplicação ou ocultando campos de Request Body (especialmente no `LoginDto`).
+   - **Solução Contornada**: Utilização de definições de esquema inline (`@ApiBody({ schema: { ... } })`) para contornar a inferência automática baseada em classes em endpoints críticos, e aplicação de `lazy resolvers` (`() => Class`) onde possível.
+
    
 2. **Inicialização Instável do Prisma Client e Seed**
    - **Problema**: Dificuldade em inicializar corretamente as engines e transações (`PrismaClientInitializationError`) no ato de boot e seeds em persistência de desenvolvimento.
    - **Solução Contornada**: Compatibilização com variáveis de ambiente configuradas, garantia de execução do daemon do postgres através do docker, e ajuste fino da conexão em `prisma.service.ts`.
+
+3. **Instabilidade de Injeção de Dependência (DI) em Ambiente TSX**
+   - **Problema**: Falhas na resolução automática de dependências pelo NestJS em tempo de execução (especialmente ao usar `tsx watch`), resultando em injeções nulas (`undefined`) em construtores de controllers e services. Isso causava erros genéricos de `INTERNAL_ERROR`.
+   - **Solução**: Adoção de injeção explícita com o decorador `@Inject()` em todos os construtores de módulos do Core Engine, garantindo a estabilidade da DI independente da ordem de carregamento dos arquivos.
 
 ---
 

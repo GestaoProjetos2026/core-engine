@@ -24,6 +24,10 @@ const permissionDefs: { code: string; description: string }[] = [
   { code: 'tickets:create', description: 'Create tickets' },
   { code: 'tickets:delete', description: 'Delete tickets' },
   { code: 'roles:manage', description: 'Manage roles' },
+  { code: 'roles:read', description: 'Read roles' },
+  { code: 'roles:write', description: 'Create/Update roles' },
+  { code: 'permissions:read', description: 'Read permissions' },
+  { code: 'permissions:write', description: 'Create/Update permissions' },
 ];
 
 async function main() {

@@ -1,7 +1,8 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
   ApiConflictResponse,
   ApiOperation,
   ApiResponse,
@@ -18,7 +19,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly auth: AuthService) {}
+  constructor(@Inject(AuthService) private readonly auth: AuthService) {}
 
   @Post('register')
   @ApiOperation({
@@ -28,8 +29,12 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'User created',
-    type: RegisteredUserDto,
   })
+
+
+
+
+
   @ApiBadRequestResponse({
     description: 'Password policy or validation failed (RNF08)',
   })
@@ -61,7 +66,6 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Tokens issued',
-    type: AuthTokensDto,
   })
   @ApiUnauthorizedResponse({
     description: 'Invalid credentials or inactive user (RN01)',
@@ -75,6 +79,16 @@ export class AuthController {
         timestamp: '2026-04-08T12:00:00.000Z',
         path: '/v1/auth/login',
       },
+    },
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        email: { type: 'string', example: 'admin@example.com' },
+        password: { type: 'string', example: 'Password123!' },
+      },
+      required: ['email', 'password'],
     },
   })
   async login(@Body() dto: LoginDto): Promise<AuthTokensDto> {
@@ -91,8 +105,10 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'New tokens issued',
-    type: AuthTokensDto,
   })
+
+
+
   @ApiUnauthorizedResponse({
     description:
       'Invalid or expired refresh (AUTH_REFRESH_INVALID), or reuse/revoked/concurrent race (AUTH_REFRESH_REUSED)',
@@ -137,8 +153,9 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Valid user profile',
-    type: UserProfileDto,
   })
+
+
   @ApiUnauthorizedResponse({
     description: 'Missing, invalid, or non-user token',
   })

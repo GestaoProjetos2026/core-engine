@@ -1,5 +1,5 @@
-import 'dotenv/config';
 import 'reflect-metadata';
+import 'dotenv/config';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -87,6 +87,9 @@ async function bootstrap() {
       customSiteTitle: 'Core/Auth API Docs',
     });
   }
+
+
+
 
   const port = Number(process.env.PORT ?? 3000);
   await app.listen(port, '0.0.0.0');
