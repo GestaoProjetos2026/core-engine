@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Inject, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, Param, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
   ApiConflictResponse,
   ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -11,6 +12,8 @@ import {
 } from '@nestjs/swagger';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
+import { AssignRoleUsersDto } from './dto/assign-role-users.dto';
+import { AssignRolePermissionsDto } from './dto/assign-role-permissions.dto';
 import { RoleResponseDto } from './dto/role-response.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
@@ -77,6 +80,36 @@ export class RolesController {
   @ApiForbiddenResponse({ description: 'Token lacks `roles:read` permission.', schema: forbiddenExample })
   async findAll() {
     return this.rolesService.findAll();
+  }
+
+  @Post(':id/users')
+  @HttpCode(200)
+  @RequirePermissions('roles:manage')
+  @ApiOperation({
+    summary: 'Assign users to a role',
+    description: 'RF12: Links one or more users to a role. Requires permission `roles:manage`.',
+  })
+  @ApiResponse({ status: 200, description: 'Users assigned successfully.' })
+  @ApiNotFoundResponse({ description: 'Role or one/more users not found.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks `roles:manage` permission.', schema: forbiddenExample })
+  async assignUsers(@Param('id') id: string, @Body() dto: AssignRoleUsersDto) {
+    return this.rolesService.assignUsers(id, dto);
+  }
+
+  @Post(':id/permissions')
+  @HttpCode(200)
+  @RequirePermissions('roles:manage')
+  @ApiOperation({
+    summary: 'Assign permissions to a role',
+    description: 'RF13: Links one or more permissions to a role. Requires permission `roles:manage`.',
+  })
+  @ApiResponse({ status: 200, description: 'Permissions assigned successfully.' })
+  @ApiNotFoundResponse({ description: 'Role or one/more permissions not found.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks `roles:manage` permission.', schema: forbiddenExample })
+  async assignPermissions(@Param('id') id: string, @Body() dto: AssignRolePermissionsDto) {
+    return this.rolesService.assignPermissions(id, dto);
   }
 }
 

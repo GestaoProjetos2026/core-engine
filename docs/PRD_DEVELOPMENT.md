@@ -44,7 +44,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 ### Sprint 4: RBAC Completo e Integrações Restritivas
 **Status**: ⏳ Em andamento
 - **Task 1**: Criação e manutenção do CRUD de Papéis e de Permissões. ✔️ (Concluído em 22/04/2026)
-- **Task 2**: Gerenciamento de vínculos relacionais fortes M2M (Usuário-Papel e Papel-Permissão). ⏳
+- **Task 2**: Gerenciamento de vínculos relacionais fortes M2M (Usuário-Papel e Papel-Permissão). ✔️ (Concluído em 22/04/2026)
 - Testagens isoladas em cenários Forbiddens (403) provando segurança robusta. ⏳
 
 ---
