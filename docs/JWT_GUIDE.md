@@ -149,26 +149,37 @@ As permissões seguem o formato `recurso:acao` (e opcionalmente `:escopo`):
 <recurso>:<acao>[:<escopo>]
 ```
 
-### 4.1. Exemplos
+### 4.1. `permission.code` iniciais (Sprint 4 / Task 3)
 
 | `permission.code` | Significado |
 |-------------------|-------------|
+| `users:list` | Listagem de usuários |
 | `users:read` | Leitura de usuários |
 | `users:write` | Criação e atualização de usuários |
+| `users:create` | Criação de usuários (granular) |
+| `users:update` | Atualização de usuários (granular) |
+| `users:delete` | Remoção de usuários |
 | `roles:read` | Leitura de papéis |
 | `roles:write` | Criação e atualização de papéis |
-| `orders:read` | Leitura de pedidos (módulo Orders) |
-| `orders:write` | Escrita em pedidos |
-| `reports:read` | Leitura de relatórios |
+| `roles:manage` | Vincular usuários e permissões em papéis |
+| `permissions:read` | Leitura de permissões |
+| `permissions:write` | Criação e atualização de permissões |
+| `invoice:read` | Leitura de faturamento |
+| `invoice:create` | Criação em faturamento |
+| `crm:read` | Leitura de CRM |
+| `crm:create` | Escrita em CRM |
+| `tickets:read` | Leitura de tickets |
+| `tickets:create` | Criação de tickets |
+| `tickets:delete` | Remoção de tickets |
 
-### 4.2. Papéis sugeridos (seed inicial)
+### 4.2. Matriz inicial por papel (seed reproduzível)
 
-| Role | Permissões típicas |
-|------|--------------------|
-| `admin` | Acesso total a todos os recursos |
-| `manager` | Leitura + escrita em recursos operacionais |
-| `operator` | Operações do dia a dia (sem gestão de acesso) |
-| `viewer` | Somente leitura |
+| Role | Permissões iniciais |
+|------|----------------------|
+| `admin` | Todas as permissões iniciais |
+| `manager` | `users:list`, `users:read`, `users:write`, `roles:read`, `permissions:read`, `invoice:read`, `invoice:create`, `crm:read`, `crm:create`, `tickets:read`, `tickets:create` |
+| `operator` | `users:read`, `invoice:read`, `crm:read`, `tickets:read`, `tickets:create` |
+| `viewer` | `users:list`, `users:read`, `roles:read`, `permissions:read`, `invoice:read`, `crm:read`, `tickets:read` |
 
 ---
 

@@ -45,7 +45,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 **Status**: ⏳ Em andamento
 - **Task 1**: Criação e manutenção do CRUD de Papéis e de Permissões. ✔️ (Concluído em 22/04/2026)
 - **Task 2**: Gerenciamento de vínculos relacionais fortes M2M (Usuário-Papel e Papel-Permissão). ✔️ (Concluído em 22/04/2026)
-- Testagens isoladas em cenários Forbiddens (403) provando segurança robusta. ⏳
+- **Task 3**: Seed de papéis/permissões iniciais e teste e2e 403. ✔️ (Concluído em 22/04/2026)
 
 ---
 
@@ -55,6 +55,9 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 
 - **Implementação do RolesModule e PermissionsModule**: Criação de controladores, serviços e DTOs para gestão de RBAC.
 - **Segurança de Rotas**: Proteção dos novos endpoints com `JwtAuthGuard` e `PermissionsGuard` utilizando o decorador `@RequirePermissions`.
+- **Matriz inicial de RBAC no Seed**: Estruturado seed reproduzível com papéis `admin`, `manager`, `operator`, `viewer`, permissões iniciais e usuários padrão por papel.
+- **Teste e2e de autorização 403**: Novo cenário automatizado validando bloqueio de escrita (`POST /v1/users`) para token sem `users:write`.
+- **Documentação de `permission.code`**: Atualização do `docs/JWT_GUIDE.md` com catálogo inicial e matriz por papel.
 - **Workaround de Swagger**: Remoção temporária da propriedade `type` nos decoradores `@ApiResponse` dos novos módulos para mitigar um erro crítico de "Circular Dependency" no motor do Swagger/Fastify no ambiente de desenvolvimento Node 25.
 
 ---
@@ -73,6 +76,10 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 3. **Instabilidade de Injeção de Dependência (DI) em Ambiente TSX**
    - **Problema**: Falhas na resolução automática de dependências pelo NestJS em tempo de execução (especialmente ao usar `tsx watch`), resultando em injeções nulas (`undefined`) em construtores de controllers e services. Isso causava erros genéricos de `INTERNAL_ERROR`.
    - **Solução**: Adoção de injeção explícita com o decorador `@Inject()` em todos os construtores de módulos do Core Engine, garantindo a estabilidade da DI independente da ordem de carregamento dos arquivos.
+
+4. **Conflito de migration em banco já provisionado**
+   - **Problema**: Em execução de `prisma migrate deploy`, a migration `20260417231629_migration_test` falhou com `P3018` por tentativa de recriar enum já existente (`type "UserStatus" already exists`).
+   - **Solução adotada na sessão**: Para validar a Task 3, foi executado fluxo funcional com banco ativo + `npm run prisma:seed` + `npm test`; migrações locais ficam como ponto de revisão para a próxima task de manutenção.
 
 ---
 

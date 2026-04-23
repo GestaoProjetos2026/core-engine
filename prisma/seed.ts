@@ -13,6 +13,7 @@ const prisma = new PrismaClient({ adapter });
 const permissionDefs: { code: string; description: string }[] = [
   { code: 'users:list', description: 'List users' },
   { code: 'users:read', description: 'Read users' },
+  { code: 'users:write', description: 'Create and update users' },
   { code: 'users:create', description: 'Create users' },
   { code: 'users:update', description: 'Update users' },
   { code: 'users:delete', description: 'Delete users' },
@@ -30,6 +31,39 @@ const permissionDefs: { code: string; description: string }[] = [
   { code: 'permissions:write', description: 'Create/Update permissions' },
 ];
 
+const rolePermissionMatrix: Record<string, string[]> = {
+  admin: permissionDefs.map((permission) => permission.code),
+  manager: [
+    'users:list',
+    'users:read',
+    'users:write',
+    'roles:read',
+    'permissions:read',
+    'invoice:read',
+    'invoice:create',
+    'crm:read',
+    'crm:create',
+    'tickets:read',
+    'tickets:create',
+  ],
+  operator: [
+    'users:read',
+    'invoice:read',
+    'crm:read',
+    'tickets:read',
+    'tickets:create',
+  ],
+  viewer: [
+    'users:list',
+    'users:read',
+    'roles:read',
+    'permissions:read',
+    'invoice:read',
+    'crm:read',
+    'tickets:read',
+  ],
+};
+
 async function main() {
   const permissions = await Promise.all(
     permissionDefs.map((p) =>
@@ -43,165 +77,98 @@ async function main() {
 
   console.log(`✅ ${permissions.length} permissions upserted`);
 
-  const adminRole = await prisma.role.upsert({
-    where: { name: 'admin' },
-    update: {},
-    create: { name: 'admin' },
-  });
-
-  const viewerRole = await prisma.role.upsert({
-    where: { name: 'viewer' },
-    update: {},
-    create: { name: 'viewer' },
-  });
-
-  const accountantRole = await prisma.role.upsert({
-    where: { name: 'accountant' },
-    update: {},
-    create: { name: 'accountant' },
-  });
-
-  const salesRole = await prisma.role.upsert({
-    where: { name: 'sales_rep' },
-    update: {},
-    create: { name: 'sales_rep' },
-  });
-
-  console.log('✅ 4 roles upserted');
-
-  for (const permission of permissions) {
-    await prisma.rolePermission.upsert({
-      where: {
-        roleId_permissionId: {
-          roleId: adminRole.id,
-          permissionId: permission.id,
-        },
-      },
-      update: {},
-      create: {
-        roleId: adminRole.id,
-        permissionId: permission.id,
-      },
-    });
-  }
-
-  console.log('✅ Admin linked to all permissions');
-
-  const viewerPerms = permissions.filter(
-    (p) => p.code.endsWith(':read') || p.code.endsWith(':list'),
+  const roleNames = Object.keys(rolePermissionMatrix);
+  const roles = await Promise.all(
+    roleNames.map((roleName) =>
+      prisma.role.upsert({
+        where: { name: roleName },
+        update: {},
+        create: { name: roleName },
+      }),
+    ),
   );
-  for (const permission of viewerPerms) {
-    await prisma.rolePermission.upsert({
-      where: {
-        roleId_permissionId: {
-          roleId: viewerRole.id,
+  const roleByName = new Map(roles.map((role) => [role.name, role]));
+  const permissionByCode = new Map(permissions.map((permission) => [permission.code, permission]));
+
+  console.log(`✅ ${roles.length} roles upserted`);
+
+  for (const [roleName, permissionCodes] of Object.entries(rolePermissionMatrix)) {
+    const role = roleByName.get(roleName);
+    if (!role) {
+      throw new Error(`Missing role during seed: ${roleName}`);
+    }
+
+    for (const permissionCode of permissionCodes) {
+      const permission = permissionByCode.get(permissionCode);
+      if (!permission) {
+        throw new Error(`Missing permission during seed: ${permissionCode}`);
+      }
+
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionId: {
+            roleId: role.id,
+            permissionId: permission.id,
+          },
+        },
+        update: {},
+        create: {
+          roleId: role.id,
           permissionId: permission.id,
         },
-      },
-      update: {},
-      create: {
-        roleId: viewerRole.id,
-        permissionId: permission.id,
-      },
-    });
+      });
+    }
+
+    console.log(`✅ Role "${roleName}" linked to ${permissionCodes.length} permissions`);
   }
-
-  console.log('✅ Viewer linked to read/list permissions');
-
-  const accountantPerms = permissions.filter((p) => p.code.startsWith('invoice:'));
-  for (const permission of accountantPerms) {
-    await prisma.rolePermission.upsert({
-      where: {
-        roleId_permissionId: {
-          roleId: accountantRole.id,
-          permissionId: permission.id,
-        },
-      },
-      update: {},
-      create: {
-        roleId: accountantRole.id,
-        permissionId: permission.id,
-      },
-    });
-  }
-
-  console.log('✅ Accountant linked to invoice permissions');
-
-  const salesPerms = permissions.filter((p) => p.code.startsWith('crm:'));
-  for (const permission of salesPerms) {
-    await prisma.rolePermission.upsert({
-      where: {
-        roleId_permissionId: {
-          roleId: salesRole.id,
-          permissionId: permission.id,
-        },
-      },
-      update: {},
-      create: {
-        roleId: salesRole.id,
-        permissionId: permission.id,
-      },
-    });
-  }
-
-  console.log('✅ Sales rep linked to CRM permissions');
 
   // Criar usuários semente
   const defaultPassword = 'Password123!';
   const passwordHash = await bcrypt.hash(defaultPassword, 12);
 
-  const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
-    update: { passwordHash },
-    create: {
-      email: 'admin@example.com',
-      name: 'Admin User',
-      passwordHash,
-      status: 'ACTIVE',
-    },
-  });
+  const defaultUsers: Array<{ email: string; name: string; roleName: string }> = [
+    { email: 'admin@example.com', name: 'Admin User', roleName: 'admin' },
+    { email: 'manager@example.com', name: 'Manager User', roleName: 'manager' },
+    { email: 'operator@example.com', name: 'Operator User', roleName: 'operator' },
+    { email: 'viewer@example.com', name: 'Viewer User', roleName: 'viewer' },
+  ];
 
-  await prisma.userRole.upsert({
-    where: {
-      userId_roleId: {
-        userId: adminUser.id,
-        roleId: adminRole.id,
+  for (const userSeed of defaultUsers) {
+    const role = roleByName.get(userSeed.roleName);
+    if (!role) {
+      throw new Error(`Missing role for seeded user: ${userSeed.roleName}`);
+    }
+
+    const user = await prisma.user.upsert({
+      where: { email: userSeed.email },
+      update: { passwordHash, name: userSeed.name, status: 'ACTIVE' },
+      create: {
+        email: userSeed.email,
+        name: userSeed.name,
+        passwordHash,
+        status: 'ACTIVE',
       },
-    },
-    update: {},
-    create: {
-      userId: adminUser.id,
-      roleId: adminRole.id,
-    },
-  });
+    });
 
-  const viewerUser = await prisma.user.upsert({
-    where: { email: 'viewer@example.com' },
-    update: { passwordHash },
-    create: {
-      email: 'viewer@example.com',
-      name: 'Viewer User',
-      passwordHash,
-      status: 'ACTIVE',
-    },
-  });
-
-  await prisma.userRole.upsert({
-    where: {
-      userId_roleId: {
-        userId: viewerUser.id,
-        roleId: viewerRole.id,
+    await prisma.userRole.upsert({
+      where: {
+        userId_roleId: {
+          userId: user.id,
+          roleId: role.id,
+        },
       },
-    },
-    update: {},
-    create: {
-      userId: viewerUser.id,
-      roleId: viewerRole.id,
-    },
-  });
+      update: {},
+      create: {
+        userId: user.id,
+        roleId: role.id,
+      },
+    });
+  }
 
-  console.log('✅ Default users created and linked to roles');
+  console.log('✅ Default users created and linked to initial roles');
   console.log('   - admin@example.com / Password123!');
+  console.log('   - manager@example.com / Password123!');
+  console.log('   - operator@example.com / Password123!');
   console.log('   - viewer@example.com / Password123!');
   
   console.log('\n🎉 Seed completed');

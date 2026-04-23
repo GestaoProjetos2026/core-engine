@@ -7,31 +7,33 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 4: concluída task 2 — `Vínculos usuário–papel e papel–permissão (RF12, RF13)`. Implementados os endpoints de associação no `RolesModule`.
+- Sprint 4: concluída task 3 — `Seed de papéis/permissões iniciais e teste e2e 403`.
 
 ## Arquivos modificados recentemente
-- `src/modules/roles/*` — Criado módulo de papéis.
-- `src/modules/permissions/*` — Criado módulo de permissões.
-- `src/server/app.module.ts` — Registrados os novos módulos.
-- `prisma/seed.ts` — Adicionadas permissões de gerenciamento de roles/permissions.
+- `prisma/seed.ts` — Matriz inicial de papéis `admin`, `manager`, `operator`, `viewer` e vínculo automático com permissões.
+- `test/rbac.e2e.spec.ts` — Teste e2e cobrindo 403 para usuário sem `users:write`.
+- `docs/JWT_GUIDE.md` — Documentação dos `permission.code` iniciais e matriz por papel.
 - `docs/CONTEXT.md` — Atualizado nesta sessão.
 
 ## Estado atual
 - Os CRUDs básicos de Roles e Permissions estão operacionais e documentados no Swagger.
 - O sistema de autorização via `@RequirePermissions` está integrado aos novos endpoints.
-- Seed do banco de dados atualizado para facilitar testes administrativos.
+- Seed do banco de dados agora cria papéis base de RBAC e usuários padrão por papel.
+- Existe teste e2e específico para bloqueio de escrita com retorno `AUTHZ_FORBIDDEN`.
+- Suíte de testes validada com sucesso: `31 passed (31)`.
 
 ## Pendencias e debitos
-- Implementar o seed de papéis/permissões iniciais (Sprint 4, Task 3).
+- Revisar o histórico de migrations locais para evitar conflito no `prisma migrate deploy` (`type "UserStatus" already exists`).
 
 ## Riscos e atencoes
-- Certifique-se de rodar `npx prisma db seed` para atualizar as permissões do usuário admin no banco local.
+- Certifique-se de subir o banco antes de executar `npm run prisma:seed` e `npm test`, evitando `ECONNREFUSED`.
+- Em ambientes com banco já provisionado, validar migrations antigas antes de usar `prisma migrate deploy`.
 
 ## Proximo foco
-- Implementar os vínculos relacionais (RF12, RF13) para completar o sistema RBAC.
+- Sprint 4 - Task 4: mapear permissões por endpoint para reuso por outros squads.
 
 ## Tasks concluidas na sessao
-- Sprint 4 - Task 2: Vínculos usuário-papel e papel-permissão — Status `done`.
+- Sprint 4 - Task 3: Seed inicial RBAC + teste e2e 403 — Status `done`.
 
 ## Observacoes uteis para a proxima sessao
 - Tratar \`PRD.md\` e \`Sprints.md\` como contratos.

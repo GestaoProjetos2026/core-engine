@@ -1,7 +1,19 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-Vamos implementar a Tarefa 2 da Sprint 4.
+3) Seed de papéis/permissões iniciais e teste e2e 403
+
+Pertence a: Module 8 — Qualidade
+Título: Matriz mínima e testes de autorização
+Descrição: Seed `admin`, `manager`, `operator`, `viewer` (RN08) com permissões exemplo; teste e2e provando que usuário sem `user:write` não acessa escrita.
+Critérios de aceitação:
+
+- seed reproduzível
+- e2e cobre 403 em caso realista
+- documentação dos `permission.code` iniciais
+Prioridade: High
+Estimativa: 3 SP
+Label: seed, e2e, rbac, sprint-4
 
 Passos obrigatorios:
 1) Localize e leia o documento normativo principal do produto.

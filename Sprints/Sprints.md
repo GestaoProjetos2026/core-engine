@@ -375,6 +375,7 @@ Estimativa: 5 SP
 Label: rbac, links, sprint-4
 
 3) Seed de papéis/permissões iniciais e teste e2e 403
+Status: done
 
 Pertence a: Module 8 — Qualidade
 Título: Matriz mínima e testes de autorização
