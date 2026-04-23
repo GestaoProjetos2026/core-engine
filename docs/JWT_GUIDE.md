@@ -315,6 +315,7 @@ JWT_SECRET=mesmo-secret-do-core-auth
 
 | Recurso | Onde encontrar |
 |---------|----------------|
+| Matriz oficial endpoint x `permission.code` (admin) | `docs/PERMISSIONS_MATRIX.md` |
 | Envelope de resposta e catálogo de `error.code` | `docs/INTEGRATION_API_CONTRACT.md` |
 | Swagger interativo (ambiente dev) | `GET /v1/docs` |
 | Modelo de dados (User, Role, Permission) | `PRD.md` §15 |

@@ -390,6 +390,7 @@ Estimativa: 3 SP
 Label: seed, e2e, rbac, sprint-4
 
 4) Mapear permissões por endpoint (reuso por outros squads)
+Status: done
 
 Pertence a: Module 6 — APIs / Documentação
 Título: Publicar matriz de permissões por endpoint administrativo

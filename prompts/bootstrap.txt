@@ -1,19 +1,19 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-3) Seed de papéis/permissões iniciais e teste e2e 403
+4) Mapear permissões por endpoint (reuso por outros squads)
 
-Pertence a: Module 8 — Qualidade
-Título: Matriz mínima e testes de autorização
-Descrição: Seed `admin`, `manager`, `operator`, `viewer` (RN08) com permissões exemplo; teste e2e provando que usuário sem `user:write` não acessa escrita.
+Pertence a: Module 6 — APIs / Documentação
+Título: Publicar matriz de permissões por endpoint administrativo
+Descrição: Consolidar matriz endpoint x permission.code para evitar ambiguidades em integrações internas e facilitar onboarding de outros módulos do ERP.
 Critérios de aceitação:
 
-- seed reproduzível
-- e2e cobre 403 em caso realista
-- documentação dos `permission.code` iniciais
+- matriz publicada e versionada no repositório
+- cada endpoint administrativo com permission.code explícito
+- referência cruzada com Swagger e guia de integração
 Prioridade: High
-Estimativa: 3 SP
-Label: seed, e2e, rbac, sprint-4
+Estimativa: 2 SP
+Label: rbac, permissions-matrix, docs, sprint-4
 
 Passos obrigatorios:
 1) Localize e leia o documento normativo principal do produto.

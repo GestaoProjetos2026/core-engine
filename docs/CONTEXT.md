@@ -7,20 +7,20 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 4: concluída task 3 — `Seed de papéis/permissões iniciais e teste e2e 403`.
+- Sprint 4: concluída task 4 — `Publicar matriz de permissões por endpoint administrativo`.
 
 ## Arquivos modificados recentemente
-- `prisma/seed.ts` — Matriz inicial de papéis `admin`, `manager`, `operator`, `viewer` e vínculo automático com permissões.
-- `test/rbac.e2e.spec.ts` — Teste e2e cobrindo 403 para usuário sem `users:write`.
-- `docs/JWT_GUIDE.md` — Documentação dos `permission.code` iniciais e matriz por papel.
+- `docs/PERMISSIONS_MATRIX.md` — Matriz oficial `endpoint x permission.code` para endpoints administrativos.
+- `docs/JWT_GUIDE.md` — Referência cruzada para a matriz oficial de permissões.
+- `docs/INTEGRATION_API_CONTRACT.md` — Referência cruzada para matriz RBAC e guia JWT.
+- `Sprints/Sprints.md` — Sprint 4 Task 4 marcada como `done`.
 - `docs/CONTEXT.md` — Atualizado nesta sessão.
 
 ## Estado atual
 - Os CRUDs básicos de Roles e Permissions estão operacionais e documentados no Swagger.
 - O sistema de autorização via `@RequirePermissions` está integrado aos novos endpoints.
-- Seed do banco de dados agora cria papéis base de RBAC e usuários padrão por papel.
-- Existe teste e2e específico para bloqueio de escrita com retorno `AUTHZ_FORBIDDEN`.
-- Suíte de testes validada com sucesso: `31 passed (31)`.
+- Matriz oficial de permissões por endpoint administrativo foi publicada e versionada no repositório.
+- Referência cruzada entre matriz, Swagger (`/v1/docs`) e guias de integração foi estabelecida.
 
 ## Pendencias e debitos
 - Revisar o histórico de migrations locais para evitar conflito no `prisma migrate deploy` (`type "UserStatus" already exists`).
@@ -30,10 +30,11 @@
 - Em ambientes com banco já provisionado, validar migrations antigas antes de usar `prisma migrate deploy`.
 
 ## Proximo foco
-- Sprint 4 - Task 4: mapear permissões por endpoint para reuso por outros squads.
+- Sprint 4 - Task 5: CRUD de aplicações e regeneração de secret (RF14, RF15).
 
 ## Tasks concluidas na sessao
 - Sprint 4 - Task 3: Seed inicial RBAC + teste e2e 403 — Status `done`.
+- Sprint 4 - Task 4: Matriz de permissões por endpoint administrativo — Status `done`.
 
 ## Observacoes uteis para a proxima sessao
 - Tratar \`PRD.md\` e \`Sprints.md\` como contratos.

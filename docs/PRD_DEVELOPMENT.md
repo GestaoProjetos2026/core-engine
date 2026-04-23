@@ -46,6 +46,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 1**: Criação e manutenção do CRUD de Papéis e de Permissões. ✔️ (Concluído em 22/04/2026)
 - **Task 2**: Gerenciamento de vínculos relacionais fortes M2M (Usuário-Papel e Papel-Permissão). ✔️ (Concluído em 22/04/2026)
 - **Task 3**: Seed de papéis/permissões iniciais e teste e2e 403. ✔️ (Concluído em 22/04/2026)
+- **Task 4**: Matriz de permissões por endpoint administrativo com referência cruzada a Swagger e guia de integração. ✔️ (Concluído em 23/04/2026)
 
 ---
 
@@ -58,6 +59,7 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 - **Matriz inicial de RBAC no Seed**: Estruturado seed reproduzível com papéis `admin`, `manager`, `operator`, `viewer`, permissões iniciais e usuários padrão por papel.
 - **Teste e2e de autorização 403**: Novo cenário automatizado validando bloqueio de escrita (`POST /v1/users`) para token sem `users:write`.
 - **Documentação de `permission.code`**: Atualização do `docs/JWT_GUIDE.md` com catálogo inicial e matriz por papel.
+- **Matriz oficial endpoint x permission.code**: Publicado `docs/PERMISSIONS_MATRIX.md` com mapeamento explícito dos endpoints administrativos (`Users`, `Roles`, `Permissions`) e links de referência para Swagger (`/v1/docs`) e guias de integração.
 - **Workaround de Swagger**: Remoção temporária da propriedade `type` nos decoradores `@ApiResponse` dos novos módulos para mitigar um erro crítico de "Circular Dependency" no motor do Swagger/Fastify no ambiente de desenvolvimento Node 25.
 
 ---

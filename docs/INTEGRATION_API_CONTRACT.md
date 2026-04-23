@@ -99,3 +99,7 @@ Quando habilitado no ambiente, consultar Swagger UI em:
 
 Swagger deve refletir os contratos deste documento para payloads e erros.
 
+Para autorizacao administrativa por RBAC (endpoint x `permission.code`), consultar:
+- `docs/PERMISSIONS_MATRIX.md`.
+- `docs/JWT_GUIDE.md` (regras de validacao e consumo de claims `perms`/`scopes`).
+
