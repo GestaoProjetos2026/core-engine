@@ -403,6 +403,7 @@ Estimativa: 2 SP
 Label: rbac, permissions-matrix, docs, sprint-4
 
 5) CRUD de aplicações e regeneração de secret (RF14, RF15)
+Status: done
 
 Pertence a: Module 5 — Applications
 Título: `POST/GET/PATCH` `/v1/applications` e `regenerate-secret`

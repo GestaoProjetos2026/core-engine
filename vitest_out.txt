@@ -1,0 +1,9 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mC:/Users/Administrator/Core-Engine[39m
+
+No test files found, exiting with code 1
+
+filter: test/applications.e2e-spec.ts
+include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+exclude:  **/node_modules/**, **/.git/**
+

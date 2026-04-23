@@ -1,7 +1,7 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-Vamos implementar a Tarefa 2 da Sprint 4.
+Vamos implementar a Tarefa 5 da Sprint 4.
 
 Passos obrigatorios:
 1) Localize e leia o documento normativo principal do produto.

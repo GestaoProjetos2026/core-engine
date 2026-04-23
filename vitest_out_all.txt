@@ -1,0 +1,22 @@
+
+> erp-core-auth@1.0.0 test
+> vitest run --exclude "dist/**"
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mC:/Users/Administrator/Core-Engine[39m
+
+ [32mΓ£ô[39m src/modules/auth/auth-time.util.spec.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32mΓ£ô[39m src/modules/users/users.service.spec.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32mΓ£ô[39m src/modules/auth/guards/permissions.guard.spec.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+[33m[Nest] 28708  - [39m04/23/2026, 5:52:57 PM [33m   WARN[39m [38;5;3m[AuthService] [39m[33mAUTH_REFRESH_REUSED: reuse attempt refreshTokenId=rt1[39m
+ [32mΓ£ô[39m src/modules/auth/auth.service.spec.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 242[2mms[22m[39m
+ [32mΓ£ô[39m src/modules/users/users.controller.spec.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32mΓ£ô[39m src/modules/auth/auth.controller.spec.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32mΓ£ô[39m src/server/app.module.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32mΓ£ô[39m src/modules/applications/applications.service.spec.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 894[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m8 passed[39m[22m[90m (8)[39m
+[2m      Tests [22m [1m[32m38 passed[39m[22m[90m (38)[39m
+[2m   Start at [22m 17:52:55
+[2m   Duration [22m 2.28s[2m (transform 1.67s, setup 0ms, import 7.84s, tests 1.17s, environment 2ms)[22m
+

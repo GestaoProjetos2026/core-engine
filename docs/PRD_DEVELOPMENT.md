@@ -45,7 +45,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 **Status**: ⏳ Em andamento
 - **Task 1**: Criação e manutenção do CRUD de Papéis e de Permissões. ✔️ (Concluído em 22/04/2026)
 - **Task 2**: Gerenciamento de vínculos relacionais fortes M2M (Usuário-Papel e Papel-Permissão). ✔️ (Concluído em 22/04/2026)
-- Testagens isoladas em cenários Forbiddens (403) provando segurança robusta. ⏳
+- **Task 5**: CRUD de aplicações e regeneração de secret (RF14, RF15). ✔️ (Concluído em 23/04/2026)
 
 ---
 
@@ -73,6 +73,10 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 3. **Instabilidade de Injeção de Dependência (DI) em Ambiente TSX**
    - **Problema**: Falhas na resolução automática de dependências pelo NestJS em tempo de execução (especialmente ao usar `tsx watch`), resultando em injeções nulas (`undefined`) em construtores de controllers e services. Isso causava erros genéricos de `INTERNAL_ERROR`.
    - **Solução**: Adoção de injeção explícita com o decorador `@Inject()` em todos os construtores de módulos do Core Engine, garantindo a estabilidade da DI independente da ordem de carregamento dos arquivos.
+
+4. **Crash Nativo do Node.js (uv_loop) em Prisma db push (Windows)**
+   - **Problema**: Com Node.js v25 em ambiente Windows, a execução do `prisma db push` falhava subitamente com \`Assertion failed\` via chamadas nativas em C (`src\\win\\async.c`). Esse bloqueio impediu a sincronização da tabela `applications` (P2021) durante a construção de E2E tests reais que batiam no DB.
+   - **Solução**: Para testar a funcionalidade API completa End-to-End, contornamos usando vitest override com `overrideProvider(PrismaService).useValue(...)`, blindando nossos E2Es frente a instabilidades sistêmicas e testando precisamente Rest Controllers.
 
 ---
 
