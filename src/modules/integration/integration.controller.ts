@@ -1,8 +1,11 @@
-import { Body, Controller, HttpCode, HttpStatus, Inject, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Post, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags, ApiBody, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
 import { IntegrationService } from './integration.service';
 import { OAuthTokenRequestDto } from './dto/oauth-token-request.dto';
 import { OAuthTokenResponseDto } from './dto/oauth-token-response.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ScopesGuard } from '../auth/guards/scopes.guard';
+import { RequireScopes } from '../auth/decorators/require-scopes.decorator';
 
 @ApiTags('Integration')
 @Controller()
@@ -92,5 +95,25 @@ export class IntegrationController {
     // Force grant_type to client_credentials if using this endpoint
     const requestDto = { ...dto, grant_type: dto.grant_type || 'client_credentials' as any };
     return this.integrationService.issueToken(requestDto);
+  }
+  
+  @Get('integration/test-scope')
+  @UseGuards(JwtAuthGuard, ScopesGuard)
+  @RequireScopes('test:scope')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Test endpoint for scope validation',
+    description: 'Requires "test:scope" to access.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Access granted',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient scopes',
+  })
+  async testScope() {
+    return { success: true, message: 'You have the required scope!' };
   }
 }

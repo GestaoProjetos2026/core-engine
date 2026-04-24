@@ -48,6 +48,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 5**: CRUD de aplicações e regeneração de secret (RF14, RF15). ✔️ (Concluído em 23/04/2026)
 - **Task 6**: Catálogo de escopos e vínculo aplicação–escopo (RF16). ✔️ (Concluído em 23/04/2026)
 - **Task 7**: Token M2M e OAuth token endpoint (RF17, RF21, RF22, RF23). ✔️ (Concluído em 24/04/2026)
+- **Task 8**: JWT Integration e ScopesGuard (RF18, CA07). ✔️ (Concluído em 24/04/2026)
 
 ---
 
@@ -91,6 +92,10 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 7. **Dependência Circular Reincidente no Swagger (Módulo Integration)**
    - **Problema**: Ao introduzir o `IntegrationModule` e seus DTOs (`OAuthTokenRequestDto`, `OAuthTokenResponseDto`), o motor do Swagger disparou novamente o erro de `circular dependency detected` para a propriedade `client_id`, mesmo sem relações bidirecionais evidentes.
    - **Solução**: Seguindo o padrão estabelecido anteriormente, removemos os decoradores `@ApiProperty` dos DTOs de integração e aplicamos esquemas inline (`schema: { ... }`) nos decoradores `@ApiBody` e `@ApiResponse` do `IntegrationController`. Isso estabilizou o boot da aplicação e permitiu a exibição correta dos endpoints no Swagger UI.
+
+8. **Interceptor de Envelope Quebrava Asserções de Token nos Testes E2E**
+   - **Problema**: Com a adição do `ResponseEnvelopeInterceptor` ao setup dos testes E2E, todos os retornos passaram a ser embrulhados em `{ success, data, ... }`. Os testes de token que liam `body.access_token` passaram a receber `undefined`, pois o token agora está em `body.data.access_token`.
+   - **Solução**: Refatoração do arquivo `integration.e2e.spec.ts` para usar um helper `parseEnvelope(payload)` que extrai `body.data` corretamente. O padrão foi documentado com comentário no topo do arquivo de testes para evitar reincidências.
 
 ---
 
