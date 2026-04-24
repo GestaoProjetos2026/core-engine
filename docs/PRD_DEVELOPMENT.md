@@ -47,6 +47,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 2**: Gerenciamento de vínculos relacionais fortes M2M (Usuário-Papel e Papel-Permissão). ✔️ (Concluído em 22/04/2026)
 - **Task 5**: CRUD de aplicações e regeneração de secret (RF14, RF15). ✔️ (Concluído em 23/04/2026)
 - **Task 6**: Catálogo de escopos e vínculo aplicação–escopo (RF16). ✔️ (Concluído em 23/04/2026)
+- **Task 7**: Token M2M e OAuth token endpoint (RF17, RF21, RF22, RF23). ✔️ (Concluído em 24/04/2026)
 
 ---
 
@@ -86,6 +87,10 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 6. **Permissões Críticas Ausentes no Banco (Bloqueio de Testes)**
    - **Problema**: Durante a validação manual dos novos endpoints (como `POST /v1/applications/:id/scopes`), as rotas retornavam `403 Forbidden` mesmo para usuários administrativos, pois as permissões primordiais (`applications:read/write`, `scopes:read/write`) não haviam sido catalogadas e associadas ao papel `Admin` durante o seed do Prisma.
    - **Solução**: Atualização profunda da matriz de permissões no `prisma/seed.ts` e execução do comando de re-seed, o que liberou integralmente os testes end-to-end via Swagger.
+
+7. **Dependência Circular Reincidente no Swagger (Módulo Integration)**
+   - **Problema**: Ao introduzir o `IntegrationModule` e seus DTOs (`OAuthTokenRequestDto`, `OAuthTokenResponseDto`), o motor do Swagger disparou novamente o erro de `circular dependency detected` para a propriedade `client_id`, mesmo sem relações bidirecionais evidentes.
+   - **Solução**: Seguindo o padrão estabelecido anteriormente, removemos os decoradores `@ApiProperty` dos DTOs de integração e aplicamos esquemas inline (`schema: { ... }`) nos decoradores `@ApiBody` e `@ApiResponse` do `IntegrationController`. Isso estabilizou o boot da aplicação e permitiu a exibição correta dos endpoints no Swagger UI.
 
 ---
 

@@ -228,4 +228,28 @@ export class ApplicationsService {
 
     return this.getScopes(applicationId);
   }
+
+  async validateCredentials(clientId: string, clientSecret: string) {
+    const application = await this.prisma.application.findUnique({
+      where: { clientId },
+      include: {
+        scopes: {
+          include: {
+            scope: true,
+          }
+        }
+      }
+    });
+
+    if (!application || application.status !== 'ACTIVE') {
+      return null;
+    }
+
+    const isValid = await bcrypt.compare(clientSecret, application.clientSecretHash);
+    if (!isValid) {
+      return null;
+    }
+
+    return application;
+  }
 }

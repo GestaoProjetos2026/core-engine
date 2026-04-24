@@ -6,6 +6,7 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './server/app.module';
 import { ApiExceptionFilter } from './server/common/api-exception.filter';
+import { ApiExceptionFilter } from './server/common/api-exception.filter';
 import { ResponseEnvelopeInterceptor } from './server/common/response-envelope.interceptor';
 
 async function bootstrap() {

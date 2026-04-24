@@ -8,6 +8,7 @@ import { PrismaModule } from './prisma/prisma.module';
 
 import { ApplicationsModule } from '../modules/applications/applications.module';
 import { ScopesModule } from '../modules/scopes/scopes.module';
+import { IntegrationModule } from '../modules/integration/integration.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ScopesModule } from '../modules/scopes/scopes.module';
     PermissionsModule,
     ApplicationsModule,
     ScopesModule,
+    IntegrationModule,
   ],
 })
 export class AppModule {}

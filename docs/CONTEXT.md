@@ -7,31 +7,31 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 4: concluída task 6 — `Catálogo de escopos e vínculo aplicação–escopo (RF16)`. Implementado catálogo global em `ScopesModule` e associação em `ApplicationsModule`.
+- Sprint 4: concluída task 7 — `Token M2M e OAuth token endpoint (RF17, RF21, RF22, RF23)`. Implementado endpoint OAuth 2.0 com suporte a `client_credentials` e `refresh_token`, incluindo suporte a `application/x-www-form-urlencoded`.
 
 ## Arquivos modificados recentemente
-- `src/modules/scopes/*` — Criado módulo de escopos (catálogo global).
-- `src/modules/applications/*` — Atualizado para associação de escopos (GET/POST `/:id/scopes`).
-- `src/server/app.module.ts` — Registrado o `ScopesModule`.
-- `test/scopes.e2e.spec.ts` e `test/applications.e2e.spec.ts` — Testes E2E adicionados.
-- `docs/CONTEXT.md` e `PRD_DEVELOPMENT.md` — Atualizados nesta sessão.
+- `src/modules/integration/*` — Criado módulo de integração para fluxos OAuth M2M.
+- `src/modules/applications/applications.service.ts` — Adicionado `validateCredentials`.
+- `src/server/app.module.ts` — Registrado o `IntegrationModule`.
+- `src/main.ts` — Configurado o Fastify para aceitar `x-www-form-urlencoded`.
+- `test/integration.e2e.spec.ts` — Testes E2E para validação de tokens M2M.
 
 ## Estado atual
 - Os CRUDs de Roles, Permissions e Applications estão completos.
-- O catálogo de Escopos para integração M2M foi criado e a associação N:N entre Aplicação e Escopo está funcional.
-- O sistema de autorização via `@RequirePermissions` está integrado aos novos endpoints de escopos.
+- O sistema de emissão de tokens M2M (OAuth 2.0) está funcional e validado via testes E2E.
+- Suporte a múltiplos content-types (`json` e `urlencoded`) implementado nos endpoints de token.
 
 ## Pendencias e debitos
-- Retornar ao passo do banco de dados (se necessário resolver timeout/crash do Node.js nativo 25 durante migrações).
+- Nenhuma pendência crítica imediata para a Task 7.
 
 ## Riscos e atencoes
-- Certifique-se de rodar `npx prisma db seed` para atualizar as permissões do usuário admin no banco local.
+- Certifique-se de que `JWT_SECRET` está configurado corretamente no ambiente para que os tokens sejam assinados.
 
 ## Proximo foco
-- Iniciar a Sprint 4 Task 7: Token M2M e OAuth token endpoint (RF17, RF21, RF22, RF23) — `POST /v1/integration/token` e `POST /v1/oauth/token`.
+- Iniciar a Sprint 4 Task 8: JWT integração e ScopesGuard (RF18, CA07) — Implementar a validação de escopos no consumo das rotas via `@RequireScopes`.
 
 ## Tasks concluidas na sessao
-- Sprint 4 - Task 6: Catálogo de escopos e vínculo aplicação–escopo — Status `done`.
+- Sprint 4 - Task 7: Token M2M e OAuth token endpoint — Status `done`.
 
 ## Observacoes uteis para a proxima sessao
 - Tratar \`PRD.md\` e \`Sprints.md\` como contratos.
