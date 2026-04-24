@@ -28,6 +28,10 @@ const permissionDefs: { code: string; description: string }[] = [
   { code: 'roles:write', description: 'Create/Update roles' },
   { code: 'permissions:read', description: 'Read permissions' },
   { code: 'permissions:write', description: 'Create/Update permissions' },
+  { code: 'applications:read', description: 'Read applications' },
+  { code: 'applications:write', description: 'Create/Update applications' },
+  { code: 'scopes:read', description: 'Read scopes' },
+  { code: 'scopes:write', description: 'Create/Update scopes' },
 ];
 
 async function main() {

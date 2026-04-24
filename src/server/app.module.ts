@@ -7,6 +7,7 @@ import { HealthModule } from './health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 import { ApplicationsModule } from '../modules/applications/applications.module';
+import { ScopesModule } from '../modules/scopes/scopes.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ApplicationsModule } from '../modules/applications/applications.module'
     RolesModule,
     PermissionsModule,
     ApplicationsModule,
+    ScopesModule,
   ],
 })
 export class AppModule {}

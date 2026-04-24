@@ -9,6 +9,7 @@ import {
   ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
+  ApiParam,
 } from '@nestjs/swagger';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -65,6 +66,16 @@ export class RolesController {
   })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks `roles:write` permission.', schema: forbiddenExample })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', example: 'Admin' },
+        description: { type: 'string', example: 'Administrator role' },
+      },
+      required: ['name'],
+    },
+  })
   async create(@Body() createRoleDto: CreateRoleDto) {
     return this.rolesService.create(createRoleDto);
   }
@@ -93,6 +104,16 @@ export class RolesController {
   @ApiNotFoundResponse({ description: 'Role or one/more users not found.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks `roles:manage` permission.', schema: forbiddenExample })
+  @ApiParam({ name: 'id', required: true, type: String, description: 'Role UUID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        userIds: { type: 'array', items: { type: 'string' }, example: ['uuid1', 'uuid2'] },
+      },
+      required: ['userIds'],
+    },
+  })
   async assignUsers(@Param('id') id: string, @Body() dto: AssignRoleUsersDto) {
     return this.rolesService.assignUsers(id, dto);
   }
@@ -108,6 +129,16 @@ export class RolesController {
   @ApiNotFoundResponse({ description: 'Role or one/more permissions not found.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks `roles:manage` permission.', schema: forbiddenExample })
+  @ApiParam({ name: 'id', required: true, type: String, description: 'Role UUID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        permissionIds: { type: 'array', items: { type: 'string' }, example: ['uuid1', 'uuid2'] },
+      },
+      required: ['permissionIds'],
+    },
+  })
   async assignPermissions(@Param('id') id: string, @Body() dto: AssignRolePermissionsDto) {
     return this.rolesService.assignPermissions(id, dto);
   }

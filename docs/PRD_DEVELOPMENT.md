@@ -46,6 +46,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 1**: Criação e manutenção do CRUD de Papéis e de Permissões. ✔️ (Concluído em 22/04/2026)
 - **Task 2**: Gerenciamento de vínculos relacionais fortes M2M (Usuário-Papel e Papel-Permissão). ✔️ (Concluído em 22/04/2026)
 - **Task 5**: CRUD de aplicações e regeneração de secret (RF14, RF15). ✔️ (Concluído em 23/04/2026)
+- **Task 6**: Catálogo de escopos e vínculo aplicação–escopo (RF16). ✔️ (Concluído em 23/04/2026)
 
 ---
 
@@ -77,6 +78,14 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 4. **Crash Nativo do Node.js (uv_loop) em Prisma db push (Windows)**
    - **Problema**: Com Node.js v25 em ambiente Windows, a execução do `prisma db push` falhava subitamente com \`Assertion failed\` via chamadas nativas em C (`src\\win\\async.c`). Esse bloqueio impediu a sincronização da tabela `applications` (P2021) durante a construção de E2E tests reais que batiam no DB.
    - **Solução**: Para testar a funcionalidade API completa End-to-End, contornamos usando vitest override com `overrideProvider(PrismaService).useValue(...)`, blindando nossos E2Es frente a instabilidades sistêmicas e testando precisamente Rest Controllers.
+
+5. **Bloqueio de Metadados do Swagger por Cache do Processo Zumbi (`tsx watch`)**
+   - **Problema**: Mesmo após adicionar manualmente os decoradores `@ApiParam` e `@ApiQuery` em todos os controladores, o Swagger UI continuava exibindo "No parameters". Identificamos que após o erro anterior de "Circular Dependency", o processo filho do `tsx watch` no Windows prendeu a porta 3000 (`EADDRINUSE` silencioso) e travou a re-avaliação da AST de metadados no re-load, ignorando sumariamente novos decoradores de parâmetro nas rotas.
+   - **Solução**: Localização e finalização forçada do processo zumbi na porta 3000 via PowerShell (`Stop-Process`), seguido de um reinício totalmente limpo do ambiente de desenvolvimento (`npm run dev`). Isso forçou a varredura correta dos esquemas e restaurou a injeção dos parâmetros.
+
+6. **Permissões Críticas Ausentes no Banco (Bloqueio de Testes)**
+   - **Problema**: Durante a validação manual dos novos endpoints (como `POST /v1/applications/:id/scopes`), as rotas retornavam `403 Forbidden` mesmo para usuários administrativos, pois as permissões primordiais (`applications:read/write`, `scopes:read/write`) não haviam sido catalogadas e associadas ao papel `Admin` durante o seed do Prisma.
+   - **Solução**: Atualização profunda da matriz de permissões no `prisma/seed.ts` e execução do comando de re-seed, o que liberou integralmente os testes end-to-end via Swagger.
 
 ---
 

@@ -18,12 +18,16 @@ import {
   ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
+  ApiBody,
+  ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { ApplicationsService } from './applications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
 import { ChangeApplicationStatusDto } from './dto/change-application-status.dto';
 import { ListApplicationsQueryDto } from './dto/list-applications-query.dto';
+import { AssociateScopesDto } from './dto/associate-scopes.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
@@ -72,6 +76,15 @@ export class ApplicationsController {
   @ApiResponse({ status: 201, description: 'Application created successfully with client_secret.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks permission.', schema: forbiddenExample })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', example: 'My App' },
+      },
+      required: ['name'],
+    },
+  })
   async create(@Body() createApplicationDto: CreateApplicationDto) {
     return this.applicationsService.create(createApplicationDto);
   }
@@ -85,6 +98,10 @@ export class ApplicationsController {
   @ApiResponse({ status: 200, description: 'List of applications.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks permission.', schema: forbiddenExample })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
+  @ApiQuery({ name: 'name', required: false, type: String, description: 'Filter by app name' })
+  @ApiQuery({ name: 'status', required: false, type: String, description: 'Filter by status' })
   async findAll(@Query() query: ListApplicationsQueryDto) {
     return this.applicationsService.findAll(query);
   }
@@ -99,6 +116,7 @@ export class ApplicationsController {
   @ApiNotFoundResponse({ description: 'Application not found.', schema: notFoundExample })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks permission.', schema: forbiddenExample })
+  @ApiParam({ name: 'id', required: true, type: String, description: 'Application UUID' })
   async findOne(@Param('id') id: string) {
     return this.applicationsService.findOne(id);
   }
@@ -113,6 +131,15 @@ export class ApplicationsController {
   @ApiNotFoundResponse({ description: 'Application not found.', schema: notFoundExample })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks permission.', schema: forbiddenExample })
+  @ApiParam({ name: 'id', required: true, type: String, description: 'Application UUID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', example: 'My App' },
+      },
+    },
+  })
   async update(@Param('id') id: string, @Body() updateApplicationDto: UpdateApplicationDto) {
     return this.applicationsService.update(id, updateApplicationDto);
   }
@@ -127,6 +154,16 @@ export class ApplicationsController {
   @ApiNotFoundResponse({ description: 'Application not found.', schema: notFoundExample })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks permission.', schema: forbiddenExample })
+  @ApiParam({ name: 'id', required: true, type: String, description: 'Application UUID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', example: 'ACTIVE' },
+      },
+      required: ['status'],
+    },
+  })
   async changeStatus(@Param('id') id: string, @Body() changeStatusDto: ChangeApplicationStatusDto) {
     return this.applicationsService.changeStatus(id, changeStatusDto);
   }
@@ -141,7 +178,47 @@ export class ApplicationsController {
   @ApiNotFoundResponse({ description: 'Application not found.', schema: notFoundExample })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks permission.', schema: forbiddenExample })
+  @ApiParam({ name: 'id', required: true, type: String, description: 'Application UUID' })
   async regenerateSecret(@Param('id') id: string) {
     return this.applicationsService.regenerateSecret(id);
+  }
+
+  @Get(':id/scopes')
+  @RequirePermissions('applications:read')
+  @ApiOperation({
+    summary: 'List application scopes',
+    description: 'RF16: Returns a list of scopes associated with the application. Requires `applications:read`.',
+  })
+  @ApiResponse({ status: 200, description: 'List of application scopes.' })
+  @ApiNotFoundResponse({ description: 'Application not found.', schema: notFoundExample })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks permission.', schema: forbiddenExample })
+  @ApiParam({ name: 'id', required: true, schema: { type: 'string' }, description: 'Application UUID' })
+  async getScopes(@Param('id') id: string) {
+    return this.applicationsService.getScopes(id);
+  }
+
+  @Post(':id/scopes')
+  @RequirePermissions('applications:write')
+  @ApiOperation({
+    summary: 'Associate scopes to application',
+    description: 'RF16: Replaces the current scopes associated with the application. Requires `applications:write`.',
+  })
+  @ApiResponse({ status: 201, description: 'Scopes associated successfully.' })
+  @ApiNotFoundResponse({ description: 'Application or scope not found.', schema: notFoundExample })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks permission.', schema: forbiddenExample })
+  @ApiParam({ name: 'id', required: true, type: String, description: 'Application UUID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        scopeIds: { type: 'array', items: { type: 'string' }, example: ['uuid1', 'uuid2'] },
+      },
+      required: ['scopeIds'],
+    },
+  })
+  async associateScopes(@Param('id') id: string, @Body() associateScopesDto: AssociateScopesDto) {
+    return this.applicationsService.associateScopes(id, associateScopesDto);
   }
 }

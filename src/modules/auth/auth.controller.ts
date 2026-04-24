@@ -52,6 +52,17 @@ export class AuthController {
       },
     },
   })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        email: { type: 'string', example: 'ana@empresa.com' },
+        name: { type: 'string', example: 'Ana Silva' },
+        password: { type: 'string', example: 'strongPassword123!' },
+      },
+      required: ['email', 'name', 'password'],
+    },
+  })
   async register(@Body() dto: RegisterDto): Promise<RegisteredUserDto> {
     return this.auth.register(dto);
   }
@@ -137,6 +148,15 @@ export class AuthController {
           },
         },
       },
+    },
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        refreshToken: { type: 'string', example: 'eyJhbGci...' },
+      },
+      required: ['refreshToken'],
     },
   })
   async refresh(@Body() dto: RefreshDto): Promise<AuthTokensDto> {

@@ -24,6 +24,14 @@ describe('ApplicationsModule (e2e)', () => {
       findUnique: vi.fn(),
       update: vi.fn(),
     },
+    scope: {
+      findMany: vi.fn(),
+    },
+    applicationScope: {
+      deleteMany: vi.fn(),
+      createMany: vi.fn(),
+    },
+    $transaction: vi.fn((operations) => Promise.all(operations)),
   };
 
   beforeAll(async () => {
@@ -123,5 +131,56 @@ describe('ApplicationsModule (e2e)', () => {
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data.clientSecret).toBeDefined();
+  });
+
+  it('/v1/applications/:id/scopes (POST)', async () => {
+    const mockApp = { id: createdAppId };
+    mockPrisma.application.findUnique.mockResolvedValue(mockApp);
+    mockPrisma.scope.findMany.mockResolvedValue([{ id: 'scope-1' }]);
+    mockPrisma.applicationScope.deleteMany.mockResolvedValue({ count: 0 });
+    mockPrisma.applicationScope.createMany.mockResolvedValue({ count: 1 });
+
+    const response = await app.inject({
+      method: 'POST',
+      url: `/v1/applications/${createdAppId}/scopes`,
+      payload: { scopeIds: ['scope-1'] },
+    });
+
+    // The associateScopes method calls getScopes which calls findUnique again but with `include`,
+    // the mock Prisma resolve will need to accommodate the `include` shape if we expect it to return correctly,
+    // but we can just expect 201/200 for now. Actually, if findUnique returns { id: createdAppId }, 
+    // `application.scopes.map` will throw an error since scopes is undefined. Let's mock it properly.
+    mockPrisma.application.findUnique.mockResolvedValue({
+      id: createdAppId,
+      scopes: [{ scope: { id: 'scope-1', code: 'orders.read' } }]
+    });
+
+    const response2 = await app.inject({
+      method: 'POST',
+      url: `/v1/applications/${createdAppId}/scopes`,
+      payload: { scopeIds: ['scope-1'] },
+    });
+
+    expect(response2.statusCode).toBe(201);
+    const body = JSON.parse(response2.body);
+    expect(body.success).toBe(true);
+    expect(body.data[0].code).toBe('orders.read');
+  });
+
+  it('/v1/applications/:id/scopes (GET)', async () => {
+    mockPrisma.application.findUnique.mockResolvedValue({
+      id: createdAppId,
+      scopes: [{ scope: { id: 'scope-1', code: 'orders.read' } }]
+    });
+
+    const response = await app.inject({
+      method: 'GET',
+      url: `/v1/applications/${createdAppId}/scopes`,
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(true);
+    expect(body.data[0].code).toBe('orders.read');
   });
 });

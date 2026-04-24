@@ -7,6 +7,7 @@ import {
   ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
+  ApiBody,
 } from '@nestjs/swagger';
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
@@ -60,6 +61,16 @@ export class PermissionsController {
   })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks `permissions:write` permission.', schema: forbiddenExample })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'string', example: 'users:write' },
+        description: { type: 'string', example: 'Create users' },
+      },
+      required: ['code'],
+    },
+  })
   async create(@Body() createPermissionDto: CreatePermissionDto) {
     return this.permissionsService.create(createPermissionDto);
   }

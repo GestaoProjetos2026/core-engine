@@ -18,6 +18,9 @@ import {
   ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
+  ApiBody,
+  ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -83,6 +86,17 @@ export class UsersController {
   })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks `users:write` permission.', schema: forbiddenExample })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        email: { type: 'string', example: 'user@example.com' },
+        name: { type: 'string', example: 'John Doe' },
+        password: { type: 'string', example: 'strongPassword123' },
+      },
+      required: ['email', 'name', 'password'],
+    },
+  })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
@@ -96,6 +110,10 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Paginated list of users.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks `users:read` permission.', schema: forbiddenExample })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
+  @ApiQuery({ name: 'email', required: false, type: String, description: 'Filter by email' })
+  @ApiQuery({ name: 'status', required: false, type: String, description: 'Filter by status' })
   async findAll(@Query() query: ListUsersQueryDto) {
     return this.usersService.findAll(query);
   }
@@ -110,6 +128,7 @@ export class UsersController {
   @ApiNotFoundResponse({ description: 'User not found.', schema: notFoundExample })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks `users:read` permission.', schema: forbiddenExample })
+  @ApiParam({ name: 'id', required: true, type: String, description: 'User UUID' })
   async findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
@@ -124,6 +143,17 @@ export class UsersController {
   @ApiNotFoundResponse({ description: 'User not found.', schema: notFoundExample })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks `users:write` permission.', schema: forbiddenExample })
+  @ApiParam({ name: 'id', required: true, type: String, description: 'User UUID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        email: { type: 'string', example: 'user@example.com' },
+        name: { type: 'string', example: 'John Doe' },
+        password: { type: 'string', example: 'strongPassword123' },
+      },
+    },
+  })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
@@ -155,6 +185,16 @@ export class UsersController {
   @ApiNotFoundResponse({ description: 'User not found.', schema: notFoundExample })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks `users:write` permission.', schema: forbiddenExample })
+  @ApiParam({ name: 'id', required: true, type: String, description: 'User UUID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', example: 'ACTIVE' },
+      },
+      required: ['status'],
+    },
+  })
   async changeStatus(
     @Param('id') id: string,
     @Body() changeStatusDto: ChangeUserStatusDto,

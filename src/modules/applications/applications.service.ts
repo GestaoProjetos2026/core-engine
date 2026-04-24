@@ -4,6 +4,7 @@ import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
 import { ChangeApplicationStatusDto } from './dto/change-application-status.dto';
 import { ListApplicationsQueryDto } from './dto/list-applications-query.dto';
+import { AssociateScopesDto } from './dto/associate-scopes.dto';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -173,5 +174,58 @@ export class ApplicationsService {
       }
       throw error;
     }
+  }
+
+  async getScopes(applicationId: string) {
+    const application = await this.prisma.application.findUnique({
+      where: { id: applicationId },
+      include: {
+        scopes: {
+          include: {
+            scope: true,
+          },
+          orderBy: { scope: { code: 'asc' } }
+        },
+      },
+    });
+
+    if (!application) {
+      throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Aplicação não encontrada' });
+    }
+
+    return application.scopes.map(as => as.scope);
+  }
+
+  async associateScopes(applicationId: string, associateScopesDto: AssociateScopesDto) {
+    const application = await this.prisma.application.findUnique({
+      where: { id: applicationId },
+    });
+
+    if (!application) {
+      throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Aplicação não encontrada' });
+    }
+
+    const scopes = await this.prisma.scope.findMany({
+      where: { id: { in: associateScopesDto.scopeIds } },
+    });
+
+    if (scopes.length !== associateScopesDto.scopeIds.length) {
+      throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Um ou mais escopos fornecidos não existem' });
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.applicationScope.deleteMany({
+        where: { applicationId },
+      }),
+      this.prisma.applicationScope.createMany({
+        data: associateScopesDto.scopeIds.map(scopeId => ({
+          applicationId,
+          scopeId,
+        })),
+        skipDuplicates: true,
+      }),
+    ]);
+
+    return this.getScopes(applicationId);
   }
 }
