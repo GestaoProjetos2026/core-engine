@@ -53,8 +53,52 @@ export class IntegrationController {
     },
   })
   @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Missing or invalid parameters',
+    schema: {
+      type: 'object',
+      example: {
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'grant_type should not be empty'
+        },
+        timestamp: '2026-03-21T18:30:00Z',
+        path: '/v1/oauth/token'
+      }
+    }
+  })
+  @ApiResponse({
     status: 401,
-    description: 'Invalid client credentials or grant',
+    description: 'Unauthorized - Invalid client credentials, unsupported grant type or invalid refresh token',
+    schema: {
+      type: 'object',
+      example: {
+        success: false,
+        error: {
+          code: 'AUTH_INVALID_CLIENT',
+          message: 'Invalid client credentials or application inactive'
+        },
+        timestamp: '2026-03-21T18:30:00Z',
+        path: '/v1/oauth/token'
+      }
+    }
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Invalid scope requested',
+    schema: {
+      type: 'object',
+      example: {
+        success: false,
+        error: {
+          code: 'AUTH_INVALID_SCOPE',
+          message: 'None of the requested scopes are allowed for this application'
+        },
+        timestamp: '2026-03-21T18:30:00Z',
+        path: '/v1/oauth/token'
+      }
+    }
   })
   async oauthToken(@Body() dto: OAuthTokenRequestDto): Promise<OAuthTokenResponseDto> {
     return this.integrationService.issueToken(dto);
@@ -90,6 +134,54 @@ export class IntegrationController {
         scope: { type: 'string' },
       },
     },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Missing client_id or client_secret',
+    schema: {
+      type: 'object',
+      example: {
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'client_id should not be empty'
+        },
+        timestamp: '2026-03-21T18:30:00Z',
+        path: '/v1/integration/token'
+      }
+    }
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid client credentials',
+    schema: {
+      type: 'object',
+      example: {
+        success: false,
+        error: {
+          code: 'AUTH_INVALID_CLIENT',
+          message: 'Invalid client credentials or application inactive'
+        },
+        timestamp: '2026-03-21T18:30:00Z',
+        path: '/v1/integration/token'
+      }
+    }
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Invalid scope requested',
+    schema: {
+      type: 'object',
+      example: {
+        success: false,
+        error: {
+          code: 'AUTH_INVALID_SCOPE',
+          message: 'None of the requested scopes are allowed for this application'
+        },
+        timestamp: '2026-03-21T18:30:00Z',
+        path: '/v1/integration/token'
+      }
+    }
   })
   async integrationToken(@Body() dto: OAuthTokenRequestDto): Promise<OAuthTokenResponseDto> {
     // Force grant_type to client_credentials if using this endpoint

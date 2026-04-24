@@ -7,7 +7,7 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 4: concluída task 9 — `Documentação pública de integração M2M (RFC 6749 + exemplos)`. Criado `docs/M2M_INTEGRATION_GUIDE.md`, corrigida nota desatualizada no `JWT_GUIDE.md` e atualizado `README.md` com tabela de endpoints completa da Sprint 4.
+- Sprint 4: concluída task 10 — `OpenAPI: token endpoint OAuth e erros alinhados à RFC (RF20)`. Adicionadas as documentações detalhadas de esquema inline para respostas OAuth2 na API.
 
 ## Arquivos modificados recentemente
 - `docs/M2M_INTEGRATION_GUIDE.md` — **Novo.** Guia público de integração M2M para parceiros externos com exemplos `curl`, escopos, erros OAuth e boas práticas.
@@ -16,15 +16,11 @@
 - `docs/PRD_DEVELOPMENT.md` — Task 9 marcada como concluída.
 
 ## Estado atual
-- Tasks 1, 2, 5, 6, 7, 8 e 9 da Sprint 4 estão concluídas.
-- Documentação pública de integração M2M disponível em `docs/M2M_INTEGRATION_GUIDE.md`.
-- `README.md` reflete corretamente o estado atual do projeto (Sprint 4).
+- Tasks 1 a 10 da Sprint 4 estão concluídas.
+- O Swagger agora exibe os erros de OAuth2 corretamente utilizando os envelopes da aplicação.
 
 ## Pendencias e debitos
-- Tasks 3, 4, 10 e 11 da Sprint 4 ainda pendentes:
-  - Task 3: Seed de papéis/permissões iniciais e teste e2e 403
-  - Task 4: Mapear permissões por endpoint
-  - Task 10: OpenAPI — completar Swagger com token endpoint OAuth e erros RFC
+- Task 11 da Sprint 4 ainda pendente:
   - Task 11: Testes e2e M2M e spike manual com aplicação de teste
 
 ## Riscos e atencoes
@@ -35,9 +31,7 @@
 - Confirmar com o usuário a próxima task da Sprint 4: Task 10 (OpenAPI), Task 11 (e2e M2M), Task 3 (seed) ou Task 4 (matriz de permissões).
 
 ## Tasks concluidas na sessao
-- Sprint 4 - Task 7: Token M2M e OAuth token endpoint — Status `done`.
-- Sprint 4 - Task 8: JWT Integration e ScopesGuard — Status `done`.
-- Sprint 4 - Task 9: Documentação pública de integração M2M — Status `done`.
+- Sprint 4 - Task 10: OpenAPI: token endpoint OAuth e erros RFC — Status `done`.
 
 ## Observacoes uteis para a proxima sessao
 - Tratar `PRD.md` e `Sprints.md` como contratos.

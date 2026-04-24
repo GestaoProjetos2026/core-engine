@@ -52,6 +52,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 7**: Token M2M e OAuth token endpoint (RF17, RF21, RF22, RF23). ✔️ (Concluído em 24/04/2026)
 - **Task 8**: JWT Integration e ScopesGuard (RF18, CA07). ✔️ (Concluído em 24/04/2026)
 - **Task 9**: Documentação pública de integração M2M (RFC 6749 + exemplos). ✔️ (Concluído em 24/04/2026)
+- **Task 10**: OpenAPI: token endpoint OAuth e erros alinhados à RFC (RF20). ✔️ (Concluído em 24/04/2026)
 
 ---
 
