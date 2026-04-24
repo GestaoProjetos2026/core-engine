@@ -45,10 +45,13 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 **Status**: ⏳ Em andamento
 - **Task 1**: Criação e manutenção do CRUD de Papéis e de Permissões. ✔️ (Concluído em 22/04/2026)
 - **Task 2**: Gerenciamento de vínculos relacionais fortes M2M (Usuário-Papel e Papel-Permissão). ✔️ (Concluído em 22/04/2026)
+- **Task 3**: Seed de papéis/permissões iniciais e testes e2e de autorização (403). ✔️ (Concluído em 24/04/2026)
+- **Task 4**: Matriz de permissões por endpoint publicada e versionada no repositório. ✔️ (Concluído em 24/04/2026)
 - **Task 5**: CRUD de aplicações e regeneração de secret (RF14, RF15). ✔️ (Concluído em 23/04/2026)
 - **Task 6**: Catálogo de escopos e vínculo aplicação–escopo (RF16). ✔️ (Concluído em 23/04/2026)
 - **Task 7**: Token M2M e OAuth token endpoint (RF17, RF21, RF22, RF23). ✔️ (Concluído em 24/04/2026)
 - **Task 8**: JWT Integration e ScopesGuard (RF18, CA07). ✔️ (Concluído em 24/04/2026)
+- **Task 9**: Documentação pública de integração M2M (RFC 6749 + exemplos). ✔️ (Concluído em 24/04/2026)
 
 ---
 
@@ -96,6 +99,10 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 8. **Interceptor de Envelope Quebrava Asserções de Token nos Testes E2E**
    - **Problema**: Com a adição do `ResponseEnvelopeInterceptor` ao setup dos testes E2E, todos os retornos passaram a ser embrulhados em `{ success, data, ... }`. Os testes de token que liam `body.access_token` passaram a receber `undefined`, pois o token agora está em `body.data.access_token`.
    - **Solução**: Refatoração do arquivo `integration.e2e.spec.ts` para usar um helper `parseEnvelope(payload)` que extrai `body.data` corretamente. O padrão foi documentado com comentário no topo do arquivo de testes para evitar reincidências.
+
+9. **Referência Desatualizada ao `ScopesGuard` no `JWT_GUIDE.md`**
+   - **Problema**: O `JWT_GUIDE.md` indicava que `ScopesGuard` seria implementado na "Sprint 5", quando na realidade foi entregue na Sprint 4 Task 8.
+   - **Solução**: Correção da nota e atualização das referências cruzadas, incluindo link para `docs/M2M_INTEGRATION_GUIDE.md` e `docs/SCOPES_GUARD_TEST_GUIDE.md`.
 
 ---
 

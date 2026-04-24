@@ -218,15 +218,15 @@ Rotas que aceitam tokens de integração verificam `scopes` (não `perms`):
 
 ```typescript
 // Decorator de escopo (análogo ao RequirePermissions)
-@UseGuards(JwtAuthGuard, ScopesGuard)   // ScopesGuard: Sprint 5
+@UseGuards(JwtAuthGuard, ScopesGuard)
 @Get('orders')
 @RequireScopes('orders.read')
 findAll() { ... }
 ```
 
-No token M2M, `scopes` é um array de strings. O guard verifica se todos os escopos exigidos estão presentes.
+No token M2M, `scopes` é um array de strings. O guard verifica se **todos** os escopos exigidos estão presentes.
 
-> **Nota:** `ScopesGuard` e `@RequireScopes` serão implementados na Sprint 5.
+> **Implementado:** `ScopesGuard` e `@RequireScopes` estão disponíveis desde a Sprint 4 (Task 8). Consulte [`docs/SCOPES_GUARD_TEST_GUIDE.md`](SCOPES_GUARD_TEST_GUIDE.md) para o guia completo de uso.
 
 ---
 
@@ -305,6 +305,8 @@ JWT_SECRET=mesmo-secret-do-core-auth
 | Recurso | Onde encontrar |
 |---------|----------------|
 | Envelope de resposta e catálogo de `error.code` | `docs/INTEGRATION_API_CONTRACT.md` |
+| Guia de integração M2M (OAuth 2.0, `curl`, escopos) | `docs/M2M_INTEGRATION_GUIDE.md` |
+| Guia do ScopesGuard (`@RequireScopes`) | `docs/SCOPES_GUARD_TEST_GUIDE.md` |
 | Swagger interativo (ambiente dev) | `GET /v1/docs` |
 | Modelo de dados (User, Role, Permission) | `PRD.md` §15 |
 | Estratégia de autenticação e claims JWT | `PRD.md` §16 |

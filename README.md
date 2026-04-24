@@ -75,7 +75,7 @@ REFRESH_EXPIRES_IN="7d"
 PORT=3000
 ```
 
-## Endpoints (Sprint 3 — estado atual)
+## Endpoints (Sprint 4 — estado atual)
 
 | Método | Rota | Descrição | Status |
 |--------|------|-----------|--------|
@@ -90,11 +90,24 @@ PORT=3000
 | GET | `/v1/users/:id` | Detalhe do usuário (RF09) | ✅ |
 | PATCH | `/v1/users/:id` | Atualizar usuário (RF09) | ✅ |
 | PATCH | `/v1/users/:id/status` | Ativar/desativar usuário (RF09, RN01) | ✅ |
-| GET | `/v1/roles` | Listar papéis | Sprint 4 |
-| POST | `/v1/roles` | Criar papel | Sprint 4 |
-| GET | `/v1/permissions` | Listar permissões | Sprint 4 |
-| POST | `/v1/permissions` | Criar permissão | Sprint 4 |
-| POST | `/v1/integration/token` | Token M2M client credentials (RF17, RF21) | Sprint 5 |
+| GET | `/v1/roles` | Listar papéis (RF10) | ✅ |
+| POST | `/v1/roles` | Criar papel (RF10) | ✅ |
+| POST | `/v1/roles/:id/users` | Associar usuário a papel (RF12) | ✅ |
+| POST | `/v1/roles/:id/permissions` | Associar permissão a papel (RF13) | ✅ |
+| GET | `/v1/permissions` | Listar permissões (RF11) | ✅ |
+| POST | `/v1/permissions` | Criar permissão (RF11) | ✅ |
+| GET | `/v1/applications` | Listar aplicações (RF14) | ✅ |
+| POST | `/v1/applications` | Criar aplicação; retorna `client_secret` **uma vez** (RF14, RF15) | ✅ |
+| GET | `/v1/applications/:id` | Detalhe (sem secret) (RF14) | ✅ |
+| PATCH | `/v1/applications/:id` | Atualizar aplicação (RF14) | ✅ |
+| PATCH | `/v1/applications/:id/status` | Ativar/desativar aplicação (RF14) | ✅ |
+| POST | `/v1/applications/:id/regenerate-secret` | Novo secret; exibido **uma vez** (RF15) | ✅ |
+| GET | `/v1/applications/:id/scopes` | Listar escopos da aplicação (RF16) | ✅ |
+| POST | `/v1/applications/:id/scopes` | Associar escopos à aplicação (RF16) | ✅ |
+| GET | `/v1/scopes` | Listar catálogo global de escopos | ✅ |
+| POST | `/v1/scopes` | Criar escopo global | ✅ |
+| POST | `/v1/oauth/token` | Token endpoint OAuth 2.0 (`client_credentials`, `refresh_token`) (RF21–RF23) | ✅ |
+| POST | `/v1/integration/token` | Alias M2M para `client_credentials` (RF17) | ✅ |
 
 ## Padrão de resposta da API (MVP atual)
 
@@ -125,8 +138,10 @@ PORT=3000
 
 | Documento | Conteúdo |
 |-----------|----------|
-| [`docs/JWT_GUIDE.md`](docs/JWT_GUIDE.md) | Guia completo de JWT: claims, validação, uso de `perms`, exemplos de payload decodificado |
+| [`docs/M2M_INTEGRATION_GUIDE.md`](docs/M2M_INTEGRATION_GUIDE.md) | **Guia de Integração M2M** — fluxo OAuth 2.0, `curl`, escopos, erros e boas práticas para parceiros externos |
+| [`docs/JWT_GUIDE.md`](docs/JWT_GUIDE.md) | Claims JWT, validação de token, uso de `perms` e `scopes`, exemplos em TypeScript e Python |
 | [`docs/INTEGRATION_API_CONTRACT.md`](docs/INTEGRATION_API_CONTRACT.md) | Envelope de resposta, catálogo de `error.code` e referência ao Swagger |
+| [`docs/SCOPES_GUARD_TEST_GUIDE.md`](docs/SCOPES_GUARD_TEST_GUIDE.md) | Guia de testes do `ScopesGuard` e `@RequireScopes` |
 | `GET /v1/docs` | Swagger UI interativo (disponível apenas em desenvolvimento) |
 
 ## Fluxo de Trabalho
