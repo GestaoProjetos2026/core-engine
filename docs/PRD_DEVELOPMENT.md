@@ -42,7 +42,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 ## 🚀 Sprints em Andamento / Próximas
 
 ### Sprint 4: RBAC Completo e Integrações Restritivas
-**Status**: ⏳ Em andamento
+**Status**: ✔️ Concluída
 - **Task 1**: Criação e manutenção do CRUD de Papéis e de Permissões. ✔️ (Concluído em 22/04/2026)
 - **Task 2**: Gerenciamento de vínculos relacionais fortes M2M (Usuário-Papel e Papel-Permissão). ✔️ (Concluído em 22/04/2026)
 - **Task 3**: Seed de papéis/permissões iniciais e testes e2e de autorização (403). ✔️ (Concluído em 24/04/2026)
@@ -53,6 +53,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 8**: JWT Integration e ScopesGuard (RF18, CA07). ✔️ (Concluído em 24/04/2026)
 - **Task 9**: Documentação pública de integração M2M (RFC 6749 + exemplos). ✔️ (Concluído em 24/04/2026)
 - **Task 10**: OpenAPI: token endpoint OAuth e erros alinhados à RFC (RF20). ✔️ (Concluído em 24/04/2026)
+- **Task 11**: Testes e2e M2M e spike manual com aplicação de teste. ✔️ (Concluído em 24/04/2026)
 
 ---
 

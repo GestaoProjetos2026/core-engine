@@ -208,6 +208,44 @@ async function main() {
   console.log('   - admin@example.com / Password123!');
   console.log('   - viewer@example.com / Password123!');
   
+  // Criar Aplicação Semente para Testes Manuais e E2E M2M
+  const testAppSecret = 'test-client-secret';
+  const testAppSecretHash = await bcrypt.hash(testAppSecret, 12);
+
+  const testApp = await prisma.application.upsert({
+    where: { clientId: 'test-client-id' },
+    update: { clientSecretHash: testAppSecretHash, status: 'ACTIVE' },
+    create: {
+      name: 'Test Application',
+      clientId: 'test-client-id',
+      clientSecretHash: testAppSecretHash,
+      status: 'ACTIVE',
+    },
+  });
+
+  const testScope = await prisma.scope.upsert({
+    where: { code: 'test:scope' },
+    update: {},
+    create: { code: 'test:scope', description: 'Test Scope' },
+  });
+
+  await prisma.applicationScope.upsert({
+    where: {
+      applicationId_scopeId: {
+        applicationId: testApp.id,
+        scopeId: testScope.id,
+      },
+    },
+    update: {},
+    create: {
+      applicationId: testApp.id,
+      scopeId: testScope.id,
+    },
+  });
+
+  console.log('✅ Test Application created and linked to test:scope');
+  console.log('   - clientId: test-client-id / clientSecret: test-client-secret');
+
   console.log('\n🎉 Seed completed');
 }
 
