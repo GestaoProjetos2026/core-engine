@@ -117,9 +117,10 @@ PRD + MVP do banco + setup inicial
 
 Notas de calendário (sprints semanais: sábado a sexta-feira)
 
+- **Sprint 2** é semana curta (6 dias) até o início da Sprint 3 em 28/03.
 - **Sprint 3 (estendida):** 28/03/2026 a 17/04/2026 — janela maior para fundação de auth, documentação de contrato e primeiros fluxos testáveis.
 - **Sprint 4:** 18/04/2026 a 24/04/2026 — une RBAC completo, integração M2M, OAuth token endpoint e escopos; documentação para integradores.
-- **Sprint 2** é semana curta (6 dias) até o início da Sprint 3 em 28/03.
+- **Sprint 5 (finalização):** 25/04/2026 a 08/05/2026 — Segurança operacional, observabilidade, CI/CD, hardening e encerramento do MVP.
 
 ---
 
@@ -505,7 +506,7 @@ RBAC completo (CRUD, vínculos, seed e matriz docs) + Integrações M2M (Apps, e
 
 ---
 
-Sprint 5 — 25/04/2026 a 01/05/2026
+Sprint 5 — 25/04/2026 a 08/05/2026
 
 1) Rate limit e lockout (RNF07)
 
@@ -562,14 +563,7 @@ Prioridade: High
 Estimativa: 2 SP
 Label: health, kubernetes, sprint-5
 
-Resumo Sprint 5
-Segurança operacional (rate limit) + observabilidade + auditoria mínima + health robusto
-
----
-
-Sprint 6 — 02/05/2026 a 08/05/2026
-
-1) Pipeline CI: lint, testes, build (DoD)
+5) Pipeline CI: lint, testes, build (DoD)
 
 Pertence a: Module 7 — Infraestrutura e Documentação
 Título: GitHub Actions (ou CI equivalente) para o repositório
@@ -581,9 +575,9 @@ Critérios de aceitação:
 - documentado no README
 Prioridade: Urgent
 Estimativa: 5 SP
-Label: ci, devops, sprint-6
+Label: ci, devops, sprint-5
 
-2) Cobertura de testes em módulos críticos (RNF05)
+6) Cobertura de testes em módulos críticos (RNF05)
 
 Pertence a: Module 8 — Qualidade
 Título: Elevar cobertura em auth, autorização e integração
@@ -594,9 +588,9 @@ Critérios de aceitação:
 - relatório no CI
 Prioridade: High
 Estimativa: 8 SP
-Label: testing, coverage, sprint-6
+Label: testing, coverage, sprint-5
 
-3) Helmet e CSP por ambiente (P1 PRD §20)
+7) Helmet e CSP por ambiente (P1 PRD §20)
 
 Pertence a: Module 6 — APIs
 Título: Headers de segurança HTTP
@@ -608,16 +602,9 @@ Critérios de aceitação:
 - notas em documentação
 Prioridade: Medium
 Estimativa: 3 SP
-Label: helmet, security, sprint-6
+Label: helmet, security, sprint-5
 
-Resumo Sprint 6
-CI + qualidade (cobertura) + hardening HTTP
-
----
-
-Sprint 7 — 09/05/2026 a 15/05/2026
-
-1) README e exemplos públicos (README, §23 DoD)
+8) README e exemplos públicos (README, §23 DoD)
 
 Pertence a: Module 7 — Documentação
 Título: Exemplos `curl` e fluxo completo humano + M2M
@@ -629,9 +616,9 @@ Critérios de aceitação:
 - checklist DoD atualizado
 Prioridade: Urgent
 Estimativa: 3 SP
-Label: docs, readme, sprint-7
+Label: docs, readme, sprint-5
 
-2) Seed final de papéis e matriz de permission.code (P1)
+9) Seed final de papéis e matriz de permission.code (P1)
 
 Pertence a: Module 5 — Banco de Dados
 Título: Consolidar seed e convenções para squads consumidores
@@ -643,9 +630,9 @@ Critérios de aceitação:
 - owners definidos para evolução
 Prioridade: High
 Estimativa: 3 SP
-Label: seed, governance, sprint-7
+Label: seed, governance, sprint-5
 
-3) Revisão de DoD e encerramento MVP (§23)
+10) Revisão de DoD e encerramento MVP (§23)
 
 Pertence a: Squad 1 — Planejamento
 Título: Checklist de Definition of Done e riscos
@@ -656,20 +643,18 @@ Critérios de aceitação:
 - feedback de squads consumidores registrado
 Prioridade: High
 Estimativa: 2 SP
-Label: dod, release, sprint-7
+Label: dod, release, sprint-5
 
-Resumo Sprint 7
-Adoção + exemplos + governança de permissões/escopos + fechamento MVP
+Resumo Sprint 5
+Segurança operacional (rate limit, hardening HTTP) + observabilidade + auditoria + CI/CD + qualidade + docs finais e encerramento MVP
 
 ---
 
-Resumo geral (Sprints 2 a 7 até 29/05/2026)
+Resumo geral (Sprints 2 a 5 até 08/05/2026)
 
 | Sprint | Período | Foco principal |
 |--------|---------|----------------|
 | 2 | 22/03–27/03 | Nest, envelope, Swagger, docs de erros, Docker, Prisma alinhado ao PRD |
 | 3 | 28/03–17/04 | Auth (register/login/refresh/me), JWT, docs JWT, e2e humano, spike RBAC, PermissionsGuard, CRUD de Usuários |
-| 4 | 18/04–08/05 | RBAC completo (CRUD, vínculos) + Integrações M2M (Apps, tokens, OAuth) |
-| 5 | 09/05–15/05 | Rate limit, logs requestId, auditoria mínima, health com DB |
-| 6 | 16/05–22/05 | CI, cobertura, Helmet/CSP |
-| 7 | 23/05–29/05 | README exemplos, seed/matriz final, DoD e fechamento MVP |
+| 4 | 18/04–24/04 | RBAC completo (CRUD, vínculos, seed e matriz docs) + Integrações M2M (Apps, escopos, tokens, OAuth endpoint, ScopesGuard e docs) |
+| 5 | 25/04–08/05 | Segurança, observabilidade, CI/CD, qualidade, documentação final e encerramento MVP |
