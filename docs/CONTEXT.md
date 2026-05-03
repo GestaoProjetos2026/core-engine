@@ -7,33 +7,33 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 5: iniciada e concluída Task 1 — `Rate limit e lockout (RNF07)`. Implementada proteção contra brute-force no login utilizando Redis, `RateLimiterRedis`, `RateLimitGuard` e `LoginStatusInterceptor`.
+- Sprint 5: concluída Task 2 — `Logs estruturados JSON com requestId (RNF11)`. Implementada geração automática de `requestId` pelo Fastify, integração com `nestjs-pino` para logs estruturados e propagação do ID no campo `meta` dos envelopes de resposta (sucesso e erro).
 
 ## Arquivos modificados recentemente
-- `src/server/common/rate-limit/` — Novo componente de proteção contra abuso.
-- `src/modules/auth/auth.controller.ts` — Aplicada proteção de rate limit no endpoint de login.
-- `src/modules/auth/auth.module.ts` — Integrado `RateLimitModule`.
-- `test/rate-limit.e2e.spec.ts` — Novos testes E2E validando 5 req/min e lockout de 30 min.
-- `.env` e `.env.example` — Adicionadas configurações de rate limit e Redis.
+- `src/main.ts` — Configuração do Fastify para `requestId` e Logger global pino.
+- `src/server/app.module.ts` — Registro do `LoggerModule`.
+- `src/server/common/response-envelope.interceptor.ts` — Inclusão de `meta.requestId`.
+- `src/server/common/api-exception.filter.ts` — Inclusão de `meta.requestId`.
+- `docs/PRD_DEVELOPMENT.md` — Histórico atualizado.
 
 ## Estado atual
-- Sprint 4 finalizada.
-- Sprint 5 iniciada com sucesso (Task 1 concluída).
-- Sistema de proteção contra brute-force operacional e testado.
+- Sprint 5 em andamento. Tasks 1 (Rate Limit) e 2 (Logs/RequestId) concluídas.
+- Observabilidade aprimorada com logs JSON correlacionáveis.
 
 ## Pendencias e debitos
-- Próximas tasks da Sprint 5: Logs estruturados (Task 2) e Auditoria (Task 3).
+- Próximas tasks da Sprint 5: Auditoria (Task 3).
 
 ## Riscos e atencoes
-- O sistema depende do Redis estar online para aplicar o rate limit.
-- O lockout de 30 minutos é aplicado tanto por IP quanto por E-mail após 5 falhas consecutivas.
+- O formato de log em produção agora é JSON puro. Ferramentas de coleta devem estar configuradas para tal.
+- Em desenvolvimento, o log é formatado via `pino-pretty`.
 
 ## Proximo foco
-- Sprint 5 - Task 2: Logs estruturados JSON com requestId (RNF11).
+- Sprint 5 - Task 3: Auditoria básica para eventos críticos (Login, Refresh, etc.).
 
 ## Tasks concluidas na sessao
 - Sprint 5 - Task 1: Rate limit e lockout (RNF07).
+- Sprint 5 - Task 2: Logs estruturados JSON com requestId (RNF11).
 
 ## Observacoes uteis para a proxima sessao
-- O helper `RateLimitGuard` extrai o e-mail do `body.email`. Certifique-se de que novos endpoints sensíveis sigam esse padrão ou ajuste o guard.
-- O `LoginStatusInterceptor` reporta falha apenas se receber `AUTH_INVALID_CREDENTIALS`.
+- O `requestId` é gerado via `crypto.randomUUID()` no `main.ts`.
+- O interceptor e o filtro de exceção extraem o ID de `req.id` (padrão Fastify).

@@ -4,17 +4,24 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Logger } from 'nestjs-pino';
+import { randomUUID } from 'crypto';
 import { AppModule } from './server/app.module';
-import { ApiExceptionFilter } from './server/common/api-exception.filter';
 import { ApiExceptionFilter } from './server/common/api-exception.filter';
 import { ResponseEnvelopeInterceptor } from './server/common/response-envelope.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter(),
-    { logger: ['log', 'error', 'warn'] },
+    new FastifyAdapter({
+      requestIdHeader: 'x-request-id',
+      genReqId: () => randomUUID(),
+    }),
+    { bufferLogs: true },
   );
+
+  app.useLogger(app.get(Logger));
+
 
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(

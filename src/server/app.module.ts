@@ -10,9 +10,18 @@ import { ApplicationsModule } from '../modules/applications/applications.module'
 import { ScopesModule } from '../modules/scopes/scopes.module';
 import { IntegrationModule } from '../modules/integration/integration.module';
 import { RateLimitModule } from './common/rate-limit/rate-limit.module';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport: process.env.NODE_ENV !== 'production'
+          ? { target: 'pino-pretty', options: { colorize: true, singleLine: true } }
+          : undefined,
+        level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+      },
+    }),
     PrismaModule,
     HealthModule,
     AuthModule,
@@ -25,6 +34,7 @@ import { RateLimitModule } from './common/rate-limit/rate-limit.module';
     RateLimitModule,
   ],
 })
+
 
 export class AppModule {}
 

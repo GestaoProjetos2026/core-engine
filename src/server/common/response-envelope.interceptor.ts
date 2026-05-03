@@ -11,7 +11,11 @@ type SuccessEnvelope<T> = {
   data: T;
   timestamp: string;
   path: string;
+  meta?: {
+    requestId: string;
+  };
 };
+
 
 @Injectable()
 export class ResponseEnvelopeInterceptor<T>
@@ -21,7 +25,8 @@ export class ResponseEnvelopeInterceptor<T>
     context: ExecutionContext,
     next: CallHandler<T>,
   ): Observable<SuccessEnvelope<T>> {
-    const req = context.switchToHttp().getRequest<{ url: string }>();
+    const req = context.switchToHttp().getRequest<any>();
+    const requestId = req.id || req.raw?.id;
 
     return next.handle().pipe(
       map((data) => ({
@@ -29,8 +34,10 @@ export class ResponseEnvelopeInterceptor<T>
         data,
         timestamp: new Date().toISOString(),
         path: req.url,
+        meta: requestId ? { requestId } : undefined,
       })),
     );
+
   }
 }
 

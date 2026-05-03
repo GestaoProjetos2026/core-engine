@@ -58,6 +58,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 ### Sprint 5: Segurança Operacional e Finalização
 **Status**: 🚀 Em Andamento
 - **Task 1**: Implementação de Rate Limit e Lockout (RNF07) utilizando Redis e custom Guards/Interceptors. ✔️ (Concluído em 03/05/2026)
+- **Task 2**: Implementação de Logs estruturados JSON e `requestId` (RNF11) utilizando `nestjs-pino` e Fastify hooks. ✔️ (Concluído em 03/05/2026)
 
 ---
 

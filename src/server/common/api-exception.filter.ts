@@ -15,7 +15,11 @@ type ErrorEnvelope = {
   };
   timestamp: string;
   path: string;
+  meta?: {
+    requestId: string;
+  };
 };
+
 
 const STATUS_ERROR_CODE: Record<number, string> = {
   [HttpStatus.BAD_REQUEST]: 'VALIDATION_ERROR',
@@ -33,19 +37,25 @@ const STATUS_ERROR_CODE: Record<number, string> = {
 export class ApiExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const res = ctx.getResponse<{
-      status: (statusCode: number) => { send: (body: ErrorEnvelope) => void };
-    }>();
-    const req = ctx.getRequest<{ url: string }>();
+    const res = ctx.getResponse<any>();
+    const req = ctx.getRequest<any>();
+
 
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    const requestId = req.id || req.raw?.id;
     const responseBody = this.createErrorBody(exception, status, req.url);
+
+    if (requestId) {
+      responseBody.meta = { requestId };
+    }
+
     res.status(status).send(responseBody);
   }
+
 
   private createErrorBody(
     exception: unknown,
