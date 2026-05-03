@@ -11,6 +11,7 @@ import { UserStatus, type Prisma } from '@prisma/client';
 import { compare, hash } from 'bcrypt';
 import { createHash, randomBytes } from 'crypto';
 import { PrismaService } from '../../server/prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { parseDurationToDate, parseDurationToSeconds } from './auth-time.util';
 import type { AuthTokensDto, RegisteredUserDto } from './dto/auth-response.dto';
 import type { LoginDto } from './dto/login.dto';
@@ -47,6 +48,7 @@ export class AuthService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(JwtService) private readonly jwt: JwtService,
+    @Inject(AuditService) private readonly audit: AuditService,
   ) {}
 
   async register(dto: RegisterDto): Promise<RegisteredUserDto> {
@@ -96,6 +98,11 @@ export class AuthService {
       (await compare(dto.password, user.passwordHash));
 
     if (!valid) {
+      if (user) {
+        this.audit.logLoginFailure(dto.email, 'Invalid password');
+      } else {
+        this.audit.logLoginFailure(dto.email, 'User not found');
+      }
       throw new UnauthorizedException({
         message: 'Invalid email or password',
         errorCode: 'AUTH_INVALID_CREDENTIALS',
@@ -105,6 +112,7 @@ export class AuthService {
     const accessToken = await this.signAccessToken(user);
     const refreshToken = await this.createRefreshToken(user.id);
 
+    this.audit.logLoginSuccess(user.id, user.email);
 
     return {
       accessToken,
@@ -169,6 +177,8 @@ export class AuthService {
     });
 
     const accessToken = await this.signAccessToken(result.user);
+
+    this.audit.logTokenRefresh(result.user.id);
 
     return {
       accessToken,

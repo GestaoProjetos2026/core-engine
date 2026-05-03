@@ -537,6 +537,7 @@ Estimativa: 3 SP
 Label: logging, observability, sprint-5
 
 3) Auditoria mínima de eventos críticos (§21)
+Status: done
 
 Pertence a: Module 9 — Audit
 Título: Registrar login sucesso/falha, refresh, regenerate secret, mudança de status

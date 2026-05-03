@@ -30,7 +30,8 @@ describe('AuthService', () => {
     const prisma = makePrismaMock();
     prisma.user.create.mockRejectedValue({ code: 'P2002' });
     const jwt = { signAsync: vi.fn() };
-    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService);
+    const auditMock = { logLoginSuccess: vi.fn(), logLoginFailure: vi.fn(), logTokenRefresh: vi.fn() };
+    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService, auditMock as any);
 
     await expect(
       service.register({
@@ -45,7 +46,8 @@ describe('AuthService', () => {
     const prisma = makePrismaMock();
     prisma.user.findUnique.mockResolvedValue(null);
     const jwt = { signAsync: vi.fn() };
-    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService);
+    const auditMock = { logLoginSuccess: vi.fn(), logLoginFailure: vi.fn(), logTokenRefresh: vi.fn() };
+    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService, auditMock as any);
 
     await expect(service.login({ email: 'nope@b.com', password: 'x' })).rejects.toSatisfy((e: unknown) => {
       if (!(e instanceof UnauthorizedException)) return false;
@@ -64,7 +66,8 @@ describe('AuthService', () => {
     const prisma = makePrismaMock();
     prisma.refreshToken.findUnique.mockResolvedValue(null);
     const jwt = { signAsync: vi.fn() };
-    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService);
+    const auditMock = { logLoginSuccess: vi.fn(), logLoginFailure: vi.fn(), logTokenRefresh: vi.fn() };
+    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService, auditMock as any);
 
     await expect(service.refresh({ refreshToken: 'any-opaque' })).rejects.toSatisfy((e: unknown) => {
       if (!(e instanceof UnauthorizedException)) return false;
@@ -99,7 +102,8 @@ describe('AuthService', () => {
       },
     });
     const jwt = { signAsync: vi.fn() };
-    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService);
+    const auditMock = { logLoginSuccess: vi.fn(), logLoginFailure: vi.fn(), logTokenRefresh: vi.fn() };
+    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService, auditMock as any);
 
     await expect(service.refresh({ refreshToken: 'x' })).rejects.toSatisfy((e: unknown) => {
       if (!(e instanceof UnauthorizedException)) return false;
@@ -143,7 +147,8 @@ describe('AuthService', () => {
     });
     prisma.refreshToken.updateMany.mockResolvedValue({ count: 1 });
     const jwt = { signAsync: vi.fn().mockResolvedValue('access.jwt') };
-    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService);
+    const auditMock = { logLoginSuccess: vi.fn(), logLoginFailure: vi.fn(), logTokenRefresh: vi.fn() };
+    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService, auditMock as any);
 
     const out = await service.refresh({ refreshToken: 'opaque-value' });
 
@@ -165,7 +170,8 @@ describe('AuthService', () => {
       roles: [],
     });
     const jwt = { signAsync: vi.fn() };
-    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService);
+    const auditMock = { logLoginSuccess: vi.fn(), logLoginFailure: vi.fn(), logTokenRefresh: vi.fn() };
+    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService, auditMock as any);
 
     await expect(service.login({ email: 'a@b.com', password: 'ValidPass1!x' })).rejects.toBeInstanceOf(
       UnauthorizedException,

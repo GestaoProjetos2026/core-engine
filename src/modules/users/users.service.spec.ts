@@ -26,7 +26,8 @@ describe('UsersService', () => {
 
   beforeEach(() => {
     prisma = mockPrismaService as unknown as PrismaService;
-    service = new UsersService(prisma);
+    const auditMock = { logStatusChange: vi.fn() };
+    service = new UsersService(prisma, auditMock as any);
   });
 
   it('should be defined', () => {

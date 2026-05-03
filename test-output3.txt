@@ -1,0 +1,423 @@
+
+> erp-core-auth@1.0.0 test
+> vitest run --exclude "dist/**"
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mC:/Users/Administrator/Core-Engine[39m
+
+ [32mΓ£ô[39m src/modules/auth/auth-time.util.spec.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32mΓ£ô[39m src/modules/users/users.service.spec.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32mΓ£ô[39m src/modules/auth/guards/scopes.guard.spec.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32mΓ£ô[39m src/modules/auth/guards/permissions.guard.spec.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+[33m[Nest] 5936  - [39m05/03/2026, 4:04:05 PM [33m   WARN[39m [38;5;3m[AuthService] [39m[33mAUTH_REFRESH_REUSED: reuse attempt refreshTokenId=rt1[39m
+ [32mΓ£ô[39m src/modules/auth/auth.service.spec.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 477[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m register throws ConflictException on unique violation [33m 449[2mms[22m[39m
+ [32mΓ£ô[39m src/modules/users/users.controller.spec.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mΓ£ô[39m src/modules/auth/auth.controller.spec.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32mΓ£ô[39m src/modules/applications/applications.service.spec.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 1516[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m should create an application returning clear client_secret [33m 407[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m should throw ConflictException if client ID duplicates [33m 368[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m should update and return a new client_secret [33m 354[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m should throw NotFoundException if app not found [33m 356[2mms[22m[39m
+ [32mΓ£ô[39m src/server/app.module.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 8[2mms[22m[39m
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/integration.e2e.spec.ts > Integration (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/integration.e2e.spec.ts > Integration (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/applications.e2e.spec.ts > ApplicationsModule (e2e) > /v1/applications (POST)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/applications.e2e.spec.ts > ApplicationsModule (e2e) > /v1/applications (POST)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/integration.e2e.spec.ts > Integration (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/scopes.e2e.spec.ts
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+ [32mΓ£ô[39m test/scopes.e2e.spec.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1140[2mms[22m[39m
+[16:04:08.882] [32mINFO[39m (33872): [36mrequest completed[39m [90m{"req":{"id":"req-1","method":"POST","url":"/v1/scopes","query":{},"headers":{"user-agent":"lightMyRequest","host":"localhost:80","content-type":"application/json","content-length":"50"},"remoteAddress":"127.0.0.1"},"res":{"statusCode":201,"headers":{"content-type":"application/json; charset=utf-8","content-length":"177"}},"responseTime":71}[39m
+[16:04:08.889] [32mINFO[39m (33872): [36mrequest completed[39m [90m{"req":{"id":"req-2","method":"GET","url":"/v1/scopes","query":{},"headers":{"user-agent":"lightMyRequest","host":"localhost:80"},"remoteAddress":"127.0.0.1"},"res":{"statusCode":200,"headers":{"content-type":"application/json; charset=utf-8","content-length":"179"}},"responseTime":3}[39m
+stderr | test/applications.e2e.spec.ts > ApplicationsModule (e2e) > /v1/applications (POST)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/integration.e2e.spec.ts > Integration (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+[16:04:09.073] [32mINFO[39m (18604): [36mrequest completed[39m [90m{"req":{"id":"req-1","method":"POST","url":"/v1/applications","query":{},"headers":{"user-agent":"lightMyRequest","host":"localhost:80","content-type":"application/json","content-length":"25"},"remoteAddress":"127.0.0.1"},"res":{"statusCode":201,"headers":{"content-type":"application/json; charset=utf-8","content-length":"359"}},"responseTime":401}[39m
+[16:04:09.077] [32mINFO[39m (18604): [36mrequest completed[39m [90m{"req":{"id":"req-2","method":"GET","url":"/v1/applications","query":{},"headers":{"user-agent":"lightMyRequest","host":"localhost:80"},"remoteAddress":"127.0.0.1"},"res":{"statusCode":200,"headers":{"content-type":"application/json; charset=utf-8","content-length":"319"}},"responseTime":2}[39m
+[16:04:09.078] [32mINFO[39m (18604): [36mrequest completed[39m [90m{"req":{"id":"req-3","method":"GET","url":"/v1/applications/test-mock-id","query":{},"headers":{"user-agent":"lightMyRequest","host":"localhost:80"},"remoteAddress":"127.0.0.1"},"res":{"statusCode":200,"headers":{"content-type":"application/json; charset=utf-8","content-length":"290"}},"responseTime":0}[39m
+stderr | test/applications.e2e.spec.ts > ApplicationsModule (e2e) > /v1/applications/:id/regenerate-secret (POST)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+ [31mΓ¥»[39m test/integration.e2e.spec.ts [2m([22m[2m7 tests[22m[2m | [22m[33m7 skipped[39m[2m)[22m[33m 1463[2mms[22m[39m
+     [2m[90mΓåô[39m[22m POST /oauth/token (client_credentials) - JSON
+     [2m[90mΓåô[39m[22m POST /oauth/token (client_credentials) - x-www-form-urlencoded
+     [2m[90mΓåô[39m[22m POST /integration/token (alias)
+     [2m[90mΓåô[39m[22m POST /oauth/token - Invalid Credentials
+       [2m[90mΓåô[39m[22m GET /integration/test-scope - 200 com escopo v├ílido
+       [2m[90mΓåô[39m[22m GET /integration/test-scope - 403 com token sem o escopo
+       [2m[90mΓåô[39m[22m GET /integration/test-scope - 401 sem token
+[16:04:09.330] [32mINFO[39m (18604): [36mrequest errored[39m [90m{"req":{"id":"req-4","method":"POST","url":"/v1/applications/test-mock-id/regenerate-secret","query":{},"headers":{"user-agent":"lightMyRequest","host":"localhost:80"},"remoteAddress":"127.0.0.1"},"res":{"statusCode":500,"headers":{"content-type":"application/json; charset=utf-8","content-length":"208"}},"responseTime":251}[39m
+    err: {
+      "type": "Error",
+      "message": "failed with status code 500",
+      "stack":
+          Error: failed with status code 500
+              at onResFinished (C:\Users\Administrator\Core-Engine\node_modules\pino-http\logger.js:115:39)
+              at Response.onResponseComplete (C:\Users\Administrator\Core-Engine\node_modules\pino-http\logger.js:178:14)
+              at Response.emit (node:events:520:22)
+              at Response.end (C:\Users\Administrator\Core-Engine\node_modules\light-my-request\lib\response.js:127:8)
+              at sendTrailer (C:\Users\Administrator\Core-Engine\node_modules\fastify\lib\reply.js:826:9)
+              at onSendEnd (C:\Users\Administrator\Core-Engine\node_modules\fastify\lib\reply.js:682:3)
+              at onSendHook (C:\Users\Administrator\Core-Engine\node_modules\fastify\lib\reply.js:551:5)
+              at preSerializationHookEnd (C:\Users\Administrator\Core-Engine\node_modules\fastify\lib\reply.js:534:3)
+              at preSerializationHook (C:\Users\Administrator\Core-Engine\node_modules\fastify\lib\reply.js:510:5)
+              at Reply.send (C:\Users\Administrator\Core-Engine\node_modules\fastify\lib\reply.js:217:7)
+    }
+[16:04:09.343] [32mINFO[39m (18604): [36mrequest errored[39m [90m{"req":{"id":"req-5","method":"POST","url":"/v1/applications/test-mock-id/scopes","query":{},"headers":{"user-agent":"lightMyRequest","host":"localhost:80","content-type":"application/json","content-length":"24"},"remoteAddress":"127.0.0.1"},"res":{"statusCode":500,"headers":{"content-type":"application/json; charset=utf-8","content-length":"197"}},"responseTime":2}[39m
+    err: {
+      "type": "Error",
+      "message": "failed with status code 500",
+      "stack":
+          Error: failed with status code 500
+              at onResFinished (C:\Users\Administrator\Core-Engine\node_modules\pino-http\logger.js:115:39)
+              at Response.onResponseComplete (C:\Users\Administrator\Core-Engine\node_modules\pino-http\logger.js:178:14)
+              at Response.emit (node:events:520:22)
+              at Response.end (C:\Users\Administrator\Core-Engine\node_modules\light-my-request\lib\response.js:127:8)
+              at sendTrailer (C:\Users\Administrator\Core-Engine\node_modules\fastify\lib\reply.js:826:9)
+              at onSendEnd (C:\Users\Administrator\Core-Engine\node_modules\fastify\lib\reply.js:682:3)
+              at onSendHook (C:\Users\Administrator\Core-Engine\node_modules\fastify\lib\reply.js:551:5)
+              at preSerializationHookEnd (C:\Users\Administrator\Core-Engine\node_modules\fastify\lib\reply.js:534:3)
+              at preSerializationHook (C:\Users\Administrator\Core-Engine\node_modules\fastify\lib\reply.js:510:5)
+              at Reply.send (C:\Users\Administrator\Core-Engine\node_modules\fastify\lib\reply.js:217:7)
+    }
+ [31mΓ¥»[39m test/applications.e2e.spec.ts [2m([22m[2m6 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1589[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m /v1/applications (POST) [33m 512[2mms[22m[39m
+     [32mΓ£ô[39m /v1/applications (GET)[32m 3[2mms[22m[39m
+     [32mΓ£ô[39m /v1/applications/:id (GET)[32m 1[2mms[22m[39m
+[31m     [31m├ù[31m /v1/applications/:id/regenerate-secret (POST)[39m[32m 262[2mms[22m[39m
+     [32mΓ£ô[39m /v1/applications/:id/scopes (POST)[32m 5[2mms[22m[39m
+     [32mΓ£ô[39m /v1/applications/:id/scopes (GET)[32m 1[2mms[22m[39m
+[16:04:09.345] [32mINFO[39m (18604): [36mrequest completed[39m [90m{"req":{"id":"req-6","method":"POST","url":"/v1/applications/test-mock-id/scopes","query":{},"headers":{"user-agent":"lightMyRequest","host":"localhost:80","content-type":"application/json","content-length":"24"},"remoteAddress":"127.0.0.1"},"res":{"statusCode":201,"headers":{"content-type":"application/json; charset=utf-8","content-length":"177"}},"responseTime":1}[39m
+[16:04:09.346] [32mINFO[39m (18604): [36mrequest completed[39m [90m{"req":{"id":"req-7","method":"GET","url":"/v1/applications/test-mock-id/scopes","query":{},"headers":{"user-agent":"lightMyRequest","host":"localhost:80"},"remoteAddress":"127.0.0.1"},"res":{"statusCode":200,"headers":{"content-type":"application/json; charset=utf-8","content-length":"177"}},"responseTime":0}[39m
+stderr | EventEmitter.silentEmit (C:\Users\Administrator\Core-Engine\node_modules\ioredis\built\Redis.js:532:21)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1193:18)
+    at afterConnectMultiple (node:net:1783:7)
+
+stderr | test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+Failed to initialize test app: MaxRetriesPerRequestError: Reached the max retries per request limit (which is 20). Refer to "maxRetriesPerRequest" option for details.
+    at Socket.<anonymous> (C:\Users\Administrator\Core-Engine\node_modules\ioredis\built\redis\event_handler.js:207:37)
+    at Object.onceWrapper (node:events:623:12)
+    at Socket.emit (node:events:508:20)
+    at TCP.<anonymous> (node:net:350:12)
+
+ [31mΓ¥»[39m test/rate-limit.e2e.spec.ts [2m([22m[2m2 tests[22m[2m | [22m[33m2 skipped[39m[2m)[22m[33m 11616[2mms[22m[39m
+     [2m[90mΓåô[39m[22m should allow up to 5 login attempts per minute
+     [2m[90mΓåô[39m[22m should trigger lockout after 5 consecutive failures
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Suites 2 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  test/integration.e2e.spec.ts > Integration (e2e)
+PrismaClientKnownRequestError: 
+Invalid `prisma.application.upsert()` invocation in
+C:/Users/Administrator/Core-Engine/test/integration.e2e.spec.ts:46:30
+
+  43 
+  44 // Seed test data
+  45 const clientSecretHash = await bcrypt.hash(testApp.clientSecret, 12);
+ΓåÆ 46 await prisma.application.upsert(
+
+ Γ¥» zr.handleRequestError node_modules/@prisma/client/runtime/client.js:65:8286
+ Γ¥» zr.handleAndLogRequestError node_modules/@prisma/client/runtime/client.js:65:7581
+ Γ¥» zr.request node_modules/@prisma/client/runtime/client.js:65:7288
+ Γ¥» a node_modules/@prisma/client/runtime/client.js:75:5816
+ Γ¥» test/integration.e2e.spec.ts:46:5
+     44|     // Seed test data
+     45|     const clientSecretHash = await bcrypt.hash(testApp.clientSecret, 1ΓÇª
+     46|     await prisma.application.upsert({
+       |     ^
+     47|       where: { clientId: testApp.clientId },
+     48|       update: { clientSecretHash, status: 'ACTIVE' },
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/4]ΓÄ»
+
+ FAIL  test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+Error: Hook timed out in 10000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ Γ¥» test/rate-limit.e2e.spec.ts:15:3
+     13|   let redis: Redis;
+     14| 
+     15|   beforeAll(async () => {
+       |   ^
+     16|     try {
+     17|       const moduleFixture: TestingModule = await Test.createTestingModΓÇª
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[2/4]ΓÄ»
+
+ FAIL  test/rate-limit.e2e.spec.ts > Rate Limit (e2e)
+MaxRetriesPerRequestError: Reached the max retries per request limit (which is 20). Refer to "maxRetriesPerRequest" option for details.
+ Γ¥» Socket.<anonymous> node_modules/ioredis/built/redis/event_handler.js:207:37
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[3/4]ΓÄ»
+
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Tests 1 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  test/applications.e2e.spec.ts > ApplicationsModule (e2e) > /v1/applications/:id/regenerate-secret (POST)
+AssertionError: expected 500 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 500
+
+ Γ¥» test/applications.e2e.spec.ts:130:33
+    128|     });
+    129| 
+    130|     expect(response.statusCode).toBe(201);
+       |                                 ^
+    131|     const body = JSON.parse(response.body);
+    132|     expect(body.success).toBe(true);
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[4/4]ΓÄ»
+
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m10 passed[39m[22m[90m (13)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m52 passed[39m[22m[2m | [22m[33m9 skipped[39m[90m (62)[39m
+[2m   Start at [22m 16:03:59
+[2m   Duration [22m 19.47s[2m (transform 5.97s, setup 0ms, import 63.70s, tests 17.87s, environment 3ms)[22m
+

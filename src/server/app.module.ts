@@ -11,6 +11,7 @@ import { ScopesModule } from '../modules/scopes/scopes.module';
 import { IntegrationModule } from '../modules/integration/integration.module';
 import { RateLimitModule } from './common/rate-limit/rate-limit.module';
 import { LoggerModule } from 'nestjs-pino';
+import { AuditModule } from '../modules/audit/audit.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { LoggerModule } from 'nestjs-pino';
     ScopesModule,
     IntegrationModule,
     RateLimitModule,
+    AuditModule,
   ],
 })
 

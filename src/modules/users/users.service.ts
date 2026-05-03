@@ -6,10 +6,14 @@ import { ChangeUserStatusDto } from './dto/change-user-status.dto';
 import { ListUsersQueryDto } from './dto/list-users-query.dto';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(AuditService) private readonly audit: AuditService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const passwordHash = await bcrypt.hash(createUserDto.password, 12);
@@ -129,6 +133,7 @@ export class UsersService {
           updatedAt: true,
         },
       });
+      this.audit.logStatusChange('USER', id, changeStatusDto.status);
       return user;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

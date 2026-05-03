@@ -4,6 +4,7 @@ import { PrismaService } from '../../server/prisma/prisma.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Prisma, AppStatus } from '@prisma/client';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { AuditService } from '../audit/audit.service';
 
 describe('ApplicationsService', () => {
   let service: ApplicationsService;
@@ -23,6 +24,13 @@ describe('ApplicationsService', () => {
               findUnique: vi.fn(),
               update: vi.fn(),
             },
+          },
+        },
+        {
+          provide: AuditService,
+          useValue: {
+            logStatusChange: vi.fn(),
+            logSecretRegenerated: vi.fn(),
           },
         },
       ],

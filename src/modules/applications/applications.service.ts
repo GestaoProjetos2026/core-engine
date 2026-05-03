@@ -8,10 +8,14 @@ import { AssociateScopesDto } from './dto/associate-scopes.dto';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class ApplicationsService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(AuditService) private readonly audit: AuditService,
+  ) {}
 
   private generateClientCredentials() {
     const clientId = crypto.randomUUID().replace(/-/g, '');
@@ -141,6 +145,7 @@ export class ApplicationsService {
           updatedAt: true,
         },
       });
+      this.audit.logStatusChange('APPLICATION', id, changeStatusDto.status);
       return application;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -167,6 +172,7 @@ export class ApplicationsService {
           updatedAt: true,
         },
       });
+      this.audit.logSecretRegenerated(id);
       return { ...application, clientSecret };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
