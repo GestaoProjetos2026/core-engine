@@ -552,6 +552,7 @@ Estimativa: 5 SP
 Label: audit, logging, sprint-5
 
 4) Healthcheck com dependências (RF19, RNF09)
+Status: done
 
 Pertence a: Module 6 — Health
 Título: `GET /v1/health` reflete estado do banco

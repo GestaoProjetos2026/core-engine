@@ -7,31 +7,29 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 5: concluída Task 3 — `Auditoria mínima de eventos críticos (§21)`. Criação do `AuditModule` e `AuditService` para logging estruturado em JSON e integração com os fluxos críticos de: Autenticação (sucesso, falha e refresh), Aplicações (regeneração de client_secret e mudança de status) e Usuários (mudança de status). Refatoração associada nos specs para suprir injeção da nova dependência.
+- Sprint 5: concluída Task 4 — `Healthcheck com dependências (RF19, RNF09)`. Criação do `HealthService` nativo (Prisma + Redis) exposto na rota `GET /v1/health` retornando explicitamente status `ok` ou `degraded` composto pela resposta dos componentes alvos.
 
 ## Arquivos modificados recentemente
-- `src/modules/audit/audit.module.ts` e `src/modules/audit/audit.service.ts` — Módulo base.
-- `src/server/app.module.ts` — Importação global do `AuditModule`.
-- `src/modules/auth/auth.service.ts` / `src/modules/applications/applications.service.ts` / `src/modules/users/users.service.ts` — Injeção e emissão de eventos críticos.
-- `docs/PRD_DEVELOPMENT.md` — Histórico atualizado.
+- `src/server/health/health.service.ts` e `src/server/health/health.service.spec.ts` — Nova service monitorando Prisma e Redis.
+- `src/server/health/health.module.ts` — Importado `PrismaModule`.
+- `src/server/health/health.controller.ts` e `src/server/health/health.controller.spec.ts` — Rota atualizada, integrando DI com decorador `@Inject`.
+- `docs/CONTEXT.md` e `docs/PRD_DEVELOPMENT.md` — Tracking de progresso da sprint.
 
 ## Estado atual
-- Sprint 5 em andamento. Tasks 1, 2 e 3 concluídas.
-- Observabilidade e logs de segurança e auditoria (estruturados) agora preenchem os requisitos operacionais §21.
+- Sprint 5 em andamento. Tasks 1, 2, 3 e 4 concluídas.
+- Carga de observabilidade (Healthchecks compostos e estruturados) integrados com sucesso.
 
 ## Pendencias e debitos
-- Próximas tasks da Sprint 5: Healthcheck com dependências (Task 4) e Pipeline CI (Task 5).
-- Testes E2E (como integração do Rate Limit em Redis) falham apenas por ausência de conectividade aos serviços em nível de máquina virtual (não é problema do código, mas falta o db de teste).
+- Próximas tasks da Sprint 5: Pipeline CI (Task 5), Cobertura em módulos críticos (Task 6), HTTP Helmet/CSP por ambiente (Task 7).
 
 ## Riscos e atencoes
-- Atentar ao spin-up total do Docker Compose (PostgreSQL e Redis) antes de exigir verdades absolutas dos testes E2E localmente. 
-- A auditoria não bloqueia transações se houver falha no logger (o que está aderente aos requisitos não bloqueantes).
+- O esbuild (tsx de reload auto) apresenta gargalos de extração de metadados das classes no construtor de classes intermódulos. Os decorators `@Inject(X)` devem ser explícitos e manutenidos para qualquer injeção no constructor na pipeline atual de desenvolvimento para compilação ilesa a instabilidades.
 
 ## Proximo foco
-- Sprint 5 - Task 4: Healthcheck com dependências (RF19, RNF09). Mostrar o status dos serviços acoplados (DB, Redis) na rota GET /v1/health.
+- Sprint 5 - Task 5: Pipeline CI: lint, testes, build (DoD). Adicionar GitHub Actions para o repositório rodar o pipeline automático antes de cada integração de PR.
 
 ## Tasks concluidas na sessao
-- Sprint 5 - Task 3: Auditoria mínima de eventos críticos (§21).
+- Sprint 5 - Task 4: Healthcheck com dependências (RF19, RNF09).
 
 ## Observacoes uteis para a proxima sessao
-- A suíte de testes unitários precisou de imports mock (`vi.fn()`) robustos para o `AuditService` para que os controllers e services isolados compilassem o e corressem em sucesso. Quando adicionar serviços globais no core, reatestar os injects nos Root Modules de teste sempre.
+- O teste do `HealthService` foi contruído de forma a não depender da daemon real do PostgreSQL ou do Redis. Isso garante a flexibilidade exigida numa pipeline de CI que será implementada na Task 5.

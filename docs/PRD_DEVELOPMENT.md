@@ -60,6 +60,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 1**: Implementação de Rate Limit e Lockout (RNF07) utilizando Redis e custom Guards/Interceptors. ✔️ (Concluído em 03/05/2026)
 - **Task 2**: Implementação de Logs estruturados JSON e `requestId` (RNF11) utilizando `nestjs-pino` e Fastify hooks. ✔️ (Concluído em 03/05/2026)
 - **Task 3**: Auditoria mínima de eventos críticos (§21) utilizando logs estruturados e injetados globalmente via `AuditService`. ✔️ (Concluído em 03/05/2026)
+- **Task 4**: Healthcheck com dependências (RF19, RNF09). Utilização nativa do PrismaService e ioredis validando liveness das comunicações sem dependências externas como `@nestjs/terminus`. ✔️ (Concluído em 03/05/2026)
 
 ---
 
@@ -112,8 +113,15 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 9. **Referência Desatualizada ao `ScopesGuard` no `JWT_GUIDE.md`**
    - **Problema**: O `JWT_GUIDE.md` indicava que `ScopesGuard` seria implementado na "Sprint 5", quando na realidade foi entregue na Sprint 4 Task 8.
    - **Solução**: Correção da nota e atualização das referências cruzadas, incluindo link para `docs/M2M_INTEGRATION_GUIDE.md` e `docs/SCOPES_GUARD_TEST_GUIDE.md`.
+10. **DI Omissa nos Testes (Esbuild TypeScript Compiler)**
+    - **Problema**: O `HealthController` injetava o `HealthService` nativamente via inferência de TypeScript, mas durante execução no esbuild (vitest e tsx engine) as dependências não resolviam o inject corretamente, lançando `Cannot read properties of undefined (reading 'checkDatabase')`.
+    - **Solução**: Uso imperativo do `@Inject(HealthService)` nos construtores do Health Module, conforme estabelecido no problema prévio catalogado nas Sprints 1 a 4.
+
+11. **Soft Degradation no Healthcheck**
+    - **Problema**: A dependência e falhas drásticas na comunicação com o banco (`Prisma`) ou o (`Redis`) jogaria exceções 500 mascaradas pelo EnvelopeInterceptor, confundindo orquestradores como Kubernetes.
+    - **Solução**: O serviço isola a exceção e retorna HTTP 200 encapsulado com `{ status: 'degraded' }`, satisfazendo as políticas orquestrais que leem o corpo de liveness sem acionar o panic mode dos frameworks.
 
 ---
 
 ## 📝 Tasks Postergadas
-*Nenhuma ocorrência de Task crítica postergada até a Sprint 3. Os ciclos seguem alinhados ao planejamento estabelecido.*
+*Nenhuma ocorrência de Task crítica postergada até o momento. Os ciclos seguem alinhados ao planejamento da Sprint 5.*
