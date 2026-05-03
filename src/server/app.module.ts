@@ -9,6 +9,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ApplicationsModule } from '../modules/applications/applications.module';
 import { ScopesModule } from '../modules/scopes/scopes.module';
 import { IntegrationModule } from '../modules/integration/integration.module';
+import { RateLimitModule } from './common/rate-limit/rate-limit.module';
 
 @Module({
   imports: [
@@ -21,8 +22,10 @@ import { IntegrationModule } from '../modules/integration/integration.module';
     ApplicationsModule,
     ScopesModule,
     IntegrationModule,
+    RateLimitModule,
   ],
 })
+
 export class AppModule {}
 
 

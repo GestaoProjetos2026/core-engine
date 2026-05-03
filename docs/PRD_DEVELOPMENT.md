@@ -55,9 +55,14 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 10**: OpenAPI: token endpoint OAuth e erros alinhados à RFC (RF20). ✔️ (Concluído em 24/04/2026)
 - **Task 11**: Testes e2e M2M e spike manual com aplicação de teste. ✔️ (Concluído em 24/04/2026)
 
+### Sprint 5: Segurança Operacional e Finalização
+**Status**: 🚀 Em Andamento
+- **Task 1**: Implementação de Rate Limit e Lockout (RNF07) utilizando Redis e custom Guards/Interceptors. ✔️ (Concluído em 03/05/2026)
+
 ---
 
 ## 🛠️ Alterações, Modificações e Implementações Técnicas
+
 
 Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão cruciais e refatorações se mostraram necessárias:
 

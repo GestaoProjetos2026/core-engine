@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Post, Req, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -15,6 +15,8 @@ import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { RateLimitGuard } from '../../server/common/rate-limit/rate-limit.guard';
+import { LoginStatusInterceptor } from '../../server/common/rate-limit/login-status.interceptor';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -69,14 +71,34 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RateLimitGuard)
+  @UseInterceptors(LoginStatusInterceptor)
   @ApiOperation({
     summary: 'Login with e-mail and password',
     description:
-      'Returns access and refresh tokens (RF02, RF03). Failed login does not reveal whether the e-mail exists.',
+      'Returns access and refresh tokens (RF02, RF03). Subject to rate limiting and lockout (RNF07).',
   })
   @ApiResponse({
     status: 200,
     description: 'Tokens issued',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Rate limit exceeded or account locked (RNF07)',
+    schema: {
+      example: {
+        success: false,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: 'Too many attempts or account locked. Please try again later.',
+          details: {
+            retryAfter: 60,
+          },
+        },
+        timestamp: '2026-04-08T12:00:00.000Z',
+        path: '/v1/auth/login',
+      },
+    },
   })
   @ApiUnauthorizedResponse({
     description: 'Invalid credentials or inactive user (RN01)',

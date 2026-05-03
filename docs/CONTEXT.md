@@ -7,31 +7,33 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 4: concluída task 11 — `Testes e2e M2M e spike manual com aplicação de teste`. Adicionada a aplicação semente no `prisma/seed.ts` e confirmados testes da integração M2M. A Sprint 4 está totalmente finalizada.
+- Sprint 5: iniciada e concluída Task 1 — `Rate limit e lockout (RNF07)`. Implementada proteção contra brute-force no login utilizando Redis, `RateLimiterRedis`, `RateLimitGuard` e `LoginStatusInterceptor`.
 
 ## Arquivos modificados recentemente
-- `prisma/seed.ts` — Incluído código para gerar a "Test Application" (`test-client-id` / `test-client-secret`) e o escopo `test:scope` na inicialização do banco.
-- `test/integration.e2e.spec.ts` — Confirmada integridade estrutural e adoção do `parseEnvelope` nas asserções.
-- `docs/M2M_INTEGRATION_GUIDE.md` — Guia público de integração M2M para parceiros externos com exemplos `curl`, escopos, erros OAuth e boas práticas.
+- `src/server/common/rate-limit/` — Novo componente de proteção contra abuso.
+- `src/modules/auth/auth.controller.ts` — Aplicada proteção de rate limit no endpoint de login.
+- `src/modules/auth/auth.module.ts` — Integrado `RateLimitModule`.
+- `test/rate-limit.e2e.spec.ts` — Novos testes E2E validando 5 req/min e lockout de 30 min.
+- `.env` e `.env.example` — Adicionadas configurações de rate limit e Redis.
 
 ## Estado atual
-- Tasks 1 a 11 da Sprint 4 estão concluídas. O ciclo está pronto para encerramento ou migração para a Sprint 5.
+- Sprint 4 finalizada.
+- Sprint 5 iniciada com sucesso (Task 1 concluída).
+- Sistema de proteção contra brute-force operacional e testado.
 
 ## Pendencias e debitos
-- Sem pendências críticas. A base OAuth 2.0 (client credentials) e autorização RBAC está implementada e testada.
+- Próximas tasks da Sprint 5: Logs estruturados (Task 2) e Auditoria (Task 3).
 
 ## Riscos e atencoes
-- O padrão de teste E2E exige o helper `parseEnvelope()` para extrair `body.data` — evitar ler `body.access_token` diretamente.
-- Certifique-se de que `JWT_SECRET` está configurado corretamente no ambiente para que os tokens sejam assinados.
+- O sistema depende do Redis estar online para aplicar o rate limit.
+- O lockout de 30 minutos é aplicado tanto por IP quanto por E-mail após 5 falhas consecutivas.
 
 ## Proximo foco
-- Iniciar o escopo da **Sprint 5**, priorizando segurança operacional com Rate limit e lockout (Task 1).
+- Sprint 5 - Task 2: Logs estruturados JSON com requestId (RNF11).
 
 ## Tasks concluidas na sessao
-- Sprint 4 - Task 11: Testes e2e M2M e spike manual com aplicação de teste — Status `done`.
+- Sprint 5 - Task 1: Rate limit e lockout (RNF07).
 
 ## Observacoes uteis para a proxima sessao
-- Tratar `PRD.md` e `Sprints.md` como contratos.
-- Os testes E2E do Nest+Fastify usam o `app.inject()` instanciado diretamente.
-- O `ResponseEnvelopeInterceptor` embrulha TODAS as respostas. Acessar dados via `body.data`, não diretamente em `body`.
-- Se o Swagger não refletir mudanças, matar o processo zumbi na porta 3000 e reiniciar `npm run dev`.
+- O helper `RateLimitGuard` extrai o e-mail do `body.email`. Certifique-se de que novos endpoints sensíveis sigam esse padrão ou ajuste o guard.
+- O `LoginStatusInterceptor` reporta falha apenas se receber `AUTH_INVALID_CREDENTIALS`.
