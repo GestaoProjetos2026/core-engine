@@ -1,7 +1,19 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-Vamos implementar a Tarefa 4 da Sprint 5.
+Vamos implementar a task 5 da sprint 5: 5)Pipeline CI: lint, testes, build (DoD)
+
+Pertence a: Module 7 — Infraestrutura e Documentação
+Título: GitHub Actions (ou CI equivalente) para o repositório
+Descrição: Rodar ESLint/Prettier, testes unitários e e2e, build Nest em PR ou push principal.
+Critérios de aceitação:
+
+- pipeline verde no repositório
+- falha bloqueia merge
+- documentado no README
+Prioridade: Urgent
+Estimativa: 5 SP
+Label: ci, devops, sprint-5
 
 Passos obrigatorios:
 1) Localize e leia o documento normativo principal do produto.

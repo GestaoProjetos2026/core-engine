@@ -9,7 +9,7 @@ export class CreateScopeDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
-  code: string;
+  code!: string;
 
   @ApiProperty({
     description: 'Human-readable description of what this scope allows',
@@ -18,5 +18,5 @@ export class CreateScopeDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
-  description: string;
+  description!: string;
 }

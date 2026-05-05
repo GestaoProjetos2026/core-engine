@@ -1,6 +1,6 @@
 # PRD de Desenvolvimento - Erp Core Auth
 
-Este documento serve como tracking contínuo de desenvolvimento, mapeando e centralizando o progresso do projeto. Ele contém o registro de tudo o que foi desenvolvido (Tasks e Sprints concluídas), dificuldades técnicas encontradas, tasks postergadas e todas as implementações ou decisões de arquitetura no código. 
+Este documento serve como tracking contínuo de desenvolvimento, mapeando e centralizando o progresso do projeto. Ele contém o registro de tudo o que foi desenvolvido (Tasks e Sprints concluídas), dificuldades técnicas encontradas, tasks postergadas e todas as implementações ou decisões de arquitetura no código.
 
 Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, task ou sprint.
 
@@ -9,7 +9,9 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 ## 🎯 Sprints e Tasks Concluídas
 
 ### Sprint 1: Planejamento e MVP do Banco de Dados
+
 **Status**: ✔️ Concluída
+
 - **Task 1**: Elaboração do PRD do Core/Auth.
 - **Task 2**: Definição e abstração do MVP do banco de dados.
 - **Tasks 3, 4, 5, 6**: Modelagem das entidades principais: `User`, `Role`, `Permission`, além de suas tabelas de relacionamento para suporte a RBAC.
@@ -17,7 +19,9 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 8**: Padronização do versionamento da API com o prefixo global `/v1`.
 
 ### Sprint 2: Fundação API e Infraestrutura
+
 **Status**: ✔️ Concluída
+
 - **Task 1**: Bootstrap da aplicação base, configurando o NestJS, módulo global do Prisma e rotas de estado (Ex: `/v1/health`).
 - **Task 2**: Implementação do envelope padrão de resposta (success, data, timestamps) e captura hierárquica de erro com `error.code`.
 - **Task 3**: Entrega da documentação inicial sobre o contrato da API e dos catálogos de erro.
@@ -26,7 +30,9 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 6**: Evolução do Prisma Schema contendo RefreshToken, Application, Scope e migrações fundamentais para as lógicas de auth e client.
 
 ### Sprint 3: Core Auth, JWT, Guards e Interceptadores
+
 **Status**: ✔️ Concluída
+
 - **Task 1**: Implementação dos endpoints primários (`POST /v1/auth/register` e `POST /v1/auth/login`) contendo lógicas de credenciais.
 - **Task 2**: Implementação mecânica do endpoint de refresh token (`POST /v1/auth/refresh`) com rotação obrigatória de chaves.
 - **Task 3**: Conclusão da rota `GET /v1/auth/me` para retorno do profile persistente, papéis e permissões do usuário em contexto.
@@ -42,7 +48,9 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 ## 🚀 Sprints em Andamento / Próximas
 
 ### Sprint 4: RBAC Completo e Integrações Restritivas
+
 **Status**: ✔️ Concluída
+
 - **Task 1**: Criação e manutenção do CRUD de Papéis e de Permissões. ✔️ (Concluído em 22/04/2026)
 - **Task 2**: Gerenciamento de vínculos relacionais fortes M2M (Usuário-Papel e Papel-Permissão). ✔️ (Concluído em 22/04/2026)
 - **Task 3**: Seed de papéis/permissões iniciais e testes e2e de autorização (403). ✔️ (Concluído em 24/04/2026)
@@ -56,16 +64,18 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 11**: Testes e2e M2M e spike manual com aplicação de teste. ✔️ (Concluído em 24/04/2026)
 
 ### Sprint 5: Segurança Operacional e Finalização
+
 **Status**: 🚀 Em Andamento
+
 - **Task 1**: Implementação de Rate Limit e Lockout (RNF07) utilizando Redis e custom Guards/Interceptors. ✔️ (Concluído em 03/05/2026)
 - **Task 2**: Implementação de Logs estruturados JSON e `requestId` (RNF11) utilizando `nestjs-pino` e Fastify hooks. ✔️ (Concluído em 03/05/2026)
 - **Task 3**: Auditoria mínima de eventos críticos (§21) utilizando logs estruturados e injetados globalmente via `AuditService`. ✔️ (Concluído em 03/05/2026)
 - **Task 4**: Healthcheck com dependências (RF19, RNF09). Utilização nativa do PrismaService e ioredis validando liveness das comunicações sem dependências externas como `@nestjs/terminus`. ✔️ (Concluído em 03/05/2026)
+- **Task 5**: Pipeline CI: lint, testes e build (DoD), com workflow GitHub Actions para `pull_request`/`push`, serviços PostgreSQL + Redis e quality gate completo (`lint`, `format:check`, `test:unit`, `test:e2e`, `build`). ✔️ (Concluído em 05/05/2026)
 
 ---
 
 ## 🛠️ Alterações, Modificações e Implementações Técnicas
-
 
 Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão cruciais e refatorações se mostraram necessárias:
 
@@ -80,8 +90,6 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 1. **Dependência Circular em Parsers do OpenAPI (@nestjs/swagger)**
    - **Problema**: Ocorreram conflitos em processamento de metadata de DTOs durante a startup do Nest, gerando erros de `Circular dependency detected` no motor do Swagger, impedindo o boot da aplicação ou ocultando campos de Request Body (especialmente no `LoginDto`).
    - **Solução Contornada**: Utilização de definições de esquema inline (`@ApiBody({ schema: { ... } })`) para contornar a inferência automática baseada em classes em endpoints críticos, e aplicação de `lazy resolvers` (`() => Class`) onde possível.
-
-   
 2. **Inicialização Instável do Prisma Client e Seed**
    - **Problema**: Dificuldade em inicializar corretamente as engines e transações (`PrismaClientInitializationError`) no ato de boot e seeds em persistência de desenvolvimento.
    - **Solução Contornada**: Compatibilização com variáveis de ambiente configuradas, garantia de execução do daemon do postgres através do docker, e ajuste fino da conexão em `prisma.service.ts`.
@@ -120,8 +128,20 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 11. **Soft Degradation no Healthcheck**
     - **Problema**: A dependência e falhas drásticas na comunicação com o banco (`Prisma`) ou o (`Redis`) jogaria exceções 500 mascaradas pelo EnvelopeInterceptor, confundindo orquestradores como Kubernetes.
     - **Solução**: O serviço isola a exceção e retorna HTTP 200 encapsulado com `{ status: 'degraded' }`, satisfazendo as políticas orquestrais que leem o corpo de liveness sem acionar o panic mode dos frameworks.
+12. **Bloqueio Local de Migração Prisma durante Validação da CI**
+    - **Problema**: Na validação local pós-implementação da Task 5 (pipeline CI), o comando `prisma migrate deploy` retornou `P3009` por migração anterior marcada como falha (`20260417231629_migration_test`) no banco local, impedindo execução e2e completa nessa instância.
+    - **Solução**: Registrado como débito de ambiente local; no workflow CI o banco é provisionado limpo por job. Ação pendente: saneamento local da migração via fluxo de `migrate resolve`/reset controlado conforme política do time.
 
 ---
 
 ## 📝 Tasks Postergadas
-*Nenhuma ocorrência de Task crítica postergada até o momento. Os ciclos seguem alinhados ao planejamento da Sprint 5.*
+
+- **Configurar Branch Protection do workflow `CI`**
+  - **Motivo do adiamento**: depende de permissão/configuração no repositório GitHub (fora do código).
+  - **Impacto**: sem essa configuração, a regra "falha bloqueia merge" não fica efetivamente aplicada.
+  - **Próxima ação**: exigir o status check `CI` nas branches protegidas (`main`/`develop`, conforme política do time).
+
+- **Saneamento local de migração Prisma (`P3009`)**
+  - **Motivo do adiamento**: bloqueio de ambiente local por migração marcada como falha (`20260417231629_migration_test`).
+  - **Impacto**: validação e2e local fica inconsistente até corrigir o histórico de migração.
+  - **Próxima ação**: executar fluxo controlado de `prisma migrate resolve` e/ou reset do banco local, alinhado à política do squad.

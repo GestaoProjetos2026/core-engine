@@ -8,6 +8,13 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/src/main.js",
     "test": "vitest run --exclude \"dist/**\"",
+    "test:unit": "vitest run src --exclude \"dist/**\"",
+    "test:e2e": "vitest run test --exclude \"dist/**\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"README.md\" \"docs/CONTEXT.md\" \"docs/PRD_DEVELOPMENT.md\" \"package.json\" \"tsconfig.json\" \"eslint.config.mjs\" \".prettierrc.json\" \".github/workflows/*.yml\"",
+    "format:check": "prettier --check \"README.md\" \"docs/CONTEXT.md\" \"docs/PRD_DEVELOPMENT.md\" \"package.json\" \"tsconfig.json\" \"eslint.config.mjs\" \".prettierrc.json\" \".github/workflows/*.yml\"",
+    "ci": "npm run lint && npm run format:check && npm run test:unit && npm run test:e2e && npm run build",
     "prisma:seed": "tsx prisma/seed.ts"
   },
   "keywords": [],
@@ -58,6 +65,7 @@
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.59.2",
     "vitest": "^4.0.18"
   }
 }

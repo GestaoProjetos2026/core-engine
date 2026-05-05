@@ -1,0 +1,11 @@
+dist
+node_modules
+coverage
+prisma/migrations
+package-lock.json
+*.log
+test-output*.txt
+test-res*.txt
+test-result*.txt
+vitest*.txt
+swagger*.json

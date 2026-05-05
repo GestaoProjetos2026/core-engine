@@ -566,6 +566,7 @@ Estimativa: 2 SP
 Label: health, kubernetes, sprint-5
 
 5) Pipeline CI: lint, testes, build (DoD)
+Status: done
 
 Pertence a: Module 7 — Infraestrutura e Documentação
 Título: GitHub Actions (ou CI equivalente) para o repositório

@@ -9,7 +9,7 @@ export class CreatePermissionDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(100)
-  code: string;
+  code!: string;
 
   @ApiProperty({
     example: 'Allows reading user list and details',
@@ -18,5 +18,5 @@ export class CreatePermissionDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(255)
-  description: string;
+  description!: string;
 }

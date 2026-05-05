@@ -29,15 +29,21 @@ export class ResponseEnvelopeInterceptor<T>
     const requestId = req.id || req.raw?.id;
 
     return next.handle().pipe(
-      map((data) => ({
-        success: true,
-        data,
-        timestamp: new Date().toISOString(),
-        path: req.url,
-        meta: requestId ? { requestId } : undefined,
-      })),
-    );
+      map((data) => {
+        const envelope: SuccessEnvelope<T> = {
+          success: true,
+          data,
+          timestamp: new Date().toISOString(),
+          path: req.url,
+        };
 
+        if (requestId) {
+          envelope.meta = { requestId: String(requestId) };
+        }
+
+        return envelope;
+      }),
+    );
   }
 }
 

@@ -17,11 +17,11 @@ import { AuditModule } from '../modules/audit/audit.module';
   imports: [
     LoggerModule.forRoot({
       pinoHttp: {
-        transport: process.env.NODE_ENV !== 'production'
-          ? { target: 'pino-pretty', options: { colorize: true, singleLine: true } }
-          : undefined,
         level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
-      },
+        ...(process.env.NODE_ENV !== 'production'
+          ? { transport: { target: 'pino-pretty', options: { colorize: true, singleLine: true } } }
+          : {}),
+      } as any,
     }),
     PrismaModule,
     HealthModule,

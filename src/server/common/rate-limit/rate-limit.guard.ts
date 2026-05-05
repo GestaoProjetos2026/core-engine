@@ -22,17 +22,19 @@ export class RateLimitGuard implements CanActivate {
     try {
       await this.rateLimitService.checkLimits(ip, email);
     } catch (err) {
+      const limiterError = err as { msBeforeNext?: number };
       throw new HttpException(
         {
           code: 'RATE_LIMIT_EXCEEDED',
           message: 'Too many attempts or account locked. Please try again later.',
           details: {
-            retryAfter: err.msBeforeNext ? Math.ceil(err.msBeforeNext / 1000) : undefined,
+            retryAfter: limiterError.msBeforeNext
+              ? Math.ceil(limiterError.msBeforeNext / 1000)
+              : undefined,
           },
         },
         HttpStatus.TOO_MANY_REQUESTS,
       );
-
     }
 
     return true;
