@@ -6,6 +6,7 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { randomUUID } from 'crypto';
+import fastifyHelmet from '@fastify/helmet';
 import { AppModule } from './server/app.module';
 import { ApiExceptionFilter } from './server/common/api-exception.filter';
 import { ResponseEnvelopeInterceptor } from './server/common/response-envelope.interceptor';
@@ -22,6 +23,19 @@ async function bootstrap() {
 
   app.useLogger(app.get(Logger));
 
+  await app.register(fastifyHelmet, {
+    contentSecurityPolicy:
+      process.env.NODE_ENV === 'production'
+        ? undefined
+        : {
+            directives: {
+              defaultSrc: ["'self'"],
+              styleSrc: ["'self'", "'unsafe-inline'"],
+              imgSrc: ["'self'", 'data:', 'validator.swagger.io'],
+              scriptSrc: ["'self'", "https: 'unsafe-inline'"],
+            },
+          },
+  });
 
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(
