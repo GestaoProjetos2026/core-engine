@@ -11,27 +11,34 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 const permissionDefs: { code: string; description: string }[] = [
-  { code: 'users:list', description: 'List users' },
-  { code: 'users:read', description: 'Read users' },
-  { code: 'users:create', description: 'Create users' },
-  { code: 'users:update', description: 'Update users' },
-  { code: 'users:delete', description: 'Delete users' },
-  { code: 'invoice:create', description: 'Create invoices' },
-  { code: 'invoice:read', description: 'Read invoices' },
-  { code: 'crm:read', description: 'Read CRM' },
-  { code: 'crm:create', description: 'Create CRM records' },
-  { code: 'tickets:read', description: 'Read tickets' },
-  { code: 'tickets:create', description: 'Create tickets' },
-  { code: 'tickets:delete', description: 'Delete tickets' },
-  { code: 'roles:manage', description: 'Manage roles' },
-  { code: 'roles:read', description: 'Read roles' },
-  { code: 'roles:write', description: 'Create/Update roles' },
-  { code: 'permissions:read', description: 'Read permissions' },
-  { code: 'permissions:write', description: 'Create/Update permissions' },
-  { code: 'applications:read', description: 'Read applications' },
-  { code: 'applications:write', description: 'Create/Update applications' },
-  { code: 'scopes:read', description: 'Read scopes' },
-  { code: 'scopes:write', description: 'Create/Update scopes' },
+  // Identity & Access Management (IAM)
+  { code: 'users:read', description: 'Visualizar lista e detalhes de usuários' },
+  { code: 'users:write', description: 'Criar, atualizar e excluir usuários' },
+  { code: 'roles:read', description: 'Visualizar papéis de acesso' },
+  { code: 'roles:write', description: 'Criar e atualizar papéis' },
+  { code: 'roles:manage', description: 'Vincular usuários e permissões a papéis' },
+  { code: 'permissions:read', description: 'Visualizar catálogo de permissões' },
+  { code: 'permissions:write', description: 'Gerenciar permissões do sistema' },
+
+  // Integration & M2M
+  { code: 'applications:read', description: 'Visualizar aplicações integradas' },
+  { code: 'applications:write', description: 'Gerenciar aplicações e segredos' },
+  { code: 'scopes:read', description: 'Visualizar catálogo de escopos' },
+  { code: 'scopes:write', description: 'Gerenciar escopos e vínculos' },
+
+  // Observability & System
+  { code: 'audit:read', description: 'Visualizar logs de auditoria e eventos críticos' },
+  { code: 'health:read', description: 'Visualizar status de saúde do sistema' },
+
+  // Domain Placeholders (Consumer Squads / ERP Modules)
+  { code: 'orders:read', description: 'Visualizar pedidos (Módulo Vendas)' },
+  { code: 'orders:write', description: 'Gerenciar pedidos (Módulo Vendas)' },
+  { code: 'customers:read', description: 'Visualizar clientes (Módulo CRM)' },
+  { code: 'customers:write', description: 'Gerenciar clientes (Módulo CRM)' },
+  { code: 'products:read', description: 'Visualizar catálogo de produtos' },
+  { code: 'products:write', description: 'Gerenciar catálogo de produtos' },
+  { code: 'inventory:read', description: 'Visualizar estoque' },
+  { code: 'inventory:write', description: 'Movimentar estoque' },
 ];
 
 async function main() {
@@ -39,7 +46,7 @@ async function main() {
     permissionDefs.map((p) =>
       prisma.permission.upsert({
         where: { code: p.code },
-        update: {},
+        update: { description: p.description },
         create: { code: p.code, description: p.description },
       }),
     ),
@@ -59,20 +66,15 @@ async function main() {
     create: { name: 'viewer' },
   });
 
-  const accountantRole = await prisma.role.upsert({
-    where: { name: 'accountant' },
+  const managerRole = await prisma.role.upsert({
+    where: { name: 'manager' },
     update: {},
-    create: { name: 'accountant' },
+    create: { name: 'manager' },
   });
 
-  const salesRole = await prisma.role.upsert({
-    where: { name: 'sales_rep' },
-    update: {},
-    create: { name: 'sales_rep' },
-  });
+  console.log('✅ Roles (admin, viewer, manager) upserted');
 
-  console.log('✅ 4 roles upserted');
-
+  // Admin: Tudo
   for (const permission of permissions) {
     await prisma.rolePermission.upsert({
       where: {
@@ -88,12 +90,10 @@ async function main() {
       },
     });
   }
-
   console.log('✅ Admin linked to all permissions');
 
-  const viewerPerms = permissions.filter(
-    (p) => p.code.endsWith(':read') || p.code.endsWith(':list'),
-  );
+  // Viewer: Tudo que termina em :read
+  const viewerPerms = permissions.filter((p) => p.code.endsWith(':read'));
   for (const permission of viewerPerms) {
     await prisma.rolePermission.upsert({
       where: {
@@ -109,46 +109,33 @@ async function main() {
       },
     });
   }
+  console.log(`✅ Viewer linked to ${viewerPerms.length} read permissions`);
 
-  console.log('✅ Viewer linked to read/list permissions');
-
-  const accountantPerms = permissions.filter((p) => p.code.startsWith('invoice:'));
-  for (const permission of accountantPerms) {
+  // Manager: IAM Read + Domain Read/Write (sem permissão de gerenciar IAM)
+  const managerPerms = permissions.filter(
+    (p) =>
+      p.code.endsWith(':read') ||
+      p.code.startsWith('orders:') ||
+      p.code.startsWith('customers:') ||
+      p.code.startsWith('products:') ||
+      p.code.startsWith('inventory:'),
+  );
+  for (const permission of managerPerms) {
     await prisma.rolePermission.upsert({
       where: {
         roleId_permissionId: {
-          roleId: accountantRole.id,
+          roleId: managerRole.id,
           permissionId: permission.id,
         },
       },
       update: {},
       create: {
-        roleId: accountantRole.id,
+        roleId: managerRole.id,
         permissionId: permission.id,
       },
     });
   }
-
-  console.log('✅ Accountant linked to invoice permissions');
-
-  const salesPerms = permissions.filter((p) => p.code.startsWith('crm:'));
-  for (const permission of salesPerms) {
-    await prisma.rolePermission.upsert({
-      where: {
-        roleId_permissionId: {
-          roleId: salesRole.id,
-          permissionId: permission.id,
-        },
-      },
-      update: {},
-      create: {
-        roleId: salesRole.id,
-        permissionId: permission.id,
-      },
-    });
-  }
-
-  console.log('✅ Sales rep linked to CRM permissions');
+  console.log(`✅ Manager linked to ${managerPerms.length} permissions`);
 
   // Criar usuários semente
   const defaultPassword = 'Password123!';
@@ -223,27 +210,48 @@ async function main() {
     },
   });
 
-  const testScope = await prisma.scope.upsert({
-    where: { code: 'test:scope' },
-    update: {},
-    create: { code: 'test:scope', description: 'Test Scope' },
-  });
+  // Criar Escopos Semente (M2M)
+  const scopeDefs: { code: string; description: string }[] = [
+    { code: 'read:all', description: 'Leitura total (M2M)' },
+    { code: 'write:all', description: 'Escrita total (M2M)' },
+    { code: 'orders:read', description: 'Leitura de pedidos' },
+    { code: 'orders:write', description: 'Criação/alteração de pedidos' },
+    { code: 'customers:read', description: 'Leitura de clientes' },
+    { code: 'customers:write', description: 'Escrita de clientes' },
+    { code: 'products:read', description: 'Leitura de produtos' },
+    { code: 'products:write', description: 'Escrita de produtos' },
+  ];
 
-  await prisma.applicationScope.upsert({
-    where: {
-      applicationId_scopeId: {
-        applicationId: testApp.id,
-        scopeId: testScope.id,
+  const scopes = await Promise.all(
+    scopeDefs.map((s) =>
+      prisma.scope.upsert({
+        where: { code: s.code },
+        update: { description: s.description },
+        create: { code: s.code, description: s.description },
+      }),
+    ),
+  );
+
+  console.log(`✅ ${scopes.length} scopes upserted`);
+
+  // Vincular escopos à aplicação de teste
+  for (const scope of scopes) {
+    await prisma.applicationScope.upsert({
+      where: {
+        applicationId_scopeId: {
+          applicationId: testApp.id,
+          scopeId: scope.id,
+        },
       },
-    },
-    update: {},
-    create: {
-      applicationId: testApp.id,
-      scopeId: testScope.id,
-    },
-  });
+      update: {},
+      create: {
+        applicationId: testApp.id,
+        scopeId: scope.id,
+      },
+    });
+  }
 
-  console.log('✅ Test Application created and linked to test:scope');
+  console.log('✅ Test Application linked to all scopes');
   console.log('   - clientId: test-client-id / clientSecret: test-client-secret');
 
   console.log('\n🎉 Seed completed');

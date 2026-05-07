@@ -1,14 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 
 export type EntityType = 'USER' | 'APPLICATION';
 
 @Injectable()
 export class AuditService {
-  constructor(private readonly logger: Logger) {}
+  constructor(@Inject(Logger) private readonly logger: Logger) {}
 
   logLoginSuccess(userId: string, email: string): void {
-    this.logger.info(
+    this.logger.log(
       { userId, email, auditEvent: 'LOGIN_SUCCESS' },
       `User login success: ${email}`,
     );
@@ -22,7 +22,7 @@ export class AuditService {
   }
 
   logTokenRefresh(userId: string, oldTokenId?: string, newTokenId?: string): void {
-    this.logger.info(
+    this.logger.log(
       { userId, auditEvent: 'TOKEN_REFRESH', oldTokenId, newTokenId },
       `Token refreshed for user ${userId}`,
     );
@@ -41,7 +41,7 @@ export class AuditService {
     newStatus: string,
     adminUserId?: string,
   ): void {
-    this.logger.info(
+    this.logger.log(
       { entityType, entityId, newStatus, auditEvent: 'STATUS_CHANGED', adminUserId },
       `${entityType} status changed to ${newStatus} for ID ${entityId}`,
     );

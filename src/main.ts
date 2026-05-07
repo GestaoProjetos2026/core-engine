@@ -26,7 +26,7 @@ async function bootstrap() {
   await app.register(fastifyHelmet, {
     contentSecurityPolicy:
       process.env.NODE_ENV === 'production'
-        ? undefined
+        ? true
         : {
             directives: {
               defaultSrc: ["'self'"],
