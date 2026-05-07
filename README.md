@@ -47,23 +47,45 @@ npx prisma db seed
 npm run dev
 ```
 
-## Testando a Autenticação (Spike Sprint 3)
+## Início Rápido / Exemplos Práticos (cURL)
 
-Com a seed executada (`npx prisma db seed`), dois usuários já estão prontos para uso:
-- **Admin:** `admin@example.com` / `Password123!` (Possui a role 'admin')
-- **Viewer:** `viewer@example.com` / `Password123!` (Possui a role 'viewer')
+Com a seed executada (`npx prisma db seed`), o ambiente já possui dados para testes:
+- **Admin (Humano):** `admin@example.com` / `Password123!` (Possui a role 'admin')
+- **Viewer (Humano):** `viewer@example.com` / `Password123!` (Possui a role 'viewer')
+- **Aplicação M2M:** Uma aplicação mock pode ser criada no Admin e testada.
 
-1. **Login:** Faça um `POST` para `/v1/auth/login` com o corpo:
-   ```json
-   { "email": "admin@example.com", "password": "Password123!" }
-   ```
-   *Vocé receberá um `access_token` no retorno.*
-   
-2. **Consultar Perfil:** Envie um `GET` para `/v1/auth/me` incluindo o cabeçalho:
-   ```
-   Authorization: Bearer <seu_access_token>
-   ```
-   *O retorno listará os dados do usuário e confirmará as permissões injetadas conforme suas roles.*
+### 1. Fluxo Humano (Autenticação JWT)
+
+**Passo A: Fazer Login**
+```bash
+curl -X POST http://localhost:3000/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "password": "Password123!"}'
+```
+*(Você receberá um `access_token` e `refresh_token` na resposta no campo `data`)*
+
+**Passo B: Consultar Perfil Autenticado**
+```bash
+curl -X GET http://localhost:3000/v1/auth/me \
+  -H "Authorization: Bearer <SEU_ACCESS_TOKEN>"
+```
+
+### 2. Fluxo Máquina-a-Máquina (Integração M2M)
+
+**Passo A: Obter Token de Integração via OAuth 2.0 (Client Credentials)**
+```bash
+curl -X POST http://localhost:3000/v1/oauth/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials&client_id=<CLIENT_ID>&client_secret=<CLIENT_SECRET>&scope=orders.read"
+```
+*(A API validará a aplicação e retornará um token JWT do tipo `integration_access`)*
+
+**Passo B: Chamar Rota Protegida por Escopo**
+```bash
+curl -X GET http://localhost:3000/v1/alguma-rota-protegida \
+  -H "Authorization: Bearer <SEU_TOKEN_DE_INTEGRACAO>"
+```
+*(O `ScopesGuard` interceptará a chamada garantindo que o token possui o escopo necessário)*
 
 ## Variáveis de Ambiente
 ```env
@@ -143,6 +165,17 @@ PORT=3000
 | [`docs/INTEGRATION_API_CONTRACT.md`](docs/INTEGRATION_API_CONTRACT.md) | Envelope de resposta, catálogo de `error.code` e referência ao Swagger |
 | [`docs/SCOPES_GUARD_TEST_GUIDE.md`](docs/SCOPES_GUARD_TEST_GUIDE.md) | Guia de testes do `ScopesGuard` e `@RequireScopes` |
 | `GET /v1/docs` | Swagger UI interativo (disponível apenas em desenvolvimento) |
+
+## Definition of Done (DoD) - PRD §23
+
+- [ ] Cobertura de testes unitários ≥ 80% nos módulos críticos (RNF05).
+- [x] Testes e2e dos fluxos principais (RNF06).
+- [x] Swagger/OpenAPI completo e testável (“Try it out”) para `/v1`.
+- [x] Sem segredos em plain-text no repositório; revisão de configuração.
+- [ ] CI com lint, testes e build.
+- [x] Logs estruturados JSON com requestId (RNF11).
+- [x] Healthcheck utilizável (`GET /v1/health`).
+- [x] Documentação de integração pública disponível (README ou site docs do repositório).
 
 ## Fluxo de Trabalho
 ```bash

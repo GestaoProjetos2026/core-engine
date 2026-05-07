@@ -62,6 +62,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 3**: Auditoria mínima de eventos críticos (§21) utilizando logs estruturados e injetados globalmente via `AuditService`. ✔️ (Concluído em 03/05/2026)
 - **Task 4**: Healthcheck com dependências (RF19, RNF09). Utilização nativa do PrismaService e ioredis validando liveness das comunicações sem dependências externas como `@nestjs/terminus`. ✔️ (Concluído em 03/05/2026)
 - **Task 7**: Implementação de cabeçalhos de segurança HTTP e Content Security Policy (CSP) com `@fastify/helmet` por ambiente. ✔️ (Concluído em 06/05/2026)
+- **Task 8**: README e exemplos públicos, contendo fluxos cURL testados para fluxos Humanos e M2M, além de atualização do DoD da sprint. ✔️ (Concluído em 06/05/2026)
 
 ---
 
