@@ -18,3 +18,5 @@ Dockerfile
 *.log
 swagger*.json
 scratch/
+!tsconfig.json
+!tsconfig*.json
