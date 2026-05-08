@@ -10,7 +10,6 @@ docs/
 prompts/
 test/
 vitest.config.ts
-tsconfig.json
 Dockerfile
 .dockerignore
 .vscode
