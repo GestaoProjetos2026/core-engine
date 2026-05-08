@@ -39,6 +39,7 @@ async function bootstrap() {
 
   await app.register(fastifyHelmet, {
     contentSecurityPolicy: {
+      hsts: false,
       directives: {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
