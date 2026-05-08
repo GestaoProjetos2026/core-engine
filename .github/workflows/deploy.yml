@@ -29,13 +29,13 @@ jobs:
 
       # 4. Deploy Remoto na VM do Professor
       - name: Deploy na VM via SSH
-        uses: appleboy/ssh-action@v1.0.5
+        uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/core-auth:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/projeto-setor:latest
             docker stop container-core-auth || true
             docker rm container-core-auth || true
-            docker run -d --name container-core-auth -p 8080:80 ${{ secrets.DOCKERHUB_USERNAME }}/core-auth:latest
+            docker run -d --name container-core-auth -p 8080:80 ${{ secrets.DOCKERHUB_USERNAME }}/projeto-setor:latest
