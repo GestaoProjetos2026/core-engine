@@ -8,7 +8,7 @@ export enum OAuthGrantType {
 export class OAuthTokenRequestDto {
   @IsEnum(OAuthGrantType)
   @IsNotEmpty()
-  grant_type: OAuthGrantType;
+  grant_type!: OAuthGrantType;
 
   @IsString()
   @IsOptional()

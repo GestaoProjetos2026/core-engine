@@ -9,5 +9,5 @@ export class CreateRoleDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(50)
-  name: string;
+  name!: string;
 }

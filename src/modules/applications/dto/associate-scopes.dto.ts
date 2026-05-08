@@ -11,5 +11,5 @@ export class AssociateScopesDto {
   @ArrayMinSize(1)
   @IsString({ each: true })
   @IsUUID(4, { each: true })
-  scopeIds: string[];
+  scopeIds!: string[];
 }
