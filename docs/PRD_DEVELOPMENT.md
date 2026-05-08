@@ -65,6 +65,18 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - ...
 - **Task 8**: README e exemplos públicos, contendo fluxos cURL testados para fluxos Humanos e M2M, além de atualização do DoD da sprint. ✔️ (Concluído em 06/05/2026)
 - **Task 9**: Seed final de papéis e matriz de `permission.code` (P1). Consolidação de códigos estáveis, inclusão de permissões de domínios para squads consumidores e criação do documento normativo de matriz de acesso. ✔️ (Concluído em 07/05/2026)
+- **Task 10**: Revisão de DoD e encerramento MVP (§23). Revisão de requisitos vs implementação e identificação de débitos técnicos. ✔️ (Concluído em 08/05/2026)
+
+---
+
+## 🏗️ Débitos Técnicos e Próximos Passos (Pós-MVP)
+
+Apesar da conclusão bem-sucedida das funcionalidades do Core, os seguintes itens foram identificados como débitos técnicos para evolução imediata:
+
+1. **Task 5 - Pipeline CI/CD**: Necessidade de configurar GitHub Actions para automação de testes e build.
+2. **Task 6 - Cobertura de Testes (RNF05)**: A meta de 80% de cobertura precisa ser validada e reforçada através de novos testes unitários.
+3. **Migração para Node.js LTS**: O uso do Node 25 em Windows apresentou instabilidades nativas; recomenda-se a migração para Node 22 (LTS) em ambientes de produção.
+
 
 ---
 
