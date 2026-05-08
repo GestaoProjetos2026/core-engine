@@ -26,6 +26,8 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/core-auth:latest
+          build-args: |
+            BUILDKIT_PROGRESS=plain
 
       # 4. Deploy Remoto na VM do Professor
       - name: Deploy na VM via SSH
