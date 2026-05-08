@@ -38,8 +38,8 @@ async function bootstrap() {
   // });
 
   await app.register(fastifyHelmet, {
+    hsts: false,
     contentSecurityPolicy: {
-      hsts: false,
       directives: {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
@@ -47,7 +47,7 @@ async function bootstrap() {
         scriptSrc: ["'self'", "https: 'unsafe-inline'"],
       },
     },
-  });
+  } as any);
 
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(
