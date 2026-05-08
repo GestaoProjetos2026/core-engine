@@ -37,16 +37,22 @@ async function bootstrap() {
   //       },
   // });
 
+  //TROCAR DEPOIS
+  // await app.register(fastifyHelmet, {
+  //   hsts: false,
+  //   contentSecurityPolicy: {
+  //     directives: {
+  //       defaultSrc: ["'self'"],
+  //       styleSrc: ["'self'", "'unsafe-inline'"],
+  //       imgSrc: ["'self'", 'data:', 'validator.swagger.io'],
+  //       scriptSrc: ["'self'", "https: 'unsafe-inline'"],
+  //     },
+  //   },
+  // } as any);
+
   await app.register(fastifyHelmet, {
-    hsts: false,
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", 'data:', 'validator.swagger.io'],
-        scriptSrc: ["'self'", "https: 'unsafe-inline'"],
-      },
-    },
+    contentSecurityPolicy: false,
+      hsts: false,
   } as any);
 
   app.setGlobalPrefix('v1');
