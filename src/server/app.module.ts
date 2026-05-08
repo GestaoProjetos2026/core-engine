@@ -15,13 +15,21 @@ import { AuditModule } from '../modules/audit/audit.module';
 
 @Module({
   imports: [
+    // LoggerModule.forRoot({
+    //   pinoHttp: {
+    //     transport: process.env.NODE_ENV !== 'production'
+    //       ? { target: 'pino-pretty', options: { colorize: true, singleLine: true } }
+    //       : undefined,
+    //     level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+    //   },
+    // }),
     LoggerModule.forRoot({
       pinoHttp: {
-        transport: process.env.NODE_ENV !== 'production'
-          ? { target: 'pino-pretty', options: { colorize: true, singleLine: true } }
-          : undefined,
-        level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
-      },
+        ...(process.env.NODE_ENV !== 'production' && {
+          transport: { target: 'pino-pretty', options: { colorize: true, singleLine: true } },
+          level: 'debug',
+        }),
+      } as any,
     }),
     PrismaModule,
     HealthModule,
@@ -38,7 +46,7 @@ import { AuditModule } from '../modules/audit/audit.module';
 })
 
 
-export class AppModule {}
+export class AppModule { }
 
 
 

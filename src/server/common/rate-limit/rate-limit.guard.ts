@@ -12,7 +12,7 @@ import { RateLimitService } from './rate-limit.service';
 export class RateLimitGuard implements CanActivate {
   constructor(
     @Inject(RateLimitService) private readonly rateLimitService: RateLimitService,
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -21,7 +21,7 @@ export class RateLimitGuard implements CanActivate {
 
     try {
       await this.rateLimitService.checkLimits(ip, email);
-    } catch (err) {
+    } catch (err: any) {
       throw new HttpException(
         {
           code: 'RATE_LIMIT_EXCEEDED',
