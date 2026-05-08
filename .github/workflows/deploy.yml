@@ -25,7 +25,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/core-auth:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/core-engine:latest
           build-args: |
             BUILDKIT_PROGRESS=plain
 
@@ -37,7 +37,7 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/projeto-setor:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/core-engine:latest
             docker stop container-core-auth || true
             docker rm container-core-auth || true
-            docker run -d --name container-core-auth -p 8080:80 ${{ secrets.DOCKERHUB_USERNAME }}/projeto-setor:latest
+            docker run -d --name container-core-auth -p 8080:3000 ${{ secrets.DOCKERHUB_USERNAME }}/projeto-setor:latest
