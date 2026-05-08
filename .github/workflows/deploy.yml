@@ -1,0 +1,41 @@
+name: Deploy Core Auth
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  ci-cd:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Baixar o código
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 2. Login no Registry
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 3. Build e Envio
+      - name: Build e Push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/core-auth:latest
+
+      # 4. Deploy Remoto na VM do Professor
+      - name: Deploy na VM via SSH
+        uses: appleboy/ssh-action@v1.0.5
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/core-auth:latest
+            docker stop container-core-auth || true
+            docker rm container-core-auth || true
+            docker run -d --name container-core-auth -p 8080:80 ${{ secrets.DOCKERHUB_USERNAME }}/core-auth:latest
