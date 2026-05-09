@@ -52,7 +52,7 @@ async function bootstrap() {
 
   await app.register(fastifyHelmet, {
     contentSecurityPolicy: false,
-      hsts: false,
+    hsts: false,
   } as any);
 
   app.setGlobalPrefix('v1');
@@ -93,7 +93,9 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .setContact('Squad 1 — Core/Auth', '', 'vinicius5.lopes@hotmail.com')
     .setLicense('Internal — ERP Modular Cloud-Native', '')
+    .addServer(process.env.DEV_SERVER_URL ?? 'http://20.246.82.149:8080', 'Development server')
     .addServer('http://localhost:3000', 'Local development')
+    .addServer('https://api.erp-modular.com', 'Production server')
     .addTag('Health', 'Service health and readiness probes (RF19)')
     .addTag('Auth', 'Authentication and token lifecycle: register, login, refresh, /me (RF01–RF08)')
     .addTag('Users', 'User management CRUD and status control (RF09)')
