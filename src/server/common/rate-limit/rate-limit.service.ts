@@ -23,23 +23,23 @@ export class RateLimitService implements OnModuleDestroy {
     this.limiterIp = new RateLimiterRedis({
       ...commonOpts,
       keyPrefix: 'rl:ip',
-      points: Number(process.env.THROTTLE_LIMIT || 5),
+      points: Number(process.env.THROTTLE_LIMIT || 100),
       duration: Number(process.env.THROTTLE_TTL || 60),
     });
 
     this.limiterEmail = new RateLimiterRedis({
       ...commonOpts,
       keyPrefix: 'rl:email',
-      points: Number(process.env.THROTTLE_LIMIT || 5),
+      points: Number(process.env.THROTTLE_LIMIT || 100),
       duration: Number(process.env.THROTTLE_TTL || 60),
     });
 
     this.limiterConsecutiveFailures = new RateLimiterRedis({
       ...commonOpts,
       keyPrefix: 'rl:lockout',
-      points: Number(process.env.LOCKOUT_FAILURES || 5),
+      points: Number(process.env.LOCKOUT_FAILURES || 20),
       duration: 365 * 24 * 60 * 60,
-      blockDuration: Number(process.env.LOCKOUT_TTL || 1800),
+      blockDuration: Number(process.env.LOCKOUT_TTL || 600), // Reduzi para 10 min no dev
     });
   }
 
@@ -49,12 +49,12 @@ export class RateLimitService implements OnModuleDestroy {
 
     const resEmail = await this.limiterConsecutiveFailures.get(email);
     if (resEmail && resEmail.remainingPoints <= 0) {
-      throw new Error('Email locked out');
+      throw { msBeforeNext: resEmail.msBeforeNext || 600000, remainingPoints: 0 };
     }
 
     const resIp = await this.limiterConsecutiveFailures.get(ip);
     if (resIp && resIp.remainingPoints <= 0) {
-      throw new Error('IP locked out');
+      throw { msBeforeNext: resIp.msBeforeNext || 600000, remainingPoints: 0 };
     }
   }
 
