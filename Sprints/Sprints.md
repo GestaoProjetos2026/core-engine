@@ -655,7 +655,7 @@ Segurança operacional (rate limit, hardening HTTP) + observabilidade + auditori
 
 ---
 
-Sprint 6 — 09/05/2026 a 22/05/2026
+Sprint 6 — 09/05/2026 a 15/05/2026
 
 1) Setup do Projeto Frontend (React + Vite + TS)
 
@@ -739,7 +739,7 @@ Desenvolvimento completo do Frontend Administrativo (Módulo 08), incluindo Auth
 
 ---
 
-Sprint 7 — 23/05/2026 a 29/05/2026
+Sprint 7 — 16/05/2026 a 22/05/2026
 
 1) Guia de Integração para Outros Módulos
 
@@ -783,7 +783,7 @@ Foco total na documentação de integração, guias técnicos e suporte para que
 
 ---
 
-Sprint 8 — 30/05/2026 a 05/06/2026
+Sprint 8 — 23/05/2026 a 29/05/2026
 
 1) Bug Bash e Refinamento de UI/UX
 
@@ -834,6 +834,6 @@ Resumo geral (Sprints 2 a 8 até 05/06/2026)
 | 3 | 28/03–17/04 | Auth (register/login/refresh/me), JWT, docs JWT, e2e humano, spike RBAC, PermissionsGuard, CRUD de Usuários |
 | 4 | 18/04–24/04 | RBAC completo (CRUD, vínculos, seed e matriz docs) + Integrações M2M (Apps, escopos, tokens, OAuth endpoint, ScopesGuard e docs) |
 | 5 | 25/04–08/05 | Segurança, observabilidade, CI/CD, qualidade, documentação final e encerramento MVP |
-| 6 | 09/05–22/05 | Desenvolvimento completo do Frontend Administrativo (Módulo 08) |
-| 7 | 23/05–29/05 | Guia de integração para outros módulos e suporte técnico |
-| 8 | 30/05–05/06 | Finalização, correções finais, auditoria e entrega final do projeto |
+| 6 | 09/05–15/05 | Desenvolvimento completo do Frontend Administrativo (Módulo 08) |
+| 7 | 16/05–22/05 | Guia de integração para outros módulos e suporte técnico |
+| 8 | 23/05–29/05 | Finalização, correções finais, auditoria e entrega final do projeto |
