@@ -121,6 +121,9 @@ Notas de calendário (sprints semanais: sábado a sexta-feira)
 - **Sprint 3 (estendida):** 28/03/2026 a 17/04/2026 — janela maior para fundação de auth, documentação de contrato e primeiros fluxos testáveis.
 - **Sprint 4:** 18/04/2026 a 24/04/2026 — une RBAC completo, integração M2M, OAuth token endpoint e escopos; documentação para integradores.
 - **Sprint 5 (finalização):** 25/04/2026 a 08/05/2026 — Segurança operacional, observabilidade, CI/CD, hardening e encerramento do MVP.
+- **Sprint 6 (Frontend):** 09/05/2026 a 15/05/2026 — Desenvolvimento completo da interface administrativa (Módulo 08).
+- **Sprint 7 (Integração):** 16/05/2026 a 22/05/2026 — Guia de integração para outros módulos e squads.
+- **Sprint 8 (Entrega):** 23/05/2026 a 28/05/2026 — Finalização do projeto, correções finais e entrega final.
 
 ---
 
@@ -652,7 +655,178 @@ Segurança operacional (rate limit, hardening HTTP) + observabilidade + auditori
 
 ---
 
-Resumo geral (Sprints 2 a 5 até 08/05/2026)
+Sprint 6 — 09/05/2026 a 22/05/2026
+
+1) Setup do Projeto Frontend (React + Vite + TS)
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Inicializar projeto Frontend com Vite e TypeScript
+Descrição: Configurar estrutura base, roteamento (React Router), gerenciamento de estado e sistema de estilos (Vanilla CSS/CSS Modules) seguindo padrões premium.
+Critérios de aceitação:
+- Projeto rodando com `npm run dev`
+- Roteamento base configurado
+- Estrutura de pastas organizada (components, hooks, services, pages)
+Prioridade: Urgent
+Estimativa: 5 SP
+Label: frontend, setup, vite, react, sprint-6
+
+2) Fluxo de Autenticação e Proteção de Rotas
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Implementar Login, Logout e Guards de Rota
+Descrição: Interface de login integrada ao `POST /v1/auth/login`, armazenamento seguro de tokens (cookies/localStorage) e interceptação de rotas privadas.
+Critérios de aceitação:
+- Tela de login com validações
+- Persistência de sessão (Access/Refresh Token)
+- Redirecionamento automático para login se não autenticado
+Prioridade: Urgent
+Estimativa: 8 SP
+Label: frontend, auth, jwt, sprint-6
+
+3) Dashboard e Perfil do Usuário
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Desenvolver Dashboard e Página de Perfil (/me)
+Descrição: Interface inicial com resumo do sistema e página de visualização dos dados do usuário logado consumindo `GET /v1/auth/me`.
+Critérios de aceitação:
+- Dashboard funcional com métricas simples (mockadas ou reais)
+- Página de perfil exibindo permissões e papéis do usuário
+Prioridade: High
+Estimativa: 5 SP
+Label: frontend, dashboard, profile, sprint-6
+
+4) Gerenciamento de Usuários (CRUD)
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Implementar Módulo de Gestão de Usuários
+Descrição: Listagem paginada, criação, edição e alteração de status de usuários.
+Critérios de aceitação:
+- Tabela de usuários com busca e paginação
+- Formulário de criação/edição com validações
+- Integração completa com `/v1/users`
+Prioridade: High
+Estimativa: 8 SP
+Label: frontend, users, crud, sprint-6
+
+5) Gestão de Papéis e Permissões (RBAC)
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Implementar Interface para RBAC
+Descrição: Gestão de Roles e Permissions, incluindo a associação de usuários a papéis e papéis a permissões.
+Critérios de aceitação:
+- CRUD de Roles e Permissions
+- Interface de atribuição N:N (Drag and drop ou Multiselect)
+- Feedback visual de permissões salvas
+Prioridade: High
+Estimativa: 8 SP
+Label: frontend, rbac, roles, sprint-6
+
+6) Gestão de Aplicações M2M
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Implementar Interface para Aplicações e Escopos
+Descrição: Criar e gerenciar aplicações externas, gerar Client Secrets e associar escopos.
+Critérios de aceitação:
+- CRUD de Aplicações
+- Fluxo de exibição única de Client Secret
+- Gestão de escopos por aplicação
+Prioridade: Medium
+Estimativa: 5 SP
+Label: frontend, m2m, applications, sprint-6
+
+Resumo Sprint 6
+Desenvolvimento completo do Frontend Administrativo (Módulo 08), incluindo Auth, Dashboard, Gestão de Usuários, RBAC e Integrações M2M.
+
+---
+
+Sprint 7 — 23/05/2026 a 29/05/2026
+
+1) Guia de Integração para Outros Módulos
+
+Pertence a: Module 7 — Infraestrutura e Documentação
+Título: Criar Documentação Técnica de Integração
+Descrição: Documento detalhado sobre como outros módulos devem consumir o Core/Auth (M2M, RBAC, Validação de JWT).
+Critérios de aceitação:
+- Guia em Markdown no repositório
+- Exemplos de código (Node.js, Python, etc.)
+- Fluxograma de autenticação entre módulos
+Prioridade: Urgent
+Estimativa: 5 SP
+Label: docs, integration, m2m, sprint-7
+
+2) SDK/Snippet de Integração Rápida
+
+Pertence a: Module 6 — APIs / Common
+Título: Desenvolver Middleware/Utilitário de Validação de Token
+Descrição: Criar um pequeno pacote ou snippet reutilizável para que outros squads validem o JWT do Core/Auth facilmente.
+Critérios de aceitação:
+- Código testado e documentado
+- Suporte a verificação de scopes/permissions
+Prioridade: High
+Estimativa: 3 SP
+Label: devx, integration, middleware, sprint-7
+
+3) Workshop de Integração e Homologação
+
+Pertence a: Squad 1 — Planejamento
+Título: Realizar Alinhamento Técnico com Squads Consumidores
+Descrição: Sessões de homologação para garantir que os outros módulos conseguem integrar com o Core/Auth sem fricção.
+Critérios de aceitação:
+- Feedback coletado e bugs de integração registrados
+- Pelo menos um módulo integrando com sucesso em staging
+Prioridade: High
+Estimativa: 3 SP
+Label: alignment, integration, sprint-7
+
+Resumo Sprint 7
+Foco total na documentação de integração, guias técnicos e suporte para que o Core/Auth seja consumido por todo o ecossistema ERP.
+
+---
+
+Sprint 8 — 30/05/2026 a 05/06/2026
+
+1) Bug Bash e Refinamento de UI/UX
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Correções Finais e Polimento de Interface
+Descrição: Revisão de bugs reportados, ajustes de responsividade e melhorias na experiência do usuário (feedback visual, transições).
+Critérios de aceitação:
+- Zero bugs críticos abertos
+- UI consistente em diferentes resoluções
+Prioridade: High
+Estimativa: 5 SP
+Label: frontend, bugfix, ux, sprint-8
+
+2) Auditoria Final de Segurança e Performance
+
+Pertence a: Module 9 — Audit / Infra
+Título: Revisão de Segurança e Otimização de Queries
+Descrição: Executar scan de vulnerabilidades, revisar logs de auditoria e garantir que as queries do Prisma estão otimizadas.
+Critérios de aceitação:
+- Relatório de auditoria sem falhas graves
+- Performance de endpoints críticos abaixo de 200ms
+Prioridade: High
+Estimativa: 3 SP
+Label: security, performance, audit, sprint-8
+
+3) Entrega Final e Encerramento do Projeto
+
+Pertence a: Squad 1 — Planejamento
+Título: Apresentação Final e Documento de Encerramento
+Descrição: Demonstração do produto final (Frontend + Backend) e formalização da entrega do MVP.
+Critérios de aceitação:
+- Demo realizada com sucesso
+- Documentação de encerramento assinada (check de DoD final)
+Prioridade: Urgent
+Estimativa: 3 SP
+Label: delivery, final, dod, sprint-8
+
+Resumo Sprint 8
+Finalização do projeto, correções de última hora, auditoria de segurança e entrega oficial do Core/Auth.
+
+---
+
+Resumo geral (Sprints 2 a 8 até 05/06/2026)
 
 | Sprint | Período | Foco principal |
 |--------|---------|----------------|
@@ -660,3 +834,6 @@ Resumo geral (Sprints 2 a 5 até 08/05/2026)
 | 3 | 28/03–17/04 | Auth (register/login/refresh/me), JWT, docs JWT, e2e humano, spike RBAC, PermissionsGuard, CRUD de Usuários |
 | 4 | 18/04–24/04 | RBAC completo (CRUD, vínculos, seed e matriz docs) + Integrações M2M (Apps, escopos, tokens, OAuth endpoint, ScopesGuard e docs) |
 | 5 | 25/04–08/05 | Segurança, observabilidade, CI/CD, qualidade, documentação final e encerramento MVP |
+| 6 | 09/05–22/05 | Desenvolvimento completo do Frontend Administrativo (Módulo 08) |
+| 7 | 23/05–29/05 | Guia de integração para outros módulos e suporte técnico |
+| 8 | 30/05–05/06 | Finalização, correções finais, auditoria e entrega final do projeto |
