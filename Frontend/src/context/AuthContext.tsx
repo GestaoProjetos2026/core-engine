@@ -1,14 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../lib/api';
-import { AxiosResponse } from 'axios';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  roles?: string[];
-  permissions?: string[];
-}
+import type { ApiResponse, User } from '../lib/types';
 
 interface AuthContextType {
   user: User | null;
@@ -25,8 +17,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async () => {
     try {
-      const response = await api.get<{ data: User }>('/v1/auth/me') as AxiosResponse<{ data: User }>;
-      setUser(response.data.data);
+      const response = (await api.get<ApiResponse<User>>('/v1/auth/me')) as unknown as ApiResponse<User>;
+      setUser(response.data);
     } catch {
       setUser(null);
     } finally {
@@ -45,12 +37,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await api.post<{ accessToken: string; refreshToken: string }>('/v1/auth/login', { email, password }) as AxiosResponse<{ accessToken: string; refreshToken: string }>;
+    const response = (await api.post<ApiResponse<{ accessToken: string; refreshToken: string }>>('/v1/auth/login', { email, password })) as unknown as ApiResponse<{ accessToken: string; refreshToken: string }>;
     const { accessToken, refreshToken } = response.data;
-    
+
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('refresh_token', refreshToken);
-    
+
     await fetchProfile();
   };
 

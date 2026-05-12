@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '../lib/api';
-import { AxiosResponse } from 'axios';
+import type { ApiResponse, PaginatedResponse } from '../lib/types';
 import { Card } from '../components/ui/Card';
 import { Table } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
@@ -21,8 +21,8 @@ const UsersPage: React.FC = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await api.get<{ data: User[] }>('/v1/users') as AxiosResponse<{ data: User[] }>;
-      setUsers(response.data.data);
+      const response = (await api.get<ApiResponse<PaginatedResponse<User>>>('/v1/users')) as unknown as ApiResponse<PaginatedResponse<User>>;
+      setUsers(response.data.items);
     } catch (error) {
       console.error('Failed to fetch users', error);
     } finally {
@@ -85,9 +85,9 @@ const UsersPage: React.FC = () => {
                     <Button variant="ghost" size="sm">
                       <UserCog size={16} />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => toggleStatus(user)}
                     >
                       <Power size={16} color={user.status === 'ACTIVE' ? '#f87171' : '#4ade80'} />

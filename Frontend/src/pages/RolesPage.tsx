@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '../lib/api';
-import { AxiosResponse } from 'axios';
+import type { ApiResponse, PaginatedResponse } from '../lib/types';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -19,8 +19,8 @@ const RolesPage: React.FC = () => {
 
   const fetchRoles = useCallback(async () => {
     try {
-      const response = await api.get<{ data: Role[] }>('/v1/roles') as AxiosResponse<{ data: Role[] }>;
-      setRoles(response.data.data);
+      const response = (await api.get<ApiResponse<PaginatedResponse<Role>>>('/v1/roles')) as unknown as ApiResponse<PaginatedResponse<Role>>;
+      setRoles(response.data.items);
     } catch (error) {
       console.error('Failed to fetch roles', error);
     } finally {

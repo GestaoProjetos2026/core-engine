@@ -16,10 +16,11 @@
 
 ## Estado atual
 - Sprint 5 concluída (Tasks 1-4, 7-10 concluídas; Tasks 5 e 6 postergadas como débito técnico).
-- Sprint 6 iniciada. Task 1 (Setup do Projeto Frontend) concluída com build e lint validados.
+- Sprint 6 iniciada. Task 1 (Setup) e Task 2 (Fluxo de Auth e Proteção) concluídas.
+- Frontend validado com build, lint e refinamentos de UX.
 
 ## Pendencias e debitos
-- Próximas tasks da Sprint 6: Task 2 (Fluxo de Autenticação), Task 3 (Dashboard e Perfil).
+- Próximas tasks da Sprint 6: Task 3 (Dashboard e Perfil), Task 4 (CRUD de Usuários).
 - Débitos técnicos da Sprint 5: Pipeline CI (Task 5), Cobertura em módulos críticos (Task 6).
 
 ## Riscos e atencoes

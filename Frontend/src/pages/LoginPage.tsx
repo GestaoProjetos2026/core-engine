@@ -12,17 +12,24 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const from = location.state?.from?.pathname || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       await login(email, password);
@@ -39,8 +46,8 @@ const LoginPage: React.FC = () => {
     <div className="login-page">
       <div className="login-container animate-fade-in">
         <div className="login-header">
-          <div className="login-logo">
-            <ShieldCheck size={48} color="var(--color-highlight)" />
+          <div className="login-logo pulse">
+            <ShieldCheck size={56} color="var(--color-highlight)" />
           </div>
           <h1>Welcome Back</h1>
           <p>Access the Core Engine & Auth System</p>
@@ -49,11 +56,11 @@ const LoginPage: React.FC = () => {
         <Card className="login-card">
           <form onSubmit={handleSubmit} className="login-form">
             {error && <div className="login-error">{error}</div>}
-            
+
             <Input
               label="Email Address"
               type="email"
-              placeholder="admin@example.com"
+              placeholder="[EMAIL_ADDRESS]"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -70,9 +77,9 @@ const LoginPage: React.FC = () => {
               autoComplete="current-password"
             />
 
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <Button
+              type="submit"
+              className="w-full"
               isLoading={isLoading}
             >
               Sign In

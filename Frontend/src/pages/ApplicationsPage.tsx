@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '../lib/api';
-import { AxiosResponse } from 'axios';
+import type { ApiResponse, PaginatedResponse } from '../lib/types';
 import { Card } from '../components/ui/Card';
 import { Table } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
@@ -21,8 +21,8 @@ const ApplicationsPage: React.FC = () => {
 
   const fetchApps = useCallback(async () => {
     try {
-      const response = await api.get<{ data: Application[] }>('/v1/applications') as AxiosResponse<{ data: Application[] }>;
-      setApps(response.data.data);
+      const response = (await api.get<ApiResponse<PaginatedResponse<Application>>>('/v1/applications')) as unknown as ApiResponse<PaginatedResponse<Application>>;
+      setApps(response.data.items);
     } catch (error) {
       console.error('Failed to fetch applications', error);
     } finally {

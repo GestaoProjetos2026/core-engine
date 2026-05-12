@@ -70,7 +70,8 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 ### Sprint 6: Frontend Administrativo
 **Status**: 🚀 Em Andamento
 - **Task 1**: Setup do Projeto Frontend (React + Vite + TS). ✔️ (Concluído em 12/05/2026)
-- **Task 2**: Fluxo de Autenticação e Proteção de Rotas. ⏳ (Pendente)
+- **Task 2**: Fluxo de Autenticação e Proteção de Rotas. ✔️ (Concluído em 12/05/2026)
+- **Task 3**: Dashboard e Perfil do Usuário. ⏳ (Pendente)
 
 ---
 
