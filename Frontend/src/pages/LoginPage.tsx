@@ -27,8 +27,9 @@ const LoginPage: React.FC = () => {
     try {
       await login(email, password);
       navigate(from, { replace: true });
-    } catch (err: any) {
-      setError(err.error?.message || 'Login failed. Please check your credentials.');
+    } catch (err: unknown) {
+      const errorData = err as { error?: { message?: string } };
+      setError(errorData.error?.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }

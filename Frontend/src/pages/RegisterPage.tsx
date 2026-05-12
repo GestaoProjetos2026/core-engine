@@ -24,8 +24,9 @@ const RegisterPage: React.FC = () => {
     try {
       await api.post('/v1/auth/register', { name, email, password });
       navigate('/login', { state: { message: 'Account created! Please login.' } });
-    } catch (err: any) {
-      setError(err.error?.message || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      const errorData = err as { error?: { message?: string } };
+      setError(errorData.error?.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

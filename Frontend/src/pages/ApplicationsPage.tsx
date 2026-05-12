@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import api from '../lib/api';
+import { AxiosResponse } from 'axios';
 import { Card } from '../components/ui/Card';
 import { Table } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
@@ -18,20 +19,21 @@ const ApplicationsPage: React.FC = () => {
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchApps = async () => {
+  const fetchApps = useCallback(async () => {
     try {
-      const response: any = await api.get('/v1/applications');
+      const response = await api.get<{ data: Application[] }>('/v1/applications') as AxiosResponse<{ data: Application[] }>;
       setApps(response.data.data);
     } catch (error) {
       console.error('Failed to fetch applications', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchApps();
-  }, []);
+  }, [fetchApps]);
 
   return (
     <div className="applications-page animate-fade-in">

@@ -34,7 +34,7 @@ api.interceptors.response.use(
           
           error.config.headers.Authorization = `Bearer ${accessToken}`;
           return axios(error.config);
-        } catch (refreshError) {
+        } catch {
           localStorage.clear();
           window.location.href = '/login';
         }

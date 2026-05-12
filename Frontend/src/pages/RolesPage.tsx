@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import api from '../lib/api';
+import { AxiosResponse } from 'axios';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -16,20 +17,21 @@ const RolesPage: React.FC = () => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchRoles = async () => {
+  const fetchRoles = useCallback(async () => {
     try {
-      const response: any = await api.get('/v1/roles');
+      const response = await api.get<{ data: Role[] }>('/v1/roles') as AxiosResponse<{ data: Role[] }>;
       setRoles(response.data.data);
     } catch (error) {
       console.error('Failed to fetch roles', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchRoles();
-  }, []);
+  }, [fetchRoles]);
 
   return (
     <div className="roles-page animate-fade-in">

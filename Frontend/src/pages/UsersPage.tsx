@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import api from '../lib/api';
+import { AxiosResponse } from 'axios';
 import { Card } from '../components/ui/Card';
 import { Table } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
@@ -18,27 +19,28 @@ const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
-      const response: any = await api.get('/v1/users');
+      const response = await api.get<{ data: User[] }>('/v1/users') as AxiosResponse<{ data: User[] }>;
       setUsers(response.data.data);
     } catch (error) {
       console.error('Failed to fetch users', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
   const toggleStatus = async (user: User) => {
     const newStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     try {
       await api.patch(`/v1/users/${user.id}/status`, { status: newStatus });
       fetchUsers();
-    } catch (error) {
+    } catch {
       alert('Failed to update status');
     }
   };

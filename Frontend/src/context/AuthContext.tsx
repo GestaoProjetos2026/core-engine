@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../lib/api';
+import { AxiosResponse } from 'axios';
 
 interface User {
   id: string;
@@ -24,9 +25,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async () => {
     try {
-      const response: any = await api.get('/v1/auth/me');
-      setUser(response.data);
-    } catch (error) {
+      const response = await api.get<{ data: User }>('/v1/auth/me') as AxiosResponse<{ data: User }>;
+      setUser(response.data.data);
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
@@ -36,6 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchProfile();
     } else {
       setLoading(false);
@@ -43,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response: any = await api.post('/v1/auth/login', { email, password });
+    const response = await api.post<{ accessToken: string; refreshToken: string }>('/v1/auth/login', { email, password }) as AxiosResponse<{ accessToken: string; refreshToken: string }>;
     const { accessToken, refreshToken } = response.data;
     
     localStorage.setItem('access_token', accessToken);
@@ -65,6 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

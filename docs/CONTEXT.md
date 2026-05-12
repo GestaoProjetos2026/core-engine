@@ -15,11 +15,12 @@
 - `docs/CONTEXT.md` e `docs/PRD_DEVELOPMENT.md` — Tracking de progresso.
 
 ## Estado atual
-- Sprint 5 em andamento. Tasks 1, 2, 3, 4, 7, 8 e 9 concluídas.
-- Carga de acessos estáveis e matriz de permissões para squads consumidores finalizada.
+- Sprint 5 concluída (Tasks 1-4, 7-10 concluídas; Tasks 5 e 6 postergadas como débito técnico).
+- Sprint 6 iniciada. Task 1 (Setup do Projeto Frontend) concluída com build e lint validados.
 
 ## Pendencias e debitos
-- Próximas tasks da Sprint 5: Pipeline CI (Task 5), Cobertura em módulos críticos (Task 6), Revisão de DoD (Task 10).
+- Próximas tasks da Sprint 6: Task 2 (Fluxo de Autenticação), Task 3 (Dashboard e Perfil).
+- Débitos técnicos da Sprint 5: Pipeline CI (Task 5), Cobertura em módulos críticos (Task 6).
 
 ## Riscos e atencoes
 - O esbuild (tsx de reload auto) apresenta gargalos de extração de metadados das classes no construtor de classes intermódulos. Os decorators `@Inject(X)` devem ser explícitos e manutenidos para qualquer injeção no constructor na pipeline atual de desenvolvimento para compilação ilesa a instabilidades.
