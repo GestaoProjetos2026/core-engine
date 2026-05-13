@@ -8,7 +8,8 @@ import {
   ExternalLink, 
   LogOut,
   Menu,
-  X
+  X,
+  User as UserIcon
 } from 'lucide-react';
 import './Layout.css';
 
@@ -18,6 +19,7 @@ const Layout: React.FC = () => {
 
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
+    { icon: <UserIcon size={20} />, label: 'Profile', path: '/profile' },
     { icon: <Users size={20} />, label: 'Users', path: '/users' },
     { icon: <ShieldCheck size={20} />, label: 'Roles & Perms', path: '/roles' },
     { icon: <ExternalLink size={20} />, label: 'Applications', path: '/applications' },
@@ -66,7 +68,7 @@ const Layout: React.FC = () => {
             <Menu size={24} />
           </button>
           
-          <div className="header-user">
+          <NavLink to="/profile" className="header-user">
             <div className="user-info">
               <span className="user-name">{user?.name}</span>
               <span className="user-email">{user?.email}</span>
@@ -74,7 +76,7 @@ const Layout: React.FC = () => {
             <div className="user-avatar">
               {user?.name?.charAt(0).toUpperCase()}
             </div>
-          </div>
+          </NavLink>
         </header>
 
         <div className="content">

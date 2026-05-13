@@ -4,6 +4,7 @@ import { PrivateRoute } from './components/PrivateRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import ProfilePage from './pages/ProfilePage';
 import UsersPage from './pages/UsersPage';
 import RolesPage from './pages/RolesPage';
 import ApplicationsPage from './pages/ApplicationsPage';
@@ -20,6 +21,7 @@ function App() {
           
           <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/roles" element={<RolesPage />} />
             <Route path="/applications" element={<ApplicationsPage />} />
