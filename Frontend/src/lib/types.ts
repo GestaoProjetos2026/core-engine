@@ -22,3 +22,13 @@ export interface User {
   roles: string[];
   perms: string[];
 }
+
+/** Item retornado por `GET /v1/users` e rotas de usuário administrativo (RF09). */
+export interface AdminUserListItem {
+  id: string;
+  email: string;
+  name: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  createdAt: string;
+  updatedAt: string;
+}

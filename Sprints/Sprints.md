@@ -696,6 +696,7 @@ Estimativa: 5 SP
 Label: frontend, dashboard, profile, sprint-6
 
 4) Gerenciamento de Usuários (CRUD)
+Status: done
 
 Pertence a: Module 08 — Frontend Administrativo
 Título: Implementar Módulo de Gestão de Usuários

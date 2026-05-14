@@ -71,7 +71,10 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 **Status**: 🚀 Em Andamento
 - **Task 1**: Setup do Projeto Frontend (React + Vite + TS). ✔️ (Concluído em 12/05/2026)
 - **Task 2**: Fluxo de Autenticação e Proteção de Rotas. ✔️ (Concluído em 12/05/2026)
-- **Task 3**: Dashboard e Perfil do Usuário. ⏳ (Pendente)
+- **Task 3**: Dashboard e Perfil do Usuário. ⏳ (Pendente de marcação formal no `Sprints.md`; páginas `DashboardPage` e `ProfilePage` presentes no repositório.)
+- **Task 4**: Gerenciamento de Usuários (CRUD) — listagem com busca (`email`), paginação (`page`/`limit`), filtro de status, modais de criação (`POST /v1/users`) e edição (`PATCH /v1/users/:id`), alteração de status (`PATCH /v1/users/:id/status`), tipo `AdminUserListItem` em `Frontend/src/lib/types.ts`. ✔️ (Concluído em 14/05/2026)
+
+**Incidente / ambiente (sessão 14/05/2026):** `npm run build` no `Frontend` falhou localmente sem `node_modules` (módulos TypeScript não resolvidos). Resolvido com `npm install` seguido de `npm run build` (sucesso).
 
 ---
 
@@ -94,6 +97,7 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 - **Implementação do RolesModule e PermissionsModule**: Criação de controladores, serviços e DTOs para gestão de RBAC.
 - **Segurança de Rotas**: Proteção dos novos endpoints com `JwtAuthGuard` e `PermissionsGuard` utilizando o decorador `@RequirePermissions`.
 - **Workaround de Swagger**: Remoção temporária da propriedade `type` nos decoradores `@ApiResponse` dos novos módulos para mitigar um erro crítico de "Circular Dependency" no motor do Swagger/Fastify no ambiente de desenvolvimento Node 25.
+- **Sprint 6 — UI de usuários (RF09 no admin)**: A listagem consome o payload real de `GET /v1/users` (sem `roles` no `select` do backend); a tabela do frontend foi alinhada a `id`, `email`, `name`, `status`, `createdAt`. Validação de senha no modal de criação aproxima-se do RNF08; o DTO `CreateUserDto` no backend permanece com regra mínima mais curta até alinhamento futuro.
 
 ---
 
