@@ -75,8 +75,22 @@ const UsersPage: React.FC = () => {
         params,
       })) as unknown as ApiResponse<PaginatedResponse<AdminUserListItem>>;
 
-      setUsers(response.data.items);
-      setTotal(response.data.total);
+      if (response && response.data) {
+        const data = response.data;
+        if (Array.isArray(data)) {
+          setUsers(data);
+          setTotal(data.length);
+        } else if (data.items) {
+          setUsers(data.items);
+          setTotal(data.total ?? data.items.length);
+        } else {
+          setUsers([]);
+          setTotal(0);
+        }
+      } else {
+        setUsers([]);
+        setTotal(0);
+      }
     } catch (error) {
       console.error('Failed to fetch users', error);
       setListError(parseApiError(error));
@@ -95,6 +109,7 @@ const UsersPage: React.FC = () => {
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
   const openCreate = () => {
+    setListError(''); // Clear any list errors when opening modal
     setModalMode('create');
     setEditingUser(null);
     setFormName('');
@@ -104,6 +119,7 @@ const UsersPage: React.FC = () => {
   };
 
   const openEdit = (user: AdminUserListItem) => {
+    setListError('');
     setModalMode('edit');
     setEditingUser(user);
     setFormName(user.name);
@@ -112,11 +128,11 @@ const UsersPage: React.FC = () => {
     setFormErrors({});
   };
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModalMode(null);
     setEditingUser(null);
     setFormErrors({});
-  };
+  }, []);
 
   const validateCreate = (): boolean => {
     const next: typeof formErrors = {};
@@ -213,7 +229,7 @@ const UsersPage: React.FC = () => {
       <div style={{ marginBottom: '20px' }}>
         <Card>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-end' }}>
-          <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+          <div style={{ flex: '1 1 220px', minWidth: 0, position: 'relative' }}>
             <Input
               label="Search by email"
               type="search"
@@ -222,6 +238,24 @@ const UsersPage: React.FC = () => {
               onChange={(e) => setEmailFilter(e.target.value)}
               autoComplete="off"
             />
+            {emailFilter && (
+              <button
+                type="button"
+                onClick={() => setEmailFilter('')}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '36px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--color-text-muted)',
+                  cursor: 'pointer',
+                  padding: '4px'
+                }}
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
           <div style={{ flex: '0 0 160px' }}>
             <label className="input-label" style={{ display: 'block', marginBottom: '6px' }}>
@@ -346,7 +380,9 @@ const UsersPage: React.FC = () => {
             zIndex: 1000,
             padding: '24px',
           }}
-          onClick={closeModal}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeModal();
+          }}
         >
           <div
             style={{ width: '100%', maxWidth: '440px', position: 'relative' }}

@@ -38,37 +38,67 @@ export class UsersService {
   }
 
   async findAll(query: ListUsersQueryDto) {
-    const { page = 1, limit = 10, email, status } = query;
-    const skip = (page - 1) * limit;
+    try {
+      const page = Math.max(1, Number(query.page || 1));
+      const limit = Math.max(1, Math.min(100, Number(query.limit || 10)));
+      const skip = (page - 1) * limit;
 
-    const where: Prisma.UserWhereInput = {};
-    if (email) where.email = { contains: email, mode: 'insensitive' };
-    if (status) where.status = status;
+      const { email, status } = query;
+      const where: Prisma.UserWhereInput = {};
+      
+      if (email && email.trim()) {
+        where.email = { contains: email.trim(), mode: 'insensitive' };
+      }
+      
+      if (status) {
+        // Basic validation for status if it's passed but might not be in enum
+        const validStatuses = ['ACTIVE', 'INACTIVE'];
+        if (validStatuses.includes(status)) {
+          where.status = status;
+        }
+      }
 
-    const [items, total] = await Promise.all([
-      this.prisma.user.findMany({
-        where,
-        skip,
-        take: limit,
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          status: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-        orderBy: { createdAt: 'desc' }
-      }),
-      this.prisma.user.count({ where }),
-    ]);
+      const [items, total] = await Promise.all([
+        this.prisma.user.findMany({
+          where,
+          skip,
+          take: limit,
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.user.count({ where }),
+      ]);
 
-    return {
-      items,
-      total,
-      page,
-      limit,
-    };
+      return {
+        items,
+        total,
+        page,
+        limit,
+      };
+    } catch (error) {
+      console.error('[UsersService.findAll] Database error:', {
+        message: error instanceof Error ? error.message : error,
+        query,
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        // Return a more specific error if Prisma fails due to invalid query
+        throw new ConflictException({ 
+          code: 'DATABASE_ERROR', 
+          message: 'Error fetching users from database. Please check your filters.' 
+        });
+      }
+      
+      throw error;
+    }
   }
 
   async findOne(id: string) {

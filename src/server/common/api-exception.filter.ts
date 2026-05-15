@@ -66,6 +66,21 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const isProd = process.env.NODE_ENV === 'production';
 
     if (!(exception instanceof HttpException)) {
+      // Specialized handling for Prisma errors
+      if (exception && typeof exception === 'object' && 'code' in exception && 'clientVersion' in exception) {
+        return {
+          success: false,
+          error: {
+            code: 'DATABASE_ERROR',
+            message: isProd ? 'A database error occurred' : `Database error: ${(exception as any).message}`,
+          },
+          timestamp: new Date().toISOString(),
+          path,
+        };
+      }
+
+      console.error('[ApiExceptionFilter] Unhandled Exception:', exception);
+
       return {
         success: false,
         error: {

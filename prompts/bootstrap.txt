@@ -1,17 +1,18 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-5) Gestão de Papéis e Permissões (RBAC)
+6) Gestão de Aplicações M2M
 
 Pertence a: Module 08 — Frontend Administrativo
-Título: Implementar Interface para RBAC Descrição: Gestão de Roles e Permissions, incluindo a associação de usuários a papéis e papéis a permissões.
+Título: Implementar Interface para Aplicações e Escopos
+Descrição: Criar e gerenciar aplicações externas, gerar Client Secrets e associar escopos.
 Critérios de aceitação:
-- CRUD de Roles e Permissions
-- Interface de atribuição N:N (Drag and drop ou Multiselect)
-- Feedback visual de permissões salvas
-- Prioridade: High
-- Estimativa: 8 SP
-- Label: frontend, rbac, roles, sprint-6
+- CRUD de Aplicações
+- Fluxo de exibição única de Client Secret
+- Gestão de escopos por aplicação
+Prioridade: Medium
+Estimativa: 5 SP
+Label: frontend, m2m, applications, sprint-6
 
 
 Passos obrigatorios:
