@@ -20,20 +20,13 @@ const integration_module_1 = require("../modules/integration/integration.module"
 const rate_limit_module_1 = require("./common/rate-limit/rate-limit.module");
 const nestjs_pino_1 = require("nestjs-pino");
 const audit_module_1 = require("../modules/audit/audit.module");
+const dashboard_module_1 = require("../modules/dashboard/dashboard.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            // LoggerModule.forRoot({
-            //   pinoHttp: {
-            //     transport: process.env.NODE_ENV !== 'production'
-            //       ? { target: 'pino-pretty', options: { colorize: true, singleLine: true } }
-            //       : undefined,
-            //     level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
-            //   },
-            // }),
             nestjs_pino_1.LoggerModule.forRoot({
                 pinoHttp: {
                     ...(process.env.NODE_ENV !== 'production' && {
@@ -53,6 +46,7 @@ exports.AppModule = AppModule = __decorate([
             integration_module_1.IntegrationModule,
             rate_limit_module_1.RateLimitModule,
             audit_module_1.AuditModule,
+            dashboard_module_1.DashboardModule,
         ],
     })
 ], AppModule);

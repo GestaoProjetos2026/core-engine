@@ -46,14 +46,20 @@ let PermissionsService = class PermissionsService {
         }
     }
     async findAll() {
-        return this.prisma.permission.findMany({
-            select: {
-                id: true,
-                code: true,
-                description: true,
-            },
-            orderBy: { code: 'asc' },
-        });
+        try {
+            return await this.prisma.permission.findMany({
+                select: {
+                    id: true,
+                    code: true,
+                    description: true,
+                },
+                orderBy: { code: 'asc' },
+            });
+        }
+        catch (error) {
+            console.error('[PermissionsService.findAll] Database error:', error);
+            throw error;
+        }
     }
     async delete(id) {
         try {

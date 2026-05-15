@@ -110,6 +110,21 @@ async function bootstrap() {
         customSiteTitle: 'Core/Auth API Docs',
     });
     const port = Number(process.env.PORT ?? 3000);
+    // Direct Fastify route for the root path (bypasses NestJS global prefix)
+    const fastifyInstance = app.getHttpAdapter().getInstance();
+    fastifyInstance.get('/', (_request, reply) => {
+        reply.send({
+            success: true,
+            message: 'Core Engine & Auth API is running',
+            data: {
+                version: '1.0.0',
+                docs: '/v1/docs',
+                health: '/v1/health',
+            },
+            timestamp: new Date().toISOString(),
+            path: '/',
+        });
+    });
     await app.listen(port, '0.0.0.0');
 }
 bootstrap();
