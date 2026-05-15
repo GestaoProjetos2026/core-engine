@@ -13,6 +13,7 @@ import { RateLimitModule } from './common/rate-limit/rate-limit.module';
 import { LoggerModule } from 'nestjs-pino';
 import { AuditModule } from '../modules/audit/audit.module';
 import { DashboardModule } from '../modules/dashboard/dashboard.module';
+import { RootController } from './root.controller';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { DashboardModule } from '../modules/dashboard/dashboard.module';
     AuditModule,
     DashboardModule,
   ],
+  controllers: [RootController],
 })
 
 

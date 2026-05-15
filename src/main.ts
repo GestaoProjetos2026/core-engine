@@ -56,7 +56,7 @@ async function bootstrap() {
     hsts: false,
   } as any);
 
-  app.setGlobalPrefix('v1');
+  app.setGlobalPrefix('v1', { exclude: ['/'] });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
