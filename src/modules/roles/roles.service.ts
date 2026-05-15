@@ -36,6 +36,17 @@ export class RolesService {
       select: {
         id: true,
         name: true,
+        permissions: {
+          select: {
+            permission: {
+              select: {
+                id: true,
+                code: true,
+                description: true,
+              },
+            },
+          },
+        },
         _count: {
           select: {
             users: true,
@@ -102,6 +113,56 @@ export class RolesService {
           code: 'RESOURCE_NOT_FOUND',
           message: 'One or more permissions do not exist (RN07)',
         });
+      }
+      throw error;
+    }
+  }
+
+  async removeUser(roleId: string, userId: string) {
+    try {
+      await this.prisma.userRole.delete({
+        where: {
+          userId_roleId: {
+            userId,
+            roleId,
+          },
+        },
+      });
+      return { success: true };
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'User-Role link not found' });
+      }
+      throw error;
+    }
+  }
+
+  async removePermission(roleId: string, permissionId: string) {
+    try {
+      await this.prisma.rolePermission.delete({
+        where: {
+          roleId_permissionId: {
+            roleId,
+            permissionId,
+          },
+        },
+      });
+      return { success: true };
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Role-Permission link not found' });
+      }
+      throw error;
+    }
+  }
+
+  async delete(id: string) {
+    try {
+      await this.prisma.role.delete({ where: { id } });
+      return { success: true };
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Role not found' });
       }
       throw error;
     }

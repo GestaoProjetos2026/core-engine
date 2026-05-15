@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Inject, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -141,6 +141,51 @@ export class RolesController {
   })
   async assignPermissions(@Param('id') id: string, @Body() dto: AssignRolePermissionsDto) {
     return this.rolesService.assignPermissions(id, dto);
+  }
+
+  @Delete(':id/users/:userId')
+  @HttpCode(200)
+  @RequirePermissions('roles:manage')
+  @ApiOperation({
+    summary: 'Remove user from a role',
+    description: 'Removes a user from a role. Requires permission `roles:manage`.',
+  })
+  @ApiResponse({ status: 200, description: 'User removed from role successfully.' })
+  @ApiNotFoundResponse({ description: 'Link not found.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks `roles:manage` permission.', schema: forbiddenExample })
+  async removeUser(@Param('id') id: string, @Param('userId') userId: string) {
+    return this.rolesService.removeUser(id, userId);
+  }
+
+  @Delete(':id/permissions/:permissionId')
+  @HttpCode(200)
+  @RequirePermissions('roles:manage')
+  @ApiOperation({
+    summary: 'Remove permission from a role',
+    description: 'Removes a permission from a role. Requires permission `roles:manage`.',
+  })
+  @ApiResponse({ status: 200, description: 'Permission removed from role successfully.' })
+  @ApiNotFoundResponse({ description: 'Link not found.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks `roles:manage` permission.', schema: forbiddenExample })
+  async removePermission(@Param('id') id: string, @Param('permissionId') permissionId: string) {
+    return this.rolesService.removePermission(id, permissionId);
+  }
+
+  @Delete(':id')
+  @HttpCode(200)
+  @RequirePermissions('roles:manage')
+  @ApiOperation({
+    summary: 'Delete a role',
+    description: 'Deletes a role. Requires permission `roles:manage`.',
+  })
+  @ApiResponse({ status: 200, description: 'Role deleted successfully.' })
+  @ApiNotFoundResponse({ description: 'Role not found.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks `roles:manage` permission.', schema: forbiddenExample })
+  async deleteRole(@Param('id') id: string) {
+    return this.rolesService.delete(id);
   }
 }
 

@@ -710,6 +710,7 @@ Estimativa: 8 SP
 Label: frontend, users, crud, sprint-6
 
 5) Gestão de Papéis e Permissões (RBAC)
+Status: done
 
 Pertence a: Module 08 — Frontend Administrativo
 Título: Implementar Interface para RBAC

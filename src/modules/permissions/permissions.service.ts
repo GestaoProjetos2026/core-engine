@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../server/prisma/prisma.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { Prisma } from '@prisma/client';
@@ -41,5 +41,16 @@ export class PermissionsService {
       orderBy: { code: 'asc' },
     });
   }
-}
 
+  async delete(id: string) {
+    try {
+      await this.prisma.permission.delete({ where: { id } });
+      return { success: true };
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Permission not found' });
+      }
+      throw error;
+    }
+  }
+}

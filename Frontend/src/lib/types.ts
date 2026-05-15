@@ -32,3 +32,29 @@ export interface AdminUserListItem {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Permission {
+  id: string;
+  code: string;
+  description: string;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  permissions?: { permission: Permission }[];
+  _count?: {
+    users: number;
+    permissions: number;
+  };
+}
+
+export interface CreateRoleDto {
+  name: string;
+  description?: string;
+}
+
+export interface CreatePermissionDto {
+  code: string;
+  description: string;
+}

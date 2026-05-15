@@ -73,6 +73,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 2**: Fluxo de Autenticação e Proteção de Rotas. ✔️ (Concluído em 12/05/2026)
 - **Task 3**: Dashboard e Perfil do Usuário. ⏳ (Pendente de marcação formal no `Sprints.md`; páginas `DashboardPage` e `ProfilePage` presentes no repositório.)
 - **Task 4**: Gerenciamento de Usuários (CRUD) — listagem com busca (`email`), paginação (`page`/`limit`), filtro de status, modais de criação (`POST /v1/users`) e edição (`PATCH /v1/users/:id`), alteração de status (`PATCH /v1/users/:id/status`), tipo `AdminUserListItem` em `Frontend/src/lib/types.ts`. ✔️ (Concluído em 14/05/2026)
+- **Task 5**: Gestão de Papéis e Permissões (RBAC) — UI N:N de vínculos e CRUD via `RolesPage.tsx`. Modificações extensivas no backend para prover suporte completo à listagem e operações `DELETE` das regras. ✔️ (Concluído em 14/05/2026)
 
 **Incidente / ambiente (sessão 14/05/2026):** `npm run build` no `Frontend` falhou localmente sem `node_modules` (módulos TypeScript não resolvidos). Resolvido com `npm install` seguido de `npm run build` (sucesso).
 

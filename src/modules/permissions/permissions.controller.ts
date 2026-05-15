@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Inject, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiConflictResponse,
   ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -86,6 +87,21 @@ export class PermissionsController {
   @ApiForbiddenResponse({ description: 'Token lacks `permissions:read` permission.', schema: forbiddenExample })
   async findAll() {
     return this.permissionsService.findAll();
+  }
+
+  @Delete(':id')
+  @HttpCode(200)
+  @RequirePermissions('permissions:write')
+  @ApiOperation({
+    summary: 'Delete a permission',
+    description: 'Deletes a permission. Requires permission `permissions:write`.',
+  })
+  @ApiResponse({ status: 200, description: 'Permission deleted successfully.' })
+  @ApiNotFoundResponse({ description: 'Permission not found.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
+  @ApiForbiddenResponse({ description: 'Token lacks `permissions:write` permission.', schema: forbiddenExample })
+  async deletePermission(@Param('id') id: string) {
+    return this.permissionsService.delete(id);
   }
 }
 

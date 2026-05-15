@@ -7,20 +7,21 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 6 — Task 4 concluída: módulo de **Gestão de Usuários (CRUD)** no frontend (`Frontend/src/pages/UsersPage.tsx`), com listagem paginada, busca por e-mail, filtro de status, criação/edição (modais) e alteração de status integrados a `/v1/users`. Tipo `AdminUserListItem` adicionado em `Frontend/src/lib/types.ts`. `Sprints.md` atualizado com `Status: done` na Task 4. Encerramento de sessão via `prompts/close-session.txt` (sem commit no repositório).
+- Sprint 6 — Task 5 concluída: implementação completa da Interface de Gestão de Papéis e Permissões (RBAC) no frontend (`RolesPage.tsx`). O backend foi estendido para suportar `DELETE` e trazer as permissões no payload de papéis. Encerramento da tarefa de acordo com os critérios do PRD.
 
 ## Arquivos modificados recentemente
-- `Frontend/src/pages/UsersPage.tsx` — CRUD administrativo de usuários no UI.
-- `Frontend/src/lib/types.ts` — tipo alinhado ao payload de `GET /v1/users`.
-- `Sprints/Sprints.md` — status `done` na Task 4 da Sprint 6.
-- `docs/CONTEXT.md` e `docs/PRD_DEVELOPMENT.md` — handoff e tracking.
+- `Frontend/src/pages/RolesPage.tsx` — CRUD de papéis e permissões, e modal de vínculo N:N via drag and drop/multiselect.
+- `Frontend/src/lib/types.ts` — DTOs de Role e Permission.
+- `src/modules/roles/roles.service.ts` & `roles.controller.ts` — Inclusão de `DELETE` endpoints e ajuste do payload `GET`.
+- `src/modules/permissions/permissions.service.ts` & `permissions.controller.ts` — Inclusão de `DELETE` endpoint.
+- `docs/CONTEXT.md` e `docs/PRD_DEVELOPMENT.md` — Tracking da Task 5.
 
 ## Estado atual
 - Sprint 5: entregas principais concluídas; Tasks 5 e 6 (CI e cobertura) seguem como débito técnico documentado.
-- Sprint 6: Tasks 1 e 2 já estavam entregues no código; Task 3 (Dashboard/Perfil) existe no repositório mas **não** recebeu `Status: done` no `Sprints.md` nesta sessão (sincronização pendente se o time validar critérios de aceite). **Task 4** marcada como `done` no backlog e documentação de desenvolvimento.
+- Sprint 6: Task 4 e Task 5 concluídas formalmente nesta sessão. Tasks 1, 2, e 3 existem no repositório mas aguardam revisão formal de DoD.
 
 ## Pendencias e debitos
-- Sprint 6 — **Task 5** (RBAC UI) e **Task 6** (M2M Applications UI), conforme `Sprints.md`.
+- Sprint 6 — **Task 6** (M2M Applications UI).
 - Alinhar opcionalmente `Status: done` das Sprint 6 Tasks 1–3 no `Sprints.md` após revisão formal de DoD.
 - Débitos Sprint 5: Pipeline CI (Task 5), cobertura em módulos críticos (Task 6).
 
@@ -29,10 +30,10 @@
 - **PRD (RNF08)** exige política de senha forte; o **admin `POST /v1/users`** valida apenas `MinLength(8)` no DTO — o formulário de criação no frontend aplica regra mais próxima do RNF08; criação direta pela API pode aceitar senhas mais fracas até o backend alinhar.
 
 ## Proximo foco
-- Sprint 6 — **Task 5**: Gestão de Papéis e Permissões (RBAC) no frontend administrativo (`Sprints.md`).
+- Sprint 6 — **Task 6**: Gestão de Aplicações M2M no frontend administrativo.
 
 ## Tasks concluidas na sessao
-- **Sprint 6 — Task 4:** Implementar Módulo de Gestão de Usuários (listagem com busca e paginação, formulários com validações, integração `/v1/users`).
+- **Sprint 6 — Task 5:** Gestão de Papéis e Permissões (RBAC) no frontend.
 
 ## Observacoes uteis para a proxima sessao
 - Build do frontend exige `npm install` no diretório `Frontend` antes de `npm run build` (dependências não versionadas em `node_modules`).
