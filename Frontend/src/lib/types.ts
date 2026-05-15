@@ -58,3 +58,25 @@ export interface CreatePermissionDto {
   code: string;
   description: string;
 }
+
+/** Item retornado por `GET /v1/applications` (sem secret — RN02). */
+export interface ApplicationListItem {
+  id: string;
+  name: string;
+  clientId: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Resposta de `POST /v1/applications` ou `POST .../regenerate-secret` (secret exibido uma vez). */
+export interface ApplicationWithSecret extends ApplicationListItem {
+  clientSecret: string;
+}
+
+/** Escopo M2M (`GET /v1/scopes`, `GET /v1/applications/:id/scopes`). */
+export interface Scope {
+  id: string;
+  code: string;
+  description?: string | null;
+}

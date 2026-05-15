@@ -724,6 +724,7 @@ Estimativa: 8 SP
 Label: frontend, rbac, roles, sprint-6
 
 6) Gestão de Aplicações M2M
+Status: done
 
 Pertence a: Module 08 — Frontend Administrativo
 Título: Implementar Interface para Aplicações e Escopos

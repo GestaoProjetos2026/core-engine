@@ -68,14 +68,17 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 5 e 6**: Postergadas como débitos técnicos (Pipeline CI e Cobertura de Testes).
 
 ### Sprint 6: Frontend Administrativo
-**Status**: 🚀 Em Andamento
+**Status**: ✅ Concluída (Tasks 4–6 com `done` no backlog; Tasks 1–3 implementadas, marcação formal pendente)
 - **Task 1**: Setup do Projeto Frontend (React + Vite + TS). ✔️ (Concluído em 12/05/2026)
 - **Task 2**: Fluxo de Autenticação e Proteção de Rotas. ✔️ (Concluído em 12/05/2026)
-- **Task 3**: Dashboard e Perfil do Usuário. ⏳ (Pendente de marcação formal no `Sprints.md`; páginas `DashboardPage` e `ProfilePage` presentes no repositório.)
+- **Task 3**: Dashboard e Perfil do Usuário. ⏳ (Pendente de marcação formal no `Sprints.md`; páginas `DashboardPage` e `ProfilePage` presentes no repositório; métricas do dashboard mockadas.)
 - **Task 4**: Gerenciamento de Usuários (CRUD) — listagem com busca (`email`), paginação (`page`/`limit`), filtro de status, modais de criação (`POST /v1/users`) e edição (`PATCH /v1/users/:id`), alteração de status (`PATCH /v1/users/:id/status`), tipo `AdminUserListItem` em `Frontend/src/lib/types.ts`. ✔️ (Concluído em 14/05/2026)
 - **Task 5**: Gestão de Papéis e Permissões (RBAC) — UI N:N de vínculos e CRUD via `RolesPage.tsx`. Modificações extensivas no backend para prover suporte completo à listagem e operações `DELETE` das regras. ✔️ (Concluído em 14/05/2026)
+- **Task 6**: Gestão de Aplicações M2M — `ApplicationsPage.tsx` com CRUD (`POST/PATCH /v1/applications`, status, regeneração de secret), modal one-time para `client_secret` (RN02), gestão de escopos via multiselect (`GET /v1/scopes`, `GET/POST /v1/applications/:id/scopes`). Tipos `ApplicationListItem`, `ApplicationWithSecret`, `Scope` em `Frontend/src/lib/types.ts`. ✔️ (Concluído em 15/05/2026)
 
 **Incidente / ambiente (sessão 14/05/2026):** `npm run build` no `Frontend` falhou localmente sem `node_modules` (módulos TypeScript não resolvidos). Resolvido com `npm install` seguido de `npm run build` (sucesso).
+
+**Nota técnica (Task 6):** `GET /v1/applications` não retorna escopos embutidos; a UI busca escopos por aplicação em paralelo ao renderizar a listagem da página atual.
 
 ---
 
@@ -99,6 +102,7 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 - **Segurança de Rotas**: Proteção dos novos endpoints com `JwtAuthGuard` e `PermissionsGuard` utilizando o decorador `@RequirePermissions`.
 - **Workaround de Swagger**: Remoção temporária da propriedade `type` nos decoradores `@ApiResponse` dos novos módulos para mitigar um erro crítico de "Circular Dependency" no motor do Swagger/Fastify no ambiente de desenvolvimento Node 25.
 - **Sprint 6 — UI de usuários (RF09 no admin)**: A listagem consome o payload real de `GET /v1/users` (sem `roles` no `select` do backend); a tabela do frontend foi alinhada a `id`, `email`, `name`, `status`, `createdAt`. Validação de senha no modal de criação aproxima-se do RNF08; o DTO `CreateUserDto` no backend permanece com regra mínima mais curta até alinhamento futuro.
+- **Sprint 6 — UI de aplicações M2M (RF14–RF16)**: CRUD e regeneração de secret no admin; exibição única do `client_secret` com confirmação explícita do operador; associação de escopos substitui vínculos existentes (`POST /v1/applications/:id/scopes` com `scopeIds`).
 
 ---
 
