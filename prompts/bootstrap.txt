@@ -1,18 +1,18 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-4) Gerenciamento de Usuários (CRUD)
+5) Gestão de Papéis e Permissões (RBAC)
 
 Pertence a: Module 08 — Frontend Administrativo
-Título: Implementar Módulo de Gestão de Usuários
-Descrição: Listagem paginada, criação, edição e alteração de status de usuários.
+Título: Implementar Interface para RBAC Descrição: Gestão de Roles e Permissions, incluindo a associação de usuários a papéis e papéis a permissões.
 Critérios de aceitação:
-- Tabela de usuários com busca e paginação
-- Formulário de criação/edição com validações
-- Integração completa com `/v1/users`
-Prioridade: High
-Estimativa: 8 SP
-Label: frontend, users, crud, sprint-6
+- CRUD de Roles e Permissions
+- Interface de atribuição N:N (Drag and drop ou Multiselect)
+- Feedback visual de permissões salvas
+- Prioridade: High
+- Estimativa: 8 SP
+- Label: frontend, rbac, roles, sprint-6
+
 
 Passos obrigatorios:
 1) Localize e leia o documento normativo principal do produto.
