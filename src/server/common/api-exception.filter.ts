@@ -79,7 +79,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
         };
       }
 
-      console.error('[ApiExceptionFilter] Unhandled Exception:', exception);
+      console.error('[ApiExceptionFilter] Unhandled Exception DETAILED:', exception);
+      if (exception instanceof Error) {
+        console.error('[ApiExceptionFilter] Stack:', exception.stack);
+      }
 
       return {
         success: false,

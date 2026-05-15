@@ -55,18 +55,60 @@ export class ApplicationsService {
   }
 
   async findAll(query: ListApplicationsQueryDto) {
-    const { page = 1, limit = 10, name, status } = query;
-    const skip = (page - 1) * limit;
+    try {
+      const page = Math.max(1, Number(query.page || 1));
+      const limit = Math.max(1, Math.min(100, Number(query.limit || 10)));
+      const skip = (page - 1) * limit;
 
-    const where: Prisma.ApplicationWhereInput = {};
-    if (name) where.name = { contains: name, mode: 'insensitive' };
-    if (status) where.status = status;
+      const { name, status } = query;
+      const where: Prisma.ApplicationWhereInput = {};
+      
+      if (name && name.trim()) {
+        where.name = { contains: name.trim(), mode: 'insensitive' };
+      }
+      
+      if (status) {
+        where.status = status;
+      }
 
-    const [items, total] = await Promise.all([
-      this.prisma.application.findMany({
-        where,
-        skip,
-        take: limit,
+      const [items, total] = await Promise.all([
+        this.prisma.application.findMany({
+          where,
+          skip,
+          take: limit,
+          select: {
+            id: true,
+            clientId: true,
+            name: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.application.count({ where }),
+      ]);
+
+      return {
+        items,
+        total,
+        page,
+        limit,
+      };
+    } catch (error) {
+      console.error('[ApplicationsService.findAll] Database error:', {
+        message: error instanceof Error ? error.message : error,
+        query,
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      throw error;
+    }
+  }
+
+  async findOne(id: string) {
+    try {
+      const application = await this.prisma.application.findUnique({
+        where: { id },
         select: {
           id: true,
           clientId: true,
@@ -75,37 +117,18 @@ export class ApplicationsService {
           createdAt: true,
           updatedAt: true,
         },
-        orderBy: { createdAt: 'desc' }
-      }),
-      this.prisma.application.count({ where }),
-    ]);
+      });
 
-    return {
-      items,
-      total,
-      page,
-      limit,
-    };
-  }
+      if (!application) {
+        throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Aplicação não encontrada' });
+      }
 
-  async findOne(id: string) {
-    const application = await this.prisma.application.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        clientId: true,
-        name: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    if (!application) {
-      throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Aplicação não encontrada' });
+      return application;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      console.error('[ApplicationsService.findOne] Database error:', error);
+      throw error;
     }
-
-    return application;
   }
 
   async update(id: string, updateApplicationDto: UpdateApplicationDto) {
@@ -183,23 +206,29 @@ export class ApplicationsService {
   }
 
   async getScopes(applicationId: string) {
-    const application = await this.prisma.application.findUnique({
-      where: { id: applicationId },
-      include: {
-        scopes: {
-          include: {
-            scope: true,
+    try {
+      const application = await this.prisma.application.findUnique({
+        where: { id: applicationId },
+        include: {
+          scopes: {
+            include: {
+              scope: true,
+            },
+            orderBy: { scope: { code: 'asc' } }
           },
-          orderBy: { scope: { code: 'asc' } }
         },
-      },
-    });
+      });
 
-    if (!application) {
-      throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Aplicação não encontrada' });
+      if (!application) {
+        throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Aplicação não encontrada' });
+      }
+
+      return application.scopes.map(as => as.scope);
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      console.error('[ApplicationsService.getScopes] Database error:', error);
+      throw error;
     }
-
-    return application.scopes.map(as => as.scope);
   }
 
   async associateScopes(applicationId: string, associateScopesDto: AssociateScopesDto) {

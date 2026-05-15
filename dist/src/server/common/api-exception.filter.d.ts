@@ -1,0 +1,6 @@
+import { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
+export declare class ApiExceptionFilter implements ExceptionFilter {
+    catch(exception: unknown, host: ArgumentsHost): void;
+    private createErrorBody;
+}
+//# sourceMappingURL=api-exception.filter.d.ts.map

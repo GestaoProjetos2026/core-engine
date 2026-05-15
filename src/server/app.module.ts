@@ -12,17 +12,10 @@ import { IntegrationModule } from '../modules/integration/integration.module';
 import { RateLimitModule } from './common/rate-limit/rate-limit.module';
 import { LoggerModule } from 'nestjs-pino';
 import { AuditModule } from '../modules/audit/audit.module';
+import { DashboardModule } from '../modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
-    // LoggerModule.forRoot({
-    //   pinoHttp: {
-    //     transport: process.env.NODE_ENV !== 'production'
-    //       ? { target: 'pino-pretty', options: { colorize: true, singleLine: true } }
-    //       : undefined,
-    //     level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
-    //   },
-    // }),
     LoggerModule.forRoot({
       pinoHttp: {
         ...(process.env.NODE_ENV !== 'production' && {
@@ -42,6 +35,7 @@ import { AuditModule } from '../modules/audit/audit.module';
     IntegrationModule,
     RateLimitModule,
     AuditModule,
+    DashboardModule,
   ],
 })
 

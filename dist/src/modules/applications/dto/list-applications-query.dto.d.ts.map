@@ -1,0 +1,1 @@
+{"version":3,"file":"list-applications-query.dto.d.ts","sourceRoot":"","sources":["../../../../../src/modules/applications/dto/list-applications-query.dto.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,SAAS,EAAE,MAAM,gBAAgB,CAAC;AAG3C,qBAAa,wBAAwB;IAInC,IAAI,CAAC,EAAE,MAAM,CAAC;IAKd,KAAK,CAAC,EAAE,MAAM,CAAC;IAKf,IAAI,CAAC,EAAE,MAAM,CAAC;IAKd,MAAM,CAAC,EAAE,SAAS,CAAC;CACpB"}

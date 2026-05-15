@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '../lib/api';
-import type { ApiResponse, PaginatedResponse, Role, Permission } from '../lib/types';
+import type { ApiResponse, Role, Permission } from '../lib/types';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Table } from '../components/ui/Table';
-import { Plus, Settings, X, Shield, Key, Trash2 } from 'lucide-react';
+import { Settings, X, Shield, Key, Trash2 } from 'lucide-react';
 
 function parseApiError(err: unknown): string {
   if (typeof err === 'string') return err;
@@ -157,7 +157,7 @@ const RolesPage: React.FC = () => {
       for (const id of toRemove) {
         await api.delete(`/v1/roles/${managingRole.id}/permissions/${id}`);
       }
-      
+
       closeModal();
       fetchRoles();
     } catch (err) {
@@ -205,9 +205,9 @@ const RolesPage: React.FC = () => {
       </header>
 
       <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <button 
+        <button
           onClick={() => setActiveTab('roles')}
-          style={{ 
+          style={{
             background: 'none', border: 'none', color: activeTab === 'roles' ? 'var(--color-primary)' : 'var(--color-text-muted)',
             padding: '12px 16px', cursor: 'pointer', borderBottom: activeTab === 'roles' ? '2px solid var(--color-primary)' : '2px solid transparent',
             fontWeight: 600, transition: 'all 0.2s'
@@ -215,9 +215,9 @@ const RolesPage: React.FC = () => {
         >
           Roles
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('permissions')}
-          style={{ 
+          style={{
             background: 'none', border: 'none', color: activeTab === 'permissions' ? 'var(--color-primary)' : 'var(--color-text-muted)',
             padding: '12px 16px', cursor: 'pointer', borderBottom: activeTab === 'permissions' ? '2px solid var(--color-primary)' : '2px solid transparent',
             fontWeight: 600, transition: 'all 0.2s'
@@ -343,9 +343,9 @@ const RolesPage: React.FC = () => {
                     <div style={{ maxHeight: '350px', overflowY: 'auto', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
                       {permissions.map(perm => (
                         <label key={perm.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', padding: '8px', background: selectedPermissionIds.has(perm.id) ? 'rgba(74, 222, 128, 0.1)' : 'rgba(255,255,255,0.03)', borderRadius: '6px', border: selectedPermissionIds.has(perm.id) ? '1px solid rgba(74, 222, 128, 0.3)' : '1px solid transparent', transition: 'all 0.2s' }}>
-                          <input 
-                            type="checkbox" 
-                            checked={selectedPermissionIds.has(perm.id)} 
+                          <input
+                            type="checkbox"
+                            checked={selectedPermissionIds.has(perm.id)}
                             onChange={(e) => {
                               const next = new Set(selectedPermissionIds);
                               if (e.target.checked) next.add(perm.id);
@@ -362,7 +362,7 @@ const RolesPage: React.FC = () => {
                       ))}
                       {permissions.length === 0 && <div style={{ color: 'var(--color-text-muted)' }}>No permissions available. Create some first.</div>}
                     </div>
-                    
+
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                       <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>Cancel</Button>
                       <Button type="submit" isLoading={saving}>Save Permissions</Button>

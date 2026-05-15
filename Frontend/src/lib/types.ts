@@ -80,3 +80,15 @@ export interface Scope {
   code: string;
   description?: string | null;
 }
+/** Estatísticas do Dashboard (`GET /v1/dashboard/stats`). */
+export interface DashboardStats {
+  totalUsers: number;
+  totalRoles: number;
+  totalApplications: number;
+  systemHealth: 'Optimal' | 'Degraded';
+  status: {
+    database: 'ok' | 'degraded';
+    redis: 'ok' | 'degraded';
+    auth: 'ok' | 'degraded';
+  };
+}

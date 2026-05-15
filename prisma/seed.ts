@@ -29,6 +29,7 @@ const permissionDefs: { code: string; description: string }[] = [
   // Observability & System
   { code: 'audit:read', description: 'Visualizar logs de auditoria e eventos críticos' },
   { code: 'health:read', description: 'Visualizar status de saúde do sistema' },
+  { code: 'dashboard:read', description: 'Visualizar resumo e métricas do dashboard' },
 
   // Domain Placeholders (Consumer Squads / ERP Modules)
   { code: 'orders:read', description: 'Visualizar pedidos (Módulo Vendas)' },

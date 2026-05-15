@@ -25,8 +25,13 @@ export class ScopesService {
   }
 
   async findAll() {
-    return this.prisma.scope.findMany({
-      orderBy: { code: 'asc' },
-    });
+    try {
+      return await this.prisma.scope.findMany({
+        orderBy: { code: 'asc' },
+      });
+    } catch (error) {
+      console.error('[ScopesService.findAll] Database error:', error);
+      throw error;
+    }
   }
 }

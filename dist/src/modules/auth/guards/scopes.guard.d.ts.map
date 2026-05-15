@@ -1,0 +1,1 @@
+{"version":3,"file":"scopes.guard.d.ts","sourceRoot":"","sources":["../../../../../src/modules/auth/guards/scopes.guard.ts"],"names":[],"mappings":"AAAA,OAAO,EAEL,WAAW,EACX,gBAAgB,EAGjB,MAAM,gBAAgB,CAAC;AACxB,OAAO,EAAE,SAAS,EAAE,MAAM,cAAc,CAAC;AAGzC,qBACa,WAAY,YAAW,WAAW;IACd,OAAO,CAAC,SAAS;gBAAT,SAAS,EAAE,SAAS;IAE3D,WAAW,CAAC,OAAO,EAAE,gBAAgB,GAAG,OAAO;CAiDhD"}

@@ -100,6 +100,10 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 
 - **Implementação do RolesModule e PermissionsModule**: Criação de controladores, serviços e DTOs para gestão de RBAC.
 - **Segurança de Rotas**: Proteção dos novos endpoints com `JwtAuthGuard` e `PermissionsGuard` utilizando o decorador `@RequirePermissions`.
+- **Estabilização do Dashboard (Sprint 05)**:
+    - **Hardening de Serviços**: Implementação de capturas de erro granulares no `DashboardService`, permitindo que o sistema exiba dados parciais mesmo se o Redis ou o Banco de Dados estiverem temporariamente degradados.
+    - **Correção de Serialização JSON**: Conversão explícita de contagens do Prisma para `Number`, resolvendo erros de serialização que causavam falhas 500 silenciosas.
+    - **Gestão de Ambiente Local**: Resolução de conflitos de porta (`EADDRINUSE`) e sincronização de roteamento global (`/v1/dashboard`) entre Frontend e Backend.
 - **Workaround de Swagger**: Remoção temporária da propriedade `type` nos decoradores `@ApiResponse` dos novos módulos para mitigar um erro crítico de "Circular Dependency" no motor do Swagger/Fastify no ambiente de desenvolvimento Node 25.
 - **Sprint 6 — UI de usuários (RF09 no admin)**: A listagem consome o payload real de `GET /v1/users` (sem `roles` no `select` do backend); a tabela do frontend foi alinhada a `id`, `email`, `name`, `status`, `createdAt`. Validação de senha no modal de criação aproxima-se do RNF08; o DTO `CreateUserDto` no backend permanece com regra mínima mais curta até alinhamento futuro.
 - **Sprint 6 — UI de aplicações M2M (RF14–RF16)**: CRUD e regeneração de secret no admin; exibição única do `client_secret` com confirmação explícita do operador; associação de escopos substitui vínculos existentes (`POST /v1/applications/:id/scopes` com `scopeIds`).

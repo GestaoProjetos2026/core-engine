@@ -32,30 +32,35 @@ export class RolesService {
   }
 
   async findAll() {
-    return this.prisma.role.findMany({
-      select: {
-        id: true,
-        name: true,
-        permissions: {
-          select: {
-            permission: {
-              select: {
-                id: true,
-                code: true,
-                description: true,
+    try {
+      return await this.prisma.role.findMany({
+        select: {
+          id: true,
+          name: true,
+          permissions: {
+            select: {
+              permission: {
+                select: {
+                  id: true,
+                  code: true,
+                  description: true,
+                },
               },
             },
           },
-        },
-        _count: {
-          select: {
-            users: true,
-            permissions: true,
+          _count: {
+            select: {
+              users: true,
+              permissions: true,
+            },
           },
         },
-      },
-      orderBy: { name: 'asc' },
-    });
+        orderBy: { name: 'asc' },
+      });
+    } catch (error) {
+      console.error('[RolesService.findAll] Database error:', error);
+      throw error;
+    }
   }
 
   async assignUsers(roleId: string, dto: AssignRoleUsersDto) {

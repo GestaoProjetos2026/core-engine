@@ -1,0 +1,1 @@
+{"version":3,"file":"oauth-token-response.dto.d.ts","sourceRoot":"","sources":["../../../../../src/modules/integration/dto/oauth-token-response.dto.ts"],"names":[],"mappings":"AAAA,qBAAa,qBAAqB;IAChC,YAAY,EAAG,MAAM,CAAC;IACtB,UAAU,EAAG,MAAM,CAAC;IACpB,UAAU,EAAG,MAAM,CAAC;IACpB,aAAa,CAAC,EAAE,MAAM,CAAC;IACvB,KAAK,CAAC,EAAE,MAAM,CAAC;CAChB"}
