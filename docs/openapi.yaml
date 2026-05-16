@@ -29,7 +29,7 @@ info:
     name: Internal — ERP Modular Cloud-Native
 
 servers:
-  - url: http://40.82.176.176:8080
+  - url: http://20.246.82.149:8080
     description: Development server
   - url: http://localhost:3000
     description: Local development

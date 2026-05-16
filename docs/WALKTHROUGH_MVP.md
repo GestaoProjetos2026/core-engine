@@ -56,5 +56,5 @@ Para squads e parceiros externos, o sistema atua como um **Authorization Server*
 **Ambiente de Desenvolvimento:**
 - **Porta DB:** 5433 (PostgreSQL Docker)
 - **Porta API:** 3000 (Local)
-- **URL Desenvolvimento:** http://40.82.176.176:8080
+- **URL Desenvolvimento:** http://20.246.82.149:8080
 - **Documentação:** `docs/PERMISSIONS_MATRIX.md`

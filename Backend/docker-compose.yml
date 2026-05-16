@@ -45,7 +45,7 @@ services:
       context: ./Frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://40.82.176.176:8080
+        - VITE_API_URL=http://20.246.82.149:8080
     container_name: erp-frontend
     restart: always
     ports:

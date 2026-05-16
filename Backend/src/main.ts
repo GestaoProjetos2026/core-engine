@@ -94,7 +94,7 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .setContact('Squad 1 — Core/Auth', '', 'vinicius5.lopes@hotmail.com')
     .setLicense('Internal — ERP Modular Cloud-Native', '')
-    .addServer(process.env.DEV_SERVER_URL ?? 'http://40.82.176.176:8080', 'Development server')
+    .addServer(process.env.DEV_SERVER_URL ?? 'http://20.246.82.149:8080', 'Development server')
     .addServer('http://localhost:3000', 'Local development')
     .addTag('Health', 'Service health and readiness probes (RF19)')
     .addTag('Auth', 'Authentication and token lifecycle: register, login, refresh, /me (RF01–RF08)')
