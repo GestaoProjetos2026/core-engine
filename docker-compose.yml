@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: erp-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: erp_core
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5433:5432"
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d erp_core"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: erp-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: erp-backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@postgres:5432/erp_core?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-super-secret-key-change-in-production}
+      - NODE_ENV=production
+      - PORT=3000
+    ports:
+      - "8080:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - erp-network
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+      args:
+        # A URL precisa apontar para onde o backend estará exposto para o NAVEGADOR do usuário
+        - VITE_API_URL=http://localhost:8080
+    container_name: erp-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - erp-network
+
+networks:
+  erp-network:
+    driver: bridge
