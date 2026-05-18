@@ -3,11 +3,30 @@ name: Deploy Application
 on:
   push:
     tags:
-      - v*
+      - 'back-*'
+      - 'front-*'
+      - 'v*' # Mantive v* caso você queira disparar ambos, mas é recomendado usar prefixos
 
 jobs:
-  deploy:
+  deploy-backend:
+    if: startsWith(github.ref, 'refs/tags/back-') || startsWith(github.ref, 'refs/tags/v')
     uses: GestaoProjetos2026/pipeline-centralizado/.github/workflows/pipeline.yaml@main
+    with:
+      context: ./Backend
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      GH_EMAIL: ${{ secrets.GH_EMAIL }}
+      ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+      ARGOCD_USERNAME: ${{ secrets.ARGOCD_USERNAME }}
+      ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
+
+  deploy-frontend:
+    if: startsWith(github.ref, 'refs/tags/front-') || startsWith(github.ref, 'refs/tags/v')
+    uses: GestaoProjetos2026/pipeline-centralizado/.github/workflows/pipeline.yaml@main
+    with:
+      context: ./Frontend
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
