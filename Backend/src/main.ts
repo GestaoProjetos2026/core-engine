@@ -130,7 +130,8 @@ async function bootstrap() {
 
 
 
-  const port = Number(process.env.PORT ?? 3000);
+  // Ignora o process.env.PORT para não conflitar com o Nginx, forçando a porta interna 3001
+  const port = 3001;
 
   // Direct Fastify route for the root path (bypasses NestJS global prefix)
   const fastifyInstance = app.getHttpAdapter().getInstance();
