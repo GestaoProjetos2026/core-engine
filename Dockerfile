@@ -20,9 +20,12 @@ COPY Backend/ ./
 RUN npm run build
 RUN npm prune --production
 
-# Stage 3: Production Image
+# Stage 3: Production Image (Nginx + Node)
 FROM node:22-alpine
 WORKDIR /app
+
+# Instala o Nginx para servir o Frontend
+RUN apk add --no-cache nginx
 
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -33,19 +36,16 @@ COPY --from=backend-builder /app/Backend/node_modules ./node_modules
 COPY --from=backend-builder /app/Backend/dist ./dist
 COPY --from=backend-builder /app/Backend/prisma ./prisma
 
-# Copia os arquivos compilados do frontend para a pasta 'public'
-COPY --from=frontend-builder /app/Frontend/dist ./public
+# O Frontend/nginx.conf aponta para /usr/share/nginx/html e escuta na porta 80
+RUN mkdir -p /usr/share/nginx/html
+COPY --from=frontend-builder /app/Frontend/dist /usr/share/nginx/html
 
-# Cria um usuário sem privilégios de root para segurança
-RUN addgroup -S nodejs && adduser -S nestjs -G nodejs
-RUN chown -R nestjs:nodejs /app
-USER nestjs
+# Copia a configuração do Nginx do frontend para o local correto do Alpine
+COPY Frontend/nginx.conf /etc/nginx/http.d/default.conf
 
-EXPOSE 3000
+# Expor as portas separadas: 80 (Frontend/Nginx) e 3000 (Backend/Node)
+EXPOSE 80 3000
 
-# Healthcheck apontando para a rota da API
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:3000/v1/health || exit 1
-
-# Comando para iniciar a aplicação
-CMD ["node", "dist/src/main.js"]
+# Comando para iniciar ambos os serviços
+# Inicia o Nginx em background e o Node em foreground
+CMD ["sh", "-c", "nginx && node dist/src/main.js"]

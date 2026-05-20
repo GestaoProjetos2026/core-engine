@@ -9,8 +9,6 @@ const swagger_1 = require("@nestjs/swagger");
 const nestjs_pino_1 = require("nestjs-pino");
 const crypto_1 = require("crypto");
 const helmet_1 = require("@fastify/helmet");
-const static_1 = require("@fastify/static");
-const path_1 = require("path");
 const app_module_1 = require("./server/app.module");
 const api_exception_filter_1 = require("./server/common/api-exception.filter");
 const response_envelope_interceptor_1 = require("./server/common/response-envelope.interceptor");
@@ -21,6 +19,31 @@ async function bootstrap() {
     }), { bufferLogs: true });
     app.enableCors();
     app.useLogger(app.get(nestjs_pino_1.Logger));
+    // await app.register(fastifyHelmet, {
+    //   contentSecurityPolicy:
+    //     process.env.NODE_ENV === 'production'
+    //       ? true
+    //       : {
+    //         directives: {
+    //           defaultSrc: ["'self'"],
+    //           styleSrc: ["'self'", "'unsafe-inline'"],
+    //           imgSrc: ["'self'", 'data:', 'validator.swagger.io'],
+    //           scriptSrc: ["'self'", "https: 'unsafe-inline'"],
+    //         },
+    //       },
+    // });
+    //TROCAR DEPOIS
+    // await app.register(fastifyHelmet, {
+    //   hsts: false,
+    //   contentSecurityPolicy: {
+    //     directives: {
+    //       defaultSrc: ["'self'"],
+    //       styleSrc: ["'self'", "'unsafe-inline'"],
+    //       imgSrc: ["'self'", 'data:', 'validator.swagger.io'],
+    //       scriptSrc: ["'self'", "https: 'unsafe-inline'"],
+    //     },
+    //   },
+    // } as any);
     await app.register(helmet_1.default, {
         contentSecurityPolicy: false,
         hsts: false,
@@ -87,21 +110,20 @@ async function bootstrap() {
         customSiteTitle: 'Core/Auth API Docs',
     });
     const port = Number(process.env.PORT ?? 3000);
-    // Registra o servidor de arquivos estáticos para a interface Frontend
+    // Direct Fastify route for the root path (bypasses NestJS global prefix)
     const fastifyInstance = app.getHttpAdapter().getInstance();
-    fastifyInstance.register(static_1.default, {
-        root: (0, path_1.join)(process.cwd(), 'public'),
-        prefix: '/', // Serve at root
-        wildcard: false, // Don't intercept API routes randomly
-    });
-    // O SPA routing: qualquer rota não-API e que não seja arquivo volta para o index.html
-    fastifyInstance.setNotFoundHandler((request, reply) => {
-        if (request.url.startsWith('/v1')) {
-            reply.code(404).send({ success: false, error: { code: 'NOT_FOUND' }, path: request.url });
-        }
-        else {
-            reply.sendFile('index.html');
-        }
+    fastifyInstance.get('/', (_request, reply) => {
+        reply.send({
+            success: true,
+            message: 'Core Engine & Auth API is running',
+            data: {
+                version: '1.0.0',
+                docs: '/v1/docs',
+                health: '/v1/health',
+            },
+            timestamp: new Date().toISOString(),
+            path: '/',
+        });
     });
     await app.listen(port, '0.0.0.0');
 }
