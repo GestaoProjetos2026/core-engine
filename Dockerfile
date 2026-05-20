@@ -28,7 +28,7 @@ WORKDIR /app
 RUN apk add --no-cache nginx
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=3001
 
 # Copia os arquivos compilados do backend
 COPY --from=backend-builder /app/Backend/package*.json ./
@@ -43,8 +43,8 @@ COPY --from=frontend-builder /app/Frontend/dist /usr/share/nginx/html
 # Copia a configuração do Nginx do frontend para o local correto do Alpine
 COPY Frontend/nginx.conf /etc/nginx/http.d/default.conf
 
-# Expor as portas separadas: 80 (Frontend/Nginx) e 3000 (Backend/Node)
-EXPOSE 80 3000
+# Expor as portas: 3000 (Frontend/Nginx exposto para a internet) e 3001 (Backend/Node interno)
+EXPOSE 3000 3001
 
 # Comando para iniciar ambos os serviços
 # Inicia o Nginx em background e o Node em foreground

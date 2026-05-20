@@ -65,7 +65,7 @@ services:
     container_name: erp-frontend
     restart: always
     ports:
-      - "80:80"
+      - "80:3000"
     depends_on:
       - backend
     networks:
