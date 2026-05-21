@@ -36,8 +36,8 @@ COPY --from=backend-builder /app/Backend/node_modules ./node_modules
 COPY --from=backend-builder /app/Backend/dist ./dist
 COPY --from=backend-builder /app/Backend/prisma ./prisma
 
-# O Frontend/nginx.conf aponta para /usr/share/nginx/html e escuta na porta 80
-RUN mkdir -p /usr/share/nginx/html
+# O Frontend/nginx.conf aponta para /usr/share/nginx/html e escuta na porta 3000
+RUN mkdir -p /usr/share/nginx/html /run/nginx
 COPY --from=frontend-builder /app/Frontend/dist /usr/share/nginx/html
 
 # Copia a configuração do Nginx do frontend para o local correto do Alpine
@@ -47,5 +47,5 @@ COPY Frontend/nginx.conf /etc/nginx/http.d/default.conf
 EXPOSE 3000 3001
 
 # Comando para iniciar ambos os serviços
-# Inicia o Nginx primeiro para responder aos healthchecks, roda migrations/seed compilado, e sobe a API
-CMD ["sh", "-c", "nginx && npx prisma migrate deploy && node dist/prisma/seed.js && node dist/src/main.js"]
+# Inicia o Nginx primeiro para responder aos healthchecks, roda migrations/seed, e sobe a API (tudo à prova de falhas)
+CMD ["sh", "-c", "nginx || true; npx prisma migrate deploy || true; node dist/prisma/seed.js || true; node dist/src/main.js"]
