@@ -1,18 +1,18 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-6) Gestão de Aplicações M2M
+1) Guia de Integração para Outros Módulos
 
-Pertence a: Module 08 — Frontend Administrativo
-Título: Implementar Interface para Aplicações e Escopos
-Descrição: Criar e gerenciar aplicações externas, gerar Client Secrets e associar escopos.
+Pertence a: Module 7 — Infraestrutura e Documentação
+Título: Criar Documentação Técnica de Integração
+Descrição: Documento detalhado sobre como outros módulos devem consumir o Core/Auth (M2M, RBAC, Validação de JWT).
 Critérios de aceitação:
-- CRUD de Aplicações
-- Fluxo de exibição única de Client Secret
-- Gestão de escopos por aplicação
-Prioridade: Medium
+- Guia em Markdown no repositório
+- Exemplos de código (Node.js, Python, etc.)
+- Fluxograma de autenticação entre módulos
+Prioridade: Urgent
 Estimativa: 5 SP
-Label: frontend, m2m, applications, sprint-6
+Label: docs, integration, m2m, sprint-7
 
 
 Passos obrigatorios:
