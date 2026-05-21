@@ -1,18 +1,17 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-1) Guia de Integração para Outros Módulos
+2) SDK/Snippet de Integração Rápida
 
-Pertence a: Module 7 — Infraestrutura e Documentação
-Título: Criar Documentação Técnica de Integração
-Descrição: Documento detalhado sobre como outros módulos devem consumir o Core/Auth (M2M, RBAC, Validação de JWT).
+Pertence a: Module 6 — APIs / Common
+Título: Desenvolver Middleware/Utilitário de Validação de Token
+Descrição: Criar um pequeno pacote ou snippet reutilizável para que outros squads validem o JWT do Core/Auth facilmente.
 Critérios de aceitação:
-- Guia em Markdown no repositório
-- Exemplos de código (Node.js, Python, etc.)
-- Fluxograma de autenticação entre módulos
-Prioridade: Urgent
-Estimativa: 5 SP
-Label: docs, integration, m2m, sprint-7
+- Código testado e documentado
+- Suporte a verificação de scopes/permissions
+Prioridade: High
+Estimativa: 3 SP
+Label: devx, integration, middleware, sprint-7
 
 
 Passos obrigatorios:
