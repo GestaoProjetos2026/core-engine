@@ -24,8 +24,8 @@ RUN npm prune --production
 FROM node:22-alpine
 WORKDIR /app
 
-# Instala o Nginx para servir o Frontend e o tsx para rodar o seed
-RUN apk add --no-cache nginx && npm install -g tsx
+# Instala o Nginx para servir o Frontend
+RUN apk add --no-cache nginx
 
 ENV NODE_ENV=production
 ENV PORT=3001
@@ -47,5 +47,5 @@ COPY Frontend/nginx.conf /etc/nginx/http.d/default.conf
 EXPOSE 3000 3001
 
 # Comando para iniciar ambos os serviços
-# Roda as migrations e o seed antes de iniciar o Nginx e a API
-CMD ["sh", "-c", "npx prisma migrate deploy && tsx prisma/seed.ts && nginx && node dist/src/main.js"]
+# Inicia o Nginx primeiro para responder aos healthchecks, roda migrations/seed compilado, e sobe a API
+CMD ["sh", "-c", "nginx && npx prisma migrate deploy && node dist/prisma/seed.js && node dist/src/main.js"]
