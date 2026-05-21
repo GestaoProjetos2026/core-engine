@@ -745,6 +745,7 @@ Desenvolvimento completo do Frontend Administrativo (Módulo 08), incluindo Auth
 Sprint 7 — 16/05/2026 a 22/05/2026
 
 1) Guia de Integração para Outros Módulos
+Status: done
 
 Pertence a: Module 7 — Infraestrutura e Documentação
 Título: Criar Documentação Técnica de Integração

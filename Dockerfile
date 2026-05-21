@@ -47,5 +47,5 @@ COPY Frontend/nginx.conf /etc/nginx/http.d/default.conf
 EXPOSE 3000 3001
 
 # Comando para iniciar ambos os serviços
-# Substitui dinamicamente a porta do Nginx pela variável $PORT injetada pelo K8s antes de iniciar
-CMD ["sh", "-c", "sed -i \"s/listen 3000;/listen ${PORT:-3000};/g\" /etc/nginx/http.d/default.conf && nginx || true; npx prisma migrate deploy || true; node dist/prisma/seed.js || true; node dist/src/main.js"]
+# Substitui dinamicamente a porta do Nginx, inicia o Nginx e aguarda o banco de dados ficar pronto para rodar as migrations e o seed antes de ligar a API
+CMD ["sh", "-c", "sed -i \"s/listen 3000;/listen ${PORT:-3000};/g\" /etc/nginx/http.d/default.conf && nginx || true; dokku=0; until npx prisma migrate deploy || [ $dokku -eq 10 ]; do dokku=$((dokku+1)); echo 'Waiting for DB...'; sleep 3; done; node dist/prisma/seed.js || true; node dist/src/main.js"]

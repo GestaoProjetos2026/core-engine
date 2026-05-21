@@ -82,6 +82,14 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 
 ---
 
+### Sprint 7: Integração e Documentação para Squads Consumidores
+**Status**: 🚀 Em Andamento
+- **Task 1**: Guia de Integração para Outros Módulos. ✔️ (Concluído em 21/05/2026)
+  - Criação de `docs/INTEGRATION_GUIDE.md` — documento unificado cobrindo: fluxo M2M (client_credentials), fluxo de usuário humano (RBAC), validação de JWT (assinatura + exp + type), middleware/guards em Node.js e Python, tratamento de erros com `error.code`, variáveis de ambiente e checklist de onboarding para novos squads. Fluxogramas Mermaid de sequência e visão de ecossistema. Exemplos em cURL, Node.js (fetch/axios) e Python (requests/FastAPI). Critérios de aceite satisfeitos: Guia em Markdown ✅, Exemplos multi-linguagem ✅, Fluxograma de autenticação entre módulos ✅.
+- **Tasks 2 e 3**: SDK/Snippet de Integração e Workshop de Homologação — pendentes.
+
+---
+
 ## 🏗️ Débitos Técnicos e Próximos Passos (Pós-MVP)
 
 Apesar da conclusão bem-sucedida das funcionalidades do Core, os seguintes itens foram identificados como débitos técnicos para evolução imediata:
