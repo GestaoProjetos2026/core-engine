@@ -47,5 +47,5 @@ COPY Frontend/nginx.conf /etc/nginx/http.d/default.conf
 EXPOSE 3000 3001
 
 # Comando para iniciar ambos os serviços
-# Inicia o Nginx primeiro para responder aos healthchecks, roda migrations/seed, e sobe a API (tudo à prova de falhas)
-CMD ["sh", "-c", "nginx || true; npx prisma migrate deploy || true; node dist/prisma/seed.js || true; node dist/src/main.js"]
+# Substitui dinamicamente a porta do Nginx pela variável $PORT injetada pelo K8s antes de iniciar
+CMD ["sh", "-c", "sed -i \"s/listen 3000;/listen ${PORT:-3000};/g\" /etc/nginx/http.d/default.conf && nginx || true; npx prisma migrate deploy || true; node dist/prisma/seed.js || true; node dist/src/main.js"]
