@@ -23,7 +23,8 @@ services:
 
   backend:
     build:
-      context: .
+      # context: .
+      context: ./backend
       dockerfile: Dockerfile
     container_name: erp-backend
     restart: always
@@ -42,10 +43,12 @@ services:
 
   frontend:
     build:
-      context: ./Frontend
+      # context: ./Frontend
+      context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://20.246.82.149:8080
+        # - VITE_API_URL=http://20.246.82.149:8080
+        - VITE_API_URL=http://backend:3000
     container_name: erp-frontend
     restart: always
     ports:
