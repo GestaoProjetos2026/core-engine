@@ -35,7 +35,7 @@ services:
 
   backend:
     build:
-      context: ./Backend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: erp-backend
     restart: always
@@ -57,7 +57,7 @@ services:
 
   frontend:
     build:
-      context: ./Frontend
+      context: ./frontend
       dockerfile: Dockerfile
       args:
         # A URL precisa apontar para onde o backend estará exposto para o NAVEGADOR do usuário
