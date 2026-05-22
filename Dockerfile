@@ -28,7 +28,8 @@ WORKDIR /app
 RUN apk add --no-cache nginx
 
 ENV NODE_ENV=production
-ENV PORT=3001
+# ENV PORT=3001
+ENV PORT=3000
 
 # Copia os arquivos compilados do backend
 COPY --from=backend-builder /app/backend/package*.json ./
@@ -44,7 +45,8 @@ COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
 COPY frontend/nginx.conf /etc/nginx/http.d/default.conf
 
 # Expor as portas: 3000 (Frontend/Nginx exposto para a internet) e 3001 (Backend/Node interno)
-EXPOSE 3000 3001
+# EXPOSE 3000 3001
+EXPOSE 80 3000
 
 # Comando para iniciar ambos os serviços
 # Substitui dinamicamente a porta do Nginx, inicia o Nginx e aguarda o banco de dados ficar pronto para rodar as migrations e o seed antes de ligar a API
