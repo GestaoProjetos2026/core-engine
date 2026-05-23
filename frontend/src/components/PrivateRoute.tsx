@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import '../pages/LoginPage.css';
 
 export const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -8,14 +9,11 @@ export const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        height: '100vh', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        backgroundColor: '#0B132B'
-      }}>
-        <div style={{ color: '#F5D3C8' }}>Loading...</div>
+      <div className="auth-loading-screen">
+        <div className="auth-loading-inner">
+          <span className="auth-loading-spinner" aria-hidden />
+          <span className="auth-loading-text">Loading…</span>
+        </div>
       </div>
     );
   }

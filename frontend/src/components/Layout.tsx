@@ -31,10 +31,15 @@ const Layout: React.FC = () => {
       <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="logo">
-            <ShieldCheck size={28} color="var(--color-highlight)" />
+            <ShieldCheck size={28} className="logo-icon" aria-hidden />
             <span>ERP Core</span>
           </div>
-          <button className="mobile-close" onClick={() => setIsMobileMenuOpen(false)}>
+          <button
+            type="button"
+            className="mobile-close"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="Fechar menu"
+          >
             <X size={24} />
           </button>
         </div>
@@ -54,7 +59,7 @@ const Layout: React.FC = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <button className="logout-btn" onClick={logout}>
+          <button type="button" className="logout-btn" onClick={logout}>
             <LogOut size={20} />
             <span>Logout</span>
           </button>
@@ -64,11 +69,16 @@ const Layout: React.FC = () => {
       {/* Main Content */}
       <main className="main-wrapper">
         <header className="header">
-          <button className="mobile-toggle" onClick={() => setIsMobileMenuOpen(true)}>
+          <button
+            type="button"
+            className="mobile-toggle"
+            onClick={() => setIsMobileMenuOpen(true)}
+            aria-label="Abrir menu"
+          >
             <Menu size={24} />
           </button>
-          
-          <NavLink to="/profile" className="header-user">
+
+          <NavLink to="/profile" className="header-user" onClick={() => setIsMobileMenuOpen(false)}>
             <div className="user-info">
               <span className="user-name">{user?.name}</span>
               <span className="user-email">{user?.email}</span>

@@ -3,7 +3,7 @@ import './Badge.css';
 
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'success' | 'warning' | 'error' | 'info';
+  variant?: 'success' | 'warning' | 'error' | 'danger' | 'info';
 }
 
 export const Badge: React.FC<BadgeProps> = ({ children, variant = 'info' }) => {

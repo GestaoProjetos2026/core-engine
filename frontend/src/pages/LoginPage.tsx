@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { ShieldCheck } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -14,10 +15,19 @@ const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || '/dashboard';
+
+  useEffect(() => {
+    const message = (location.state as { message?: string } | null)?.message;
+    if (message) {
+      showToast(message, 'success');
+      navigate('/login', { replace: true, state: { from: location.state?.from } });
+    }
+  }, [location.state, navigate, showToast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +46,9 @@ const LoginPage: React.FC = () => {
       navigate(from, { replace: true });
     } catch (err: unknown) {
       const errorData = err as { error?: { message?: string } };
-      setError(errorData.error?.message || 'Login failed. Please check your credentials.');
+      const msg = errorData.error?.message || 'Login failed. Please check your credentials.';
+      setError(msg);
+      showToast(msg, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -47,7 +59,7 @@ const LoginPage: React.FC = () => {
       <div className="login-container animate-fade-in">
         <div className="login-header">
           <div className="login-logo pulse">
-            <ShieldCheck size={56} color="var(--color-highlight)" />
+            <ShieldCheck size={56} className="login-logo-icon" aria-hidden />
           </div>
           <h1>Welcome Back</h1>
           <p>Access the Core Engine & Auth System</p>
@@ -55,7 +67,7 @@ const LoginPage: React.FC = () => {
 
         <Card className="login-card">
           <form onSubmit={handleSubmit} className="login-form">
-            {error && <div className="login-error">{error}</div>}
+            {error && <div className="auth-alert auth-alert--error">{error}</div>}
 
             <Input
               label="Email Address"
@@ -90,7 +102,7 @@ const LoginPage: React.FC = () => {
         <p className="login-footer">
           Don't have an account? <Link to="/register">Create one</Link>
         </p>
-        <p className="login-footer" style={{ marginTop: '-20px' }}>
+        <p className="login-footer login-footer--compact">
           Need help? <a href="#">Contact support</a>
         </p>
       </div>
