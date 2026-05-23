@@ -143,10 +143,12 @@ async function main() {
   const passwordHash = await bcrypt.hash(defaultPassword, 12);
 
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
+    // where: { email: 'admin@example.com' },
+    where: { email: 'admin@hotmail.com' },
     update: { passwordHash },
     create: {
-      email: 'admin@example.com',
+      // email: 'admin@example.com',
+      email: 'admin@hotmail.com',
       name: 'Admin User',
       passwordHash,
       status: 'ACTIVE',
