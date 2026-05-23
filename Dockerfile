@@ -1,57 +1,53 @@
-# Stage 1: Build
-FROM node:22-alpine AS builder
-
-# Instala dependências de compilação para módulos nativos (como bcrypt se necessário)
-RUN apk add --no-cache python3 make g++
-
-WORKDIR /app
-
-# Copia arquivos de definição de dependências
-COPY package*.json ./
-COPY prisma ./prisma/
-
-# Instala todas as dependências (incluindo devDependencies para o build)
+# Stage 1: Build Frontend
+FROM node:22-alpine AS frontend-builder
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
 RUN npm install
-
-# Gera o Prisma Client
-RUN npx prisma generate
-
-# Copia o restante do código fonte e configurações
-COPY . .
-
-# Executa o build do projeto (TypeScript -> JS)
+COPY frontend/ ./
+ARG VITE_API_URL=""
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
-# Remove as devDependencies para reduzir o tamanho da imagem final
+# Stage 2: Build Backend
+FROM node:22-alpine AS backend-builder
+RUN apk add --no-cache python3 make g++
+WORKDIR /app/backend
+COPY backend/package*.json ./
+COPY backend/prisma ./prisma/
+RUN npm install
+RUN npx prisma generate
+COPY backend/ ./
+RUN npm run build
 RUN npm prune --production
 
-# Stage 2: Production
+# Stage 3: Production Image (Nginx + Node)
 FROM node:22-alpine
-
 WORKDIR /app
 
-# Variáveis de ambiente padrão
+# Instala o Nginx para servir o Frontend
+RUN apk add --no-cache nginx
+
 ENV NODE_ENV=production
+# ENV PORT=3001
 ENV PORT=3000
 
-# Copia apenas o necessário do estágio de build
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma ./prisma
+# Copia os arquivos compilados do backend
+COPY --from=backend-builder /app/backend/package*.json ./
+COPY --from=backend-builder /app/backend/node_modules ./node_modules
+COPY --from=backend-builder /app/backend/dist ./dist
+COPY --from=backend-builder /app/backend/prisma ./prisma
 
-# Cria um usuário sem privilégios de root para segurança
-RUN addgroup -S nodejs && adduser -S nestjs -G nodejs
-RUN chown -R nestjs:nodejs /app
+# O Frontend/nginx.conf aponta para /usr/share/nginx/html e escuta na porta 3000
+RUN mkdir -p /usr/share/nginx/html /run/nginx
+COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
 
-USER nestjs
+# Copia a configuração do Nginx do frontend para o local correto do Alpine
+COPY frontend/nginx.conf /etc/nginx/http.d/default.conf
 
-# Expõe a porta configurada
-EXPOSE 3000
+# Expor as portas: 3000 (Frontend/Nginx exposto para a internet) e 3001 (Backend/Node interno)
+# EXPOSE 3000 3001
+EXPOSE 80 3000
 
-# Healthcheck seguindo a especificação do endpoint /v1/health (RNF09)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:3000/v1/health || exit 1
-
-# Comando para iniciar a aplicação
-CMD ["node", "dist/src/main.js"]
+# Comando para iniciar ambos os serviços
+# Substitui dinamicamente a porta do Nginx, inicia o Nginx e aguarda o banco de dados ficar pronto para rodar as migrations e o seed antes de ligar a API
+CMD ["sh", "-c", "sed -i \"s/listen 3000;/listen ${PORT:-3000};/g\" /etc/nginx/http.d/default.conf && nginx || true; dokku=0; until npx prisma migrate deploy || [ $dokku -eq 10 ]; do dokku=$((dokku+1)); echo 'Waiting for DB...'; sleep 3; done; node dist/prisma/seed.js || true; node dist/src/main.js"]

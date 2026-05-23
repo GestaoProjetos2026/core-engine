@@ -745,6 +745,7 @@ Desenvolvimento completo do Frontend Administrativo (Módulo 08), incluindo Auth
 Sprint 7 — 16/05/2026 a 22/05/2026
 
 1) Guia de Integração para Outros Módulos
+Status: done
 
 Pertence a: Module 7 — Infraestrutura e Documentação
 Título: Criar Documentação Técnica de Integração
@@ -788,19 +789,100 @@ Foco total na documentação de integração, guias técnicos e suporte para que
 
 Sprint 8 — 23/05/2026 a 29/05/2026
 
-1) Bug Bash e Refinamento de UI/UX
+> **Origem das tasks 1–6:** bootstrap (`prompts/bootstrap.txt`) + delta entre `docs/PadraoFront/Padronizacao.md` (ADR-001) e o código atual em `frontend/`. Pasta real do app: `frontend/` (não `Frontend/`).
+
+1) Tokens CSS globais e fundação do Design System (ADR-001)
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Migrar `index.css` para tokens semânticos do ADR-001
+Descrição: Substituir a paleta legada (`--color-bg: #0B132B`, `--color-primary: #88A0A8`, etc.) pelos tokens de `docs/PadraoFront/Padronizacao.md` (§3–§7, §11, §14): backgrounds (`--color-bg-app`, `--color-bg-sidebar`, `--color-bg-surface`), brand (`--color-brand-primary`), texto, bordas, status, espaçamento, radius e sombras. Manter import da fonte Inter.
+Critérios de aceitação:
+- `:root` expõe tokens semânticos conforme ADR (sem cores hardcoded fora dos tokens)
+- Tipografia base usa escala ADR (`--font-size-*`, `--font-weight-*`)
+- `:focus-visible` global conforme §12
+Prioridade: Urgent
+Estimativa: 3 SP
+Label: frontend, design-system, tokens, sprint-8
+
+2) AppShell: Sidebar e Topbar alinhados ao layout ADR
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Refatorar `Layout.tsx` / `Layout.css` para padrão AppShell
+Descrição: Ajustar sidebar (240px, `--color-bg-sidebar`), item ativo com fundo `--color-brand-muted` e borda esquerda `--color-brand-primary` (§8.2), topbar 56px com `--color-bg-header` (§8.3). Remover destaque ativo com fundo sólido cinza (`nav-item.active` atual). Logo/ícone de marca com `--color-icon-brand`.
+Critérios de aceitação:
+- Sidebar 240px fixa; item ativo segue spec ADR (não bloco sólido cinza)
+- Header/topbar 56px com borda `--color-border-subtle`
+- Menu mobile (overlay) preservado e funcional em ≤768px
+Prioridade: Urgent
+Estimativa: 3 SP
+Label: frontend, layout, appshell, sprint-8
+
+3) Biblioteca UI base: Button, Input, Card, Badge e Table
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Alinhar componentes em `frontend/src/components/ui/` ao ADR-001
+Descrição: Atualizar `Button.css/tsx` (primário `#0466c8`, secundário, ghost — §9.1), `Input.css` (altura 38px, focus ring — §9.3), `Card.css` (superfície, borda, radius 12px — §9.2), `Badge.css` (variantes success/warning/danger/info — §9.3), `Table.css` (cabeçalho overline, hover — §9.5). Estados hover/active/disabled/focus/loading em todos (§13).
+Critérios de aceitação:
+- Variantes de botão correspondem ao ADR (primário azul vivo, não cinza)
+- Inputs com focus ring `rgba(4, 102, 200, 0.20)`
+- Badges usam tokens `--color-*-muted` e bordas semânticas
+- Nenhum componente UI referencia tokens legados removidos
+Prioridade: Urgent
+Estimativa: 5 SP
+Label: frontend, ui-components, design-system, sprint-8
+
+4) Páginas administrativas CRUD: Users, Roles e Applications
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Aplicar Design System nas telas de gestão
+Descrição: Revisar `UsersPage.tsx`, `RolesPage.tsx` e `ApplicationsPage.tsx` (e CSS associados) para consumir tokens e componentes alinhados: tabelas, badges de status (Ativo/Inativo), modais (`--color-bg-elevated`, radius 16px — §9.7), grids e espaçamento `--space-*`. Substituir estilos inline (`style={{ color: ... }}`) por classes utilitárias ou tokens.
+Critérios de aceitação:
+- Tabelas e badges de status seguem §9.3–§9.5
+- Modais de criação/edição/secret one-time com superfície elevada ADR
+- Listagens e formulários sem cores legadas (`--color-primary` cinza, `--color-highlight` pêssego)
+Prioridade: High
+Estimativa: 5 SP
+Label: frontend, crud, users, roles, applications, sprint-8
+
+5) Telas de autenticação e Dashboard (metric cards)
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Alinhar Login, Register, Profile e Dashboard ao ADR
+Descrição: Atualizar `LoginPage.css`, `RegisterPage.tsx`, `ProfilePage.css`, `DashboardPage.css` e `PrivateRoute.tsx` (loading). Dashboard: metric cards conforme §9.2 (`metric-label` overline, `metric-value` 28px/700, tons brand/success/warning/danger). Referência visual: `docs/PadraoFront/preview_adr_design_system.jsx`.
+Critérios de aceitação:
+- Login/Register usam fundo `--color-bg-app` e card `--color-bg-surface`
+- Metric cards do dashboard seguem estrutura ADR (label overline + valor destacado)
+- `PrivateRoute` loading sem cor hardcoded `#F5D3C8`
+Prioridade: High
+Estimativa: 3 SP
+Label: frontend, auth, dashboard, sprint-8
+
+6) Feedback global: Toasts e estados de carregamento
+
+Pertence a: Module 08 — Frontend Administrativo
+Título: Implementar toasts e padronizar feedback de operações
+Descrição: Criar mecanismo de toast (§9.8) para sucesso/erro em CRUD e auth; padronizar skeleton/spinner nas páginas que hoje exibem texto “Loading…” inline. Garantir mensagens de erro de formulário com texto explícito (§12).
+Critérios de aceitação:
+- Toasts para operações CRUD (criar/editar/status/secret regenerate) e falhas de API
+- Estados loading consistentes (componente ou classe reutilizável)
+- Erros de validação exibem mensagem textual, não só borda
+Prioridade: Medium
+Estimativa: 3 SP
+Label: frontend, ux, toasts, a11y, sprint-8
+
+7) Bug Bash e Refinamento de UI/UX
 
 Pertence a: Module 08 — Frontend Administrativo
 Título: Correções Finais e Polimento de Interface
-Descrição: Revisão de bugs reportados, ajustes de responsividade e melhorias na experiência do usuário (feedback visual, transições).
+Descrição: Revisão de bugs reportados após migração ADR, ajustes de responsividade e melhorias na experiência do usuário (transições, consistência entre páginas).
 Critérios de aceitação:
 - Zero bugs críticos abertos
-- UI consistente em diferentes resoluções
+- UI consistente em diferentes resoluções (mobile sidebar, tabelas, modais)
 Prioridade: High
 Estimativa: 5 SP
 Label: frontend, bugfix, ux, sprint-8
 
-2) Auditoria Final de Segurança e Performance
+8) Auditoria Final de Segurança e Performance
 
 Pertence a: Module 9 — Audit / Infra
 Título: Revisão de Segurança e Otimização de Queries
@@ -812,11 +894,11 @@ Prioridade: High
 Estimativa: 3 SP
 Label: security, performance, audit, sprint-8
 
-3) Entrega Final e Encerramento do Projeto
+9) Entrega Final e Encerramento do Projeto
 
 Pertence a: Squad 1 — Planejamento
 Título: Apresentação Final e Documento de Encerramento
-Descrição: Demonstração do produto final (Frontend + Backend) e formalização da entrega do MVP.
+Descrição: Demonstração do produto final (Frontend + Backend) com interface ADR-001 aplicada e formalização da entrega do MVP.
 Critérios de aceitação:
 - Demo realizada com sucesso
 - Documentação de encerramento assinada (check de DoD final)
@@ -825,7 +907,7 @@ Estimativa: 3 SP
 Label: delivery, final, dod, sprint-8
 
 Resumo Sprint 8
-Finalização do projeto, correções de última hora, auditoria de segurança e entrega oficial do Core/Auth.
+Migração visual do admin para ADR-001 (`docs/PadraoFront/`), bug bash pós-migração, auditoria de segurança e entrega oficial do Core/Auth.
 
 ---
 
@@ -839,4 +921,4 @@ Resumo geral (Sprints 2 a 8 até 05/06/2026)
 | 5 | 25/04–08/05 | Segurança, observabilidade, CI/CD, qualidade, documentação final e encerramento MVP |
 | 6 | 09/05–15/05 | Desenvolvimento completo do Frontend Administrativo (Módulo 08) |
 | 7 | 16/05–22/05 | Guia de integração para outros módulos e suporte técnico |
-| 8 | 23/05–29/05 | Finalização, correções finais, auditoria e entrega final do projeto |
+| 8 | 23/05–29/05 | ADR-001 no frontend admin, bug bash, auditoria e entrega final do projeto |

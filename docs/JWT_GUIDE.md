@@ -139,6 +139,32 @@ assert payload["type"] == "user_access", "Token type mismatch"
 assert "orders:read" in payload["perms"], "Insufficient permissions"
 ```
 
+### 3.4. Implementação de referência no repositório
+
+O repositório Core/Auth oferece um utilitário de validação JWT reutilizável em `Backend/src/shared/utils/token.ts`.
+
+As funções principais são:
+
+- `validateJwtToken(token, secret, expectedType)`
+- `validateUserToken(token, secret)`
+- `validateM2MToken(token, secret)`
+- `hasPermission(payload, requiredPermission)`
+- `hasScope(payload, requiredScope)`
+
+Esse utilitário pode ser usado como base para middleware ou snippets em Node.js, garantindo a mesma lógica de validação de token do Core.
+
+```ts
+import {
+  validateUserToken,
+  hasPermission,
+} from '../../Backend/src/shared/utils/token';
+
+const payload = validateUserToken(token, process.env.JWT_SECRET);
+if (!hasPermission(payload, 'orders:read')) {
+  throw new Error('Insufficient permissions');
+}
+```
+
 ---
 
 ## 4. Convenção de `permission.code`
