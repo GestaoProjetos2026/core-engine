@@ -1,8 +1,7 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-Leitura somente do bootstrap para leitura dos arquivos e contextos necessários para eu desenvolver nesse agente.
-
+2) Ler docs/PadraoFront/ e criar novas tasks de alteração no /Frontend/ para a sprint 8.
 Passos obrigatorios:
 1) Localize e leia o documento normativo principal do produto.
    - Neste repositorio, trate `PRD.md` como fonte normativa atual (visao, escopo, arquitetura e regras).

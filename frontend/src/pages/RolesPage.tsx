@@ -7,6 +7,9 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Table } from '../components/ui/Table';
 import { Settings, X, Shield, Key, Trash2 } from 'lucide-react';
+import { PageLoading } from '../components/ui/PageLoading';
+import { useToast } from '../context/ToastContext';
+import './AdminPages.css';
 
 function parseApiError(err: unknown): string {
   if (typeof err === 'string') return err;
@@ -15,6 +18,7 @@ function parseApiError(err: unknown): string {
 }
 
 const RolesPage: React.FC = () => {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'roles' | 'permissions'>('roles');
 
   // Roles state
@@ -108,9 +112,12 @@ const RolesPage: React.FC = () => {
     try {
       await api.post('/v1/roles', { name: formName.trim() });
       closeModal();
-      fetchRoles();
+      await fetchRoles();
+      showToast('Role created successfully.', 'success');
     } catch (err) {
-      setFormErrors({ form: parseApiError(err) });
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -131,9 +138,12 @@ const RolesPage: React.FC = () => {
     try {
       await api.post('/v1/permissions', { code: formCode.trim(), description: formDescription.trim() });
       closeModal();
-      fetchPermissions();
+      await fetchPermissions();
+      showToast('Permission created successfully.', 'success');
     } catch (err) {
-      setFormErrors({ form: parseApiError(err) });
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -159,9 +169,12 @@ const RolesPage: React.FC = () => {
       }
 
       closeModal();
-      fetchRoles();
+      await fetchRoles();
+      showToast('Role permissions updated.', 'success');
     } catch (err) {
-      setFormErrors({ form: parseApiError(err) });
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -171,9 +184,10 @@ const RolesPage: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this role?')) return;
     try {
       await api.delete(`/v1/roles/${id}`);
-      fetchRoles();
+      await fetchRoles();
+      showToast('Role deleted.', 'success');
     } catch (err) {
-      alert(parseApiError(err));
+      showToast(parseApiError(err), 'error');
     }
   };
 
@@ -181,20 +195,21 @@ const RolesPage: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this permission?')) return;
     try {
       await api.delete(`/v1/permissions/${id}`);
-      fetchPermissions();
+      await fetchPermissions();
+      showToast('Permission deleted.', 'success');
     } catch (err) {
-      alert(parseApiError(err));
+      showToast(parseApiError(err), 'error');
     }
   };
 
   return (
-    <div className="roles-page animate-fade-in">
-      <header className="page-header" style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+    <div className="admin-page roles-page animate-fade-in">
+      <header className="page-header page-header--toolbar">
         <div>
           <h1>Roles & Permissions</h1>
           <p>Define roles and assign fine-grained permissions.</p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="page-header__actions">
           <Button variant="secondary" onClick={openCreatePermission}>
             <Key size={16} /> New Permission
           </Button>
@@ -204,56 +219,52 @@ const RolesPage: React.FC = () => {
         </div>
       </header>
 
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+      <div className="admin-tabs">
         <button
+          type="button"
+          className={`admin-tab ${activeTab === 'roles' ? 'admin-tab--active' : ''}`}
           onClick={() => setActiveTab('roles')}
-          style={{
-            background: 'none', border: 'none', color: activeTab === 'roles' ? 'var(--color-primary)' : 'var(--color-text-muted)',
-            padding: '12px 16px', cursor: 'pointer', borderBottom: activeTab === 'roles' ? '2px solid var(--color-primary)' : '2px solid transparent',
-            fontWeight: 600, transition: 'all 0.2s'
-          }}
         >
           Roles
         </button>
         <button
+          type="button"
+          className={`admin-tab ${activeTab === 'permissions' ? 'admin-tab--active' : ''}`}
           onClick={() => setActiveTab('permissions')}
-          style={{
-            background: 'none', border: 'none', color: activeTab === 'permissions' ? 'var(--color-primary)' : 'var(--color-text-muted)',
-            padding: '12px 16px', cursor: 'pointer', borderBottom: activeTab === 'permissions' ? '2px solid var(--color-primary)' : '2px solid transparent',
-            fontWeight: 600, transition: 'all 0.2s'
-          }}
         >
           Permissions
         </button>
       </div>
 
       {activeTab === 'roles' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+        <div className="roles-grid">
           {rolesLoading ? (
-            <div style={{ color: 'var(--color-text-muted)' }}>Loading roles...</div>
+            <PageLoading message="Loading roles…" />
           ) : roles.length === 0 ? (
-            <div style={{ color: 'var(--color-text-muted)', padding: '24px' }}>No roles found.</div>
+            <div className="admin-state-message">No roles found.</div>
           ) : (
             roles.map((role) => (
               <Card key={role.id} title={role.name}>
-                <div style={{ marginBottom: '20px' }}>
-                  <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
-                    Permissions ({role.permissions?.length || 0})
-                  </h4>
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', maxHeight: '120px', overflowY: 'auto' }}>
-                    {role.permissions && role.permissions.length > 0 ? role.permissions.map(p => (
-                      <Badge key={p.permission.id} variant="info">{p.permission.code}</Badge>
-                    )) : (
-                      <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>No permissions assigned</span>
+                <div className="role-perms-section">
+                  <h4 className="role-perms-title">Permissions ({role.permissions?.length || 0})</h4>
+                  <div className="role-perms-list">
+                    {role.permissions && role.permissions.length > 0 ? (
+                      role.permissions.map((p) => (
+                        <Badge key={p.permission.id} variant="info">
+                          {p.permission.code}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="role-perms-empty">No permissions assigned</span>
                     )}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="role-card-actions">
                   <Button variant="outline" size="sm" className="w-full" onClick={() => openManageRole(role)}>
                     <Settings size={16} /> Manage
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => deleteRole(role.id)} title="Delete Role">
-                    <Trash2 size={16} color="#f87171" />
+                    <Trash2 size={16} className="icon-action-danger" />
                   </Button>
                 </div>
               </Card>
@@ -265,18 +276,18 @@ const RolesPage: React.FC = () => {
       {activeTab === 'permissions' && (
         <Card>
           {permissionsLoading ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Loading permissions...</div>
+            <PageLoading message="Loading permissions…" />
           ) : permissions.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-muted)' }}>No permissions found.</div>
+            <div className="admin-state-message">No permissions found.</div>
           ) : (
             <Table headers={['Code', 'Description', 'Actions']}>
               {permissions.map((perm) => (
                 <tr key={perm.id}>
-                  <td style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{perm.code}</td>
-                  <td style={{ color: 'var(--color-text-muted)' }}>{perm.description}</td>
+                  <td className="perm-code-cell">{perm.code}</td>
+                  <td className="admin-td-muted">{perm.description}</td>
                   <td>
                     <Button variant="ghost" size="sm" onClick={() => deletePermission(perm.id)} title="Delete Permission">
-                      <Trash2 size={16} color="#f87171" />
+                      <Trash2 size={16} className="icon-action-danger" />
                     </Button>
                   </td>
                 </tr>
@@ -290,29 +301,33 @@ const RolesPage: React.FC = () => {
         <div
           role="dialog"
           aria-modal="true"
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '24px',
+          className="admin-modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeModal();
           }}
-          onClick={closeModal}
         >
-          <div style={{ width: '100%', maxWidth: modalMode === 'manageRole' ? '600px' : '440px', position: 'relative' }} onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button" onClick={closeModal}
-              style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 1, background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '4px' }}
-            >
+          <div
+            className={`admin-modal-panel ${modalMode === 'manageRole' ? 'admin-modal-panel--wide' : ''}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button type="button" className="admin-modal-close" aria-label="Close" onClick={closeModal}>
               <X size={20} />
             </button>
-            <Card>
+            <Card className="modal-card">
               {modalMode === 'createRole' && (
                 <>
-                  <h2 style={{ marginTop: 0, marginBottom: '8px' }}>New Role</h2>
-                  <p style={{ marginTop: 0, marginBottom: '24px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>Creates a new role (requires roles:write).</p>
-                  {formErrors.form && <div className="login-error" style={{ marginBottom: '16px' }}>{formErrors.form}</div>}
+                  <h2 className="modal-title">New Role</h2>
+                  <p className="modal-desc">Creates a new role (requires roles:write).</p>
+                  {formErrors.form && <div className="admin-alert admin-alert--error">{formErrors.form}</div>}
                   <form onSubmit={submitCreateRole}>
                     <Input label="Role Name" value={formName} onChange={(e) => setFormName(e.target.value)} error={formErrors.name} />
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-end' }}>
-                      <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>Cancel</Button>
-                      <Button type="submit" isLoading={saving}>Create Role</Button>
+                    <div className="modal-form-actions">
+                      <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" isLoading={saving}>
+                        Create Role
+                      </Button>
                     </div>
                   </form>
                 </>
@@ -320,15 +335,19 @@ const RolesPage: React.FC = () => {
 
               {modalMode === 'createPermission' && (
                 <>
-                  <h2 style={{ marginTop: 0, marginBottom: '8px' }}>New Permission</h2>
-                  <p style={{ marginTop: 0, marginBottom: '24px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>Creates a new permission. Code must be unique (ex: users:read).</p>
-                  {formErrors.form && <div className="login-error" style={{ marginBottom: '16px' }}>{formErrors.form}</div>}
+                  <h2 className="modal-title">New Permission</h2>
+                  <p className="modal-desc">Creates a new permission. Code must be unique (ex: users:read).</p>
+                  {formErrors.form && <div className="admin-alert admin-alert--error">{formErrors.form}</div>}
                   <form onSubmit={submitCreatePermission}>
                     <Input label="Permission Code" placeholder="users:write" value={formCode} onChange={(e) => setFormCode(e.target.value)} error={formErrors.code} />
                     <Input label="Description" placeholder="Allows creating and editing users" value={formDescription} onChange={(e) => setFormDescription(e.target.value)} error={formErrors.description} />
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-end' }}>
-                      <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>Cancel</Button>
-                      <Button type="submit" isLoading={saving}>Create Permission</Button>
+                    <div className="modal-form-actions">
+                      <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" isLoading={saving}>
+                        Create Permission
+                      </Button>
                     </div>
                   </form>
                 </>
@@ -336,13 +355,16 @@ const RolesPage: React.FC = () => {
 
               {modalMode === 'manageRole' && managingRole && (
                 <>
-                  <h2 style={{ marginTop: 0, marginBottom: '8px' }}>Manage Role: {managingRole.name}</h2>
-                  <p style={{ marginTop: 0, marginBottom: '24px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>Assign or remove permissions from this role.</p>
-                  {formErrors.form && <div className="login-error" style={{ marginBottom: '16px' }}>{formErrors.form}</div>}
+                  <h2 className="modal-title">Manage Role: {managingRole.name}</h2>
+                  <p className="modal-desc">Assign or remove permissions from this role.</p>
+                  {formErrors.form && <div className="admin-alert admin-alert--error">{formErrors.form}</div>}
                   <form onSubmit={submitManageRole}>
-                    <div style={{ maxHeight: '350px', overflowY: 'auto', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-                      {permissions.map(perm => (
-                        <label key={perm.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', padding: '8px', background: selectedPermissionIds.has(perm.id) ? 'rgba(74, 222, 128, 0.1)' : 'rgba(255,255,255,0.03)', borderRadius: '6px', border: selectedPermissionIds.has(perm.id) ? '1px solid rgba(74, 222, 128, 0.3)' : '1px solid transparent', transition: 'all 0.2s' }}>
+                    <div className="checkbox-grid">
+                      {permissions.map((perm) => (
+                        <label
+                          key={perm.id}
+                          className={`checkbox-item ${selectedPermissionIds.has(perm.id) ? 'checkbox-item--selected' : ''}`}
+                        >
                           <input
                             type="checkbox"
                             checked={selectedPermissionIds.has(perm.id)}
@@ -352,20 +374,25 @@ const RolesPage: React.FC = () => {
                               else next.delete(perm.id);
                               setSelectedPermissionIds(next);
                             }}
-                            style={{ marginTop: '4px' }}
                           />
                           <div>
-                            <div style={{ fontWeight: 600, color: selectedPermissionIds.has(perm.id) ? 'var(--color-primary)' : 'inherit' }}>{perm.code}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{perm.description}</div>
+                            <div className="checkbox-item__code">{perm.code}</div>
+                            <div className="checkbox-item__desc">{perm.description}</div>
                           </div>
                         </label>
                       ))}
-                      {permissions.length === 0 && <div style={{ color: 'var(--color-text-muted)' }}>No permissions available. Create some first.</div>}
+                      {permissions.length === 0 && (
+                        <div className="role-perms-empty">No permissions available. Create some first.</div>
+                      )}
                     </div>
 
-                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                      <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>Cancel</Button>
-                      <Button type="submit" isLoading={saving}>Save Permissions</Button>
+                    <div className="modal-form-actions">
+                      <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" isLoading={saving}>
+                        Save Permissions
+                      </Button>
                     </div>
                   </form>
                 </>
