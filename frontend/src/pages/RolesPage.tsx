@@ -7,6 +7,8 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Table } from '../components/ui/Table';
 import { Settings, X, Shield, Key, Trash2 } from 'lucide-react';
+import { PageLoading } from '../components/ui/PageLoading';
+import { useToast } from '../context/ToastContext';
 import './AdminPages.css';
 
 function parseApiError(err: unknown): string {
@@ -16,6 +18,7 @@ function parseApiError(err: unknown): string {
 }
 
 const RolesPage: React.FC = () => {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'roles' | 'permissions'>('roles');
 
   // Roles state
@@ -109,9 +112,12 @@ const RolesPage: React.FC = () => {
     try {
       await api.post('/v1/roles', { name: formName.trim() });
       closeModal();
-      fetchRoles();
+      await fetchRoles();
+      showToast('Role created successfully.', 'success');
     } catch (err) {
-      setFormErrors({ form: parseApiError(err) });
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -132,9 +138,12 @@ const RolesPage: React.FC = () => {
     try {
       await api.post('/v1/permissions', { code: formCode.trim(), description: formDescription.trim() });
       closeModal();
-      fetchPermissions();
+      await fetchPermissions();
+      showToast('Permission created successfully.', 'success');
     } catch (err) {
-      setFormErrors({ form: parseApiError(err) });
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -160,9 +169,12 @@ const RolesPage: React.FC = () => {
       }
 
       closeModal();
-      fetchRoles();
+      await fetchRoles();
+      showToast('Role permissions updated.', 'success');
     } catch (err) {
-      setFormErrors({ form: parseApiError(err) });
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -172,9 +184,10 @@ const RolesPage: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this role?')) return;
     try {
       await api.delete(`/v1/roles/${id}`);
-      fetchRoles();
+      await fetchRoles();
+      showToast('Role deleted.', 'success');
     } catch (err) {
-      alert(parseApiError(err));
+      showToast(parseApiError(err), 'error');
     }
   };
 
@@ -182,9 +195,10 @@ const RolesPage: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this permission?')) return;
     try {
       await api.delete(`/v1/permissions/${id}`);
-      fetchPermissions();
+      await fetchPermissions();
+      showToast('Permission deleted.', 'success');
     } catch (err) {
-      alert(parseApiError(err));
+      showToast(parseApiError(err), 'error');
     }
   };
 
@@ -225,7 +239,7 @@ const RolesPage: React.FC = () => {
       {activeTab === 'roles' && (
         <div className="roles-grid">
           {rolesLoading ? (
-            <div className="admin-state-message">Loading roles...</div>
+            <PageLoading message="Loading roles…" />
           ) : roles.length === 0 ? (
             <div className="admin-state-message">No roles found.</div>
           ) : (
@@ -262,7 +276,7 @@ const RolesPage: React.FC = () => {
       {activeTab === 'permissions' && (
         <Card>
           {permissionsLoading ? (
-            <div className="admin-state-message">Loading permissions...</div>
+            <PageLoading message="Loading permissions…" />
           ) : permissions.length === 0 ? (
             <div className="admin-state-message">No permissions found.</div>
           ) : (

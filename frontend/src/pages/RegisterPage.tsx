@@ -5,7 +5,8 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 import api from '../lib/api';
-import './LoginPage.css'; // Reusing login styles
+import { useToast } from '../context/ToastContext';
+import './LoginPage.css';
 
 const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -15,6 +16,7 @@ const RegisterPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +28,9 @@ const RegisterPage: React.FC = () => {
       navigate('/login', { state: { message: 'Account created! Please login.' } });
     } catch (err: unknown) {
       const errorData = err as { error?: { message?: string } };
-      setError(errorData.error?.message || 'Registration failed. Please try again.');
+      const msg = errorData.error?.message || 'Registration failed. Please try again.';
+      setError(msg);
+      showToast(msg, 'error');
     } finally {
       setIsLoading(false);
     }
