@@ -18,6 +18,7 @@ import {
   Check,
   Layers,
 } from 'lucide-react';
+import './AdminPages.css';
 
 type ApiErrorShape = { error?: { message?: string; code?: string } };
 
@@ -289,18 +290,8 @@ const ApplicationsPage: React.FC = () => {
   };
 
   return (
-    <div className="applications-page animate-fade-in">
-      <header
-        className="page-header"
-        style={{
-          marginBottom: '32px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
-        }}
-      >
+    <div className="admin-page applications-page animate-fade-in">
+      <header className="page-header page-header--toolbar">
         <div>
           <h1>M2M Applications</h1>
           <p>Register integration clients, rotate secrets, and assign OAuth scopes (RF14–RF16).</p>
@@ -311,10 +302,10 @@ const ApplicationsPage: React.FC = () => {
         </Button>
       </header>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div className="admin-filters">
         <Card>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-end' }}>
-            <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+          <div className="admin-filters__row">
+            <div className="admin-filter-field">
               <Input
                 label="Search by name"
                 type="search"
@@ -324,33 +315,27 @@ const ApplicationsPage: React.FC = () => {
                 autoComplete="off"
               />
             </div>
-            <div style={{ flex: '0 0 160px' }}>
-              <label className="input-label" style={{ display: 'block', marginBottom: '6px' }}>
-                Status
-              </label>
+            <div className="admin-filter-field admin-filter-field--narrow">
+              <label className="admin-select-label">Status</label>
               <select
-                className="input-field"
+                className="input-field admin-select"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as 'ACTIVE' | 'INACTIVE' | '')}
-                style={{ width: '100%', cursor: 'pointer' }}
               >
                 <option value="">All</option>
                 <option value="ACTIVE">Active</option>
                 <option value="INACTIVE">Inactive</option>
               </select>
             </div>
-            <div style={{ flex: '0 0 100px' }}>
-              <label className="input-label" style={{ display: 'block', marginBottom: '6px' }}>
-                Per page
-              </label>
+            <div className="admin-filter-field admin-filter-field--limit">
+              <label className="admin-select-label">Per page</label>
               <select
-                className="input-field"
+                className="input-field admin-select"
                 value={limit}
                 onChange={(e) => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                style={{ width: '100%', cursor: 'pointer' }}
               >
                 {[5, 10, 20, 50].map((n) => (
                   <option key={n} value={n}>
@@ -363,21 +348,13 @@ const ApplicationsPage: React.FC = () => {
         </Card>
       </div>
 
-      {listError && (
-        <div className="login-error" style={{ marginBottom: '16px' }}>
-          {listError}
-        </div>
-      )}
+      {listError && <div className="admin-alert admin-alert--error">{listError}</div>}
 
       <Card>
         {loading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-            Loading applications…
-          </div>
+          <div className="admin-state-message">Loading applications…</div>
         ) : apps.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-            No applications match the current filters.
-          </div>
+          <div className="admin-state-message">No applications match the current filters.</div>
         ) : (
           <>
             <Table headers={['Name', 'Client ID', 'Scopes', 'Status', 'Actions']}>
@@ -385,23 +362,14 @@ const ApplicationsPage: React.FC = () => {
                 const appScopes = scopesByAppId[app.id] ?? [];
                 return (
                   <tr key={app.id}>
-                    <td style={{ fontWeight: 600 }}>{app.name}</td>
+                    <td className="admin-td-strong">{app.name}</td>
                     <td>
-                      <code
-                        style={{
-                          fontSize: '0.75rem',
-                          backgroundColor: 'rgba(255,255,255,0.05)',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                        }}
-                      >
-                        {app.clientId}
-                      </code>
+                      <code className="admin-td-code">{app.clientId}</code>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                      <div className="admin-badge-row">
                         {appScopes.length === 0 ? (
-                          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>None</span>
+                          <span className="admin-td-muted">None</span>
                         ) : (
                           appScopes.map((s) => (
                             <Badge key={s.id} variant="warning">
@@ -415,7 +383,7 @@ const ApplicationsPage: React.FC = () => {
                       <Badge variant={app.status === 'ACTIVE' ? 'success' : 'error'}>{app.status}</Badge>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div className="admin-row-actions">
                         <Button variant="ghost" size="sm" type="button" title="Edit application" onClick={() => openEdit(app)}>
                           <Pencil size={16} />
                         </Button>
@@ -438,7 +406,10 @@ const ApplicationsPage: React.FC = () => {
                           title="Toggle active status"
                           onClick={() => toggleStatus(app)}
                         >
-                          <Power size={16} color={app.status === 'ACTIVE' ? '#f87171' : '#4ade80'} />
+                          <Power
+                            size={16}
+                            className={app.status === 'ACTIVE' ? 'icon-action-deactivate' : 'icon-action-activate'}
+                          />
                         </Button>
                       </div>
                     </td>
@@ -446,27 +417,16 @@ const ApplicationsPage: React.FC = () => {
                 );
               })}
             </Table>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '12px',
-                marginTop: '20px',
-                paddingTop: '16px',
-                borderTop: '1px solid rgba(255,255,255,0.06)',
-              }}
-            >
-              <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+            <div className="admin-pagination">
+              <span className="admin-pagination__info">
                 {total === 0 ? '0 applications' : `${(page - 1) * limit + 1}–${Math.min(page * limit, total)} of ${total}`}
               </span>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div className="admin-pagination__controls">
                 <Button variant="outline" size="sm" type="button" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
                   <ChevronLeft size={16} />
                   Previous
                 </Button>
-                <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+                <span className="admin-pagination__info">
                   Page {page} / {totalPages}
                 </span>
                 <Button variant="outline" size="sm" type="button" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
@@ -483,48 +443,24 @@ const ApplicationsPage: React.FC = () => {
         <div
           role="dialog"
           aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.65)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '24px',
-          }}
+          className="admin-modal-overlay"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeModal();
           }}
         >
-          <div style={{ width: '100%', maxWidth: '440px', position: 'relative' }} onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={closeModal}
-              style={{
-                position: 'absolute',
-                top: '12px',
-                right: '12px',
-                zIndex: 1,
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--color-text-muted)',
-                cursor: 'pointer',
-                padding: '4px',
-              }}
-            >
+          <div className="admin-modal-panel" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="admin-modal-close" aria-label="Close" onClick={closeModal}>
               <X size={20} />
             </button>
-            <Card>
-              <h2 style={{ marginTop: 0, marginBottom: '8px' }}>{modalMode === 'create' ? 'Register application' : 'Edit application'}</h2>
-              <p style={{ marginTop: 0, marginBottom: '24px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+            <Card className="modal-card">
+              <h2 className="modal-title">{modalMode === 'create' ? 'Register application' : 'Edit application'}</h2>
+              <p className="modal-desc">
                 {modalMode === 'create'
                   ? 'Creates an M2M client via POST /v1/applications. The client secret is shown only once.'
                   : 'Updates the display name via PATCH /v1/applications/:id.'}
               </p>
 
-              {formErrors.form && <div className="login-error" style={{ marginBottom: '16px' }}>{formErrors.form}</div>}
+              {formErrors.form && <div className="admin-alert admin-alert--error">{formErrors.form}</div>}
 
               <form onSubmit={modalMode === 'create' ? submitCreate : submitEdit}>
                 <Input
@@ -536,7 +472,7 @@ const ApplicationsPage: React.FC = () => {
                   placeholder="e.g. Orders Integration"
                 />
 
-                <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-end' }}>
+                <div className="modal-form-actions">
                   <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>
                     Cancel
                   </Button>
@@ -554,99 +490,49 @@ const ApplicationsPage: React.FC = () => {
         <div
           role="dialog"
           aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.65)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '24px',
-          }}
+          className="admin-modal-overlay"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeModal();
           }}
         >
-          <div style={{ width: '100%', maxWidth: '520px', position: 'relative' }} onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={closeModal}
-              style={{
-                position: 'absolute',
-                top: '12px',
-                right: '12px',
-                zIndex: 1,
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--color-text-muted)',
-                cursor: 'pointer',
-                padding: '4px',
-              }}
-            >
+          <div className="admin-modal-panel admin-modal-panel--scopes" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="admin-modal-close" aria-label="Close" onClick={closeModal}>
               <X size={20} />
             </button>
-            <Card>
-              <h2 style={{ marginTop: 0, marginBottom: '8px' }}>Manage scopes</h2>
-              <p style={{ marginTop: 0, marginBottom: '20px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+            <Card className="modal-card">
+              <h2 className="modal-title">Manage scopes</h2>
+              <p className="modal-desc">
                 Assign OAuth scopes for <strong>{editingApp.name}</strong>. Saving replaces all current associations.
               </p>
 
-              {formErrors.form && <div className="login-error" style={{ marginBottom: '16px' }}>{formErrors.form}</div>}
+              {formErrors.form && <div className="admin-alert admin-alert--error">{formErrors.form}</div>}
 
               {scopesLoading ? (
-                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>Loading scopes…</p>
+                <p className="admin-td-muted">Loading scopes…</p>
               ) : allScopes.length === 0 ? (
-                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                  No scopes in the catalog. Create scopes via the API (POST /v1/scopes) first.
-                </p>
+                <p className="admin-td-muted">No scopes in the catalog. Create scopes via the API (POST /v1/scopes) first.</p>
               ) : (
                 <form onSubmit={submitScopes}>
-                  <div
-                    style={{
-                      maxHeight: '280px',
-                      overflowY: 'auto',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '8px',
-                      marginBottom: '20px',
-                      padding: '4px',
-                    }}
-                  >
+                  <div className="scope-list">
                     {allScopes.map((scope) => (
                       <label
                         key={scope.id}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: '10px',
-                          padding: '10px 12px',
-                          borderRadius: '8px',
-                          border: '1px solid rgba(255,255,255,0.08)',
-                          cursor: 'pointer',
-                          background: selectedScopeIds.includes(scope.id) ? 'rgba(245, 211, 200, 0.08)' : 'transparent',
-                        }}
+                        className={`scope-option ${selectedScopeIds.includes(scope.id) ? 'scope-option--selected' : ''}`}
                       >
                         <input
                           type="checkbox"
                           checked={selectedScopeIds.includes(scope.id)}
                           onChange={() => toggleScopeSelection(scope.id)}
-                          style={{ marginTop: '3px', cursor: 'pointer' }}
                         />
                         <span>
-                          <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{scope.code}</span>
-                          {scope.description && (
-                            <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                              {scope.description}
-                            </span>
-                          )}
+                          <span className="scope-option__code">{scope.code}</span>
+                          {scope.description && <span className="scope-option__desc">{scope.description}</span>}
                         </span>
                       </label>
                     ))}
                   </div>
 
-                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                  <div className="modal-form-actions">
                     <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>
                       Cancel
                     </Button>
@@ -662,49 +548,20 @@ const ApplicationsPage: React.FC = () => {
       )}
 
       {secretReveal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.75)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1100,
-            padding: '24px',
-          }}
-        >
-          <div style={{ width: '100%', maxWidth: '480px' }}>
-            <Card>
-              <h2 style={{ marginTop: 0, marginBottom: '8px', color: 'var(--color-highlight)' }}>{secretReveal.title}</h2>
-              <p style={{ marginTop: 0, marginBottom: '20px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+        <div role="dialog" aria-modal="true" className="admin-modal-overlay admin-modal-overlay--priority">
+          <div className="admin-modal-panel admin-modal-panel--secret">
+            <Card className="modal-card">
+              <h2 className="modal-title modal-title--brand">{secretReveal.title}</h2>
+              <p className="modal-desc">
                 Copy and store the <strong>client secret</strong> now. It will not be shown again (RN02).
               </p>
 
-              <div
-                className="login-error"
-                style={{ marginBottom: '20px', background: 'rgba(248, 113, 113, 0.12)', borderColor: 'rgba(248, 113, 113, 0.35)' }}
-              >
-                Never share this secret in chat, email, or version control.
-              </div>
+              <div className="admin-alert admin-alert--warning">Never share this secret in chat, email, or version control.</div>
 
-              <div style={{ marginBottom: '16px' }}>
-                <label className="input-label" style={{ display: 'block', marginBottom: '6px' }}>
-                  Client ID
-                </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <code
-                    style={{
-                      flex: 1,
-                      fontSize: '0.8rem',
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.05)',
-                      wordBreak: 'break-all',
-                    }}
-                  >
+              <div className="secret-field">
+                <label className="admin-select-label">Client ID</label>
+                <div className="secret-field-row">
+                  <code className="admin-td-code secret-code-block">
                     {secretReveal.clientId}
                   </code>
                   <Button type="button" variant="outline" size="sm" onClick={() => handleCopy('id', secretReveal.clientId)}>
@@ -713,22 +570,10 @@ const ApplicationsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ marginBottom: '24px' }}>
-                <label className="input-label" style={{ display: 'block', marginBottom: '6px' }}>
-                  Client secret (one-time)
-                </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <code
-                    style={{
-                      flex: 1,
-                      fontSize: '0.8rem',
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      background: 'rgba(245, 211, 200, 0.1)',
-                      wordBreak: 'break-all',
-                      color: 'var(--color-highlight)',
-                    }}
-                  >
+              <div className="secret-field">
+                <label className="admin-select-label">Client secret (one-time)</label>
+                <div className="secret-field-row">
+                  <code className="admin-td-code admin-td-code--secret secret-code-block">
                     {secretReveal.clientSecret}
                   </code>
                   <Button type="button" variant="outline" size="sm" onClick={() => handleCopy('secret', secretReveal.clientSecret)}>
@@ -737,21 +582,11 @@ const ApplicationsPage: React.FC = () => {
                 </div>
               </div>
 
-              <label
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '10px',
-                  marginBottom: '24px',
-                  fontSize: '0.875rem',
-                  cursor: 'pointer',
-                }}
-              >
+              <label className="secret-ack">
                 <input
                   type="checkbox"
                   checked={secretAcknowledged}
                   onChange={(e) => setSecretAcknowledged(e.target.checked)}
-                  style={{ marginTop: '3px' }}
                 />
                 I have copied and securely stored the client secret.
               </label>

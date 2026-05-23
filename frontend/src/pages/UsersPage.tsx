@@ -7,6 +7,7 @@ import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Plus, UserCog, Power, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import './AdminPages.css';
 
 type ApiErrorShape = { error?: { message?: string; code?: string } };
 
@@ -214,8 +215,8 @@ const UsersPage: React.FC = () => {
   };
 
   return (
-    <div className="users-page animate-fade-in">
-      <header className="page-header" style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+    <div className="admin-page users-page animate-fade-in">
+      <header className="page-header page-header--toolbar">
         <div>
           <h1>User Management</h1>
           <p>Create and manage user accounts (RF09 — admin API).</p>
@@ -226,134 +227,101 @@ const UsersPage: React.FC = () => {
         </Button>
       </header>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div className="admin-filters">
         <Card>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-end' }}>
-          <div style={{ flex: '1 1 220px', minWidth: 0, position: 'relative' }}>
-            <Input
-              label="Search by email"
-              type="search"
-              placeholder="Filter contains…"
-              value={emailFilter}
-              onChange={(e) => setEmailFilter(e.target.value)}
-              autoComplete="off"
-            />
-            {emailFilter && (
-              <button
-                type="button"
-                onClick={() => setEmailFilter('')}
-                style={{
-                  position: 'absolute',
-                  right: '10px',
-                  top: '36px',
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--color-text-muted)',
-                  cursor: 'pointer',
-                  padding: '4px'
+          <div className="admin-filters__row">
+            <div className="admin-filter-field admin-filter-field--search">
+              <Input
+                label="Search by email"
+                type="search"
+                placeholder="Filter contains…"
+                value={emailFilter}
+                onChange={(e) => setEmailFilter(e.target.value)}
+                autoComplete="off"
+              />
+              {emailFilter && (
+                <button type="button" className="admin-filter-clear" onClick={() => setEmailFilter('')} aria-label="Clear search">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+            <div className="admin-filter-field admin-filter-field--narrow">
+              <label className="admin-select-label">Status</label>
+              <select
+                className="input-field admin-select"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as 'ACTIVE' | 'INACTIVE' | '')}
+              >
+                <option value="">All</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
+            </div>
+            <div className="admin-filter-field admin-filter-field--limit">
+              <label className="admin-select-label">Per page</label>
+              <select
+                className="input-field admin-select"
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
                 }}
               >
-                <X size={14} />
-              </button>
-            )}
+                {[5, 10, 20, 50].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div style={{ flex: '0 0 160px' }}>
-            <label className="input-label" style={{ display: 'block', marginBottom: '6px' }}>
-              Status
-            </label>
-            <select
-              className="input-field"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as 'ACTIVE' | 'INACTIVE' | '')}
-              style={{ width: '100%', cursor: 'pointer' }}
-            >
-              <option value="">All</option>
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-            </select>
-          </div>
-          <div style={{ flex: '0 0 100px' }}>
-            <label className="input-label" style={{ display: 'block', marginBottom: '6px' }}>
-              Per page
-            </label>
-            <select
-              className="input-field"
-              value={limit}
-              onChange={(e) => {
-                setLimit(Number(e.target.value));
-                setPage(1);
-              }}
-              style={{ width: '100%', cursor: 'pointer' }}
-            >
-              {[5, 10, 20, 50].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
         </Card>
       </div>
 
-      {listError && (
-        <div className="login-error" style={{ marginBottom: '16px' }}>
-          {listError}
-        </div>
-      )}
+      {listError && <div className="admin-alert admin-alert--error">{listError}</div>}
 
       <Card>
         {loading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Loading users…</div>
+          <div className="admin-state-message">Loading users…</div>
         ) : users.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-            No users match the current filters.
-          </div>
+          <div className="admin-state-message">No users match the current filters.</div>
         ) : (
           <>
             <Table headers={['Name', 'Email', 'Status', 'Created', 'Actions']}>
               {users.map((user) => (
                 <tr key={user.id}>
-                  <td style={{ fontWeight: 600 }}>{user.name}</td>
+                  <td className="admin-td-strong">{user.name}</td>
                   <td>{user.email}</td>
                   <td>
                     <Badge variant={user.status === 'ACTIVE' ? 'success' : 'error'}>{user.status}</Badge>
                   </td>
-                  <td style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{formatDate(user.createdAt)}</td>
+                  <td className="admin-td-muted">{formatDate(user.createdAt)}</td>
                   <td>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className="admin-row-actions">
                       <Button variant="ghost" size="sm" type="button" title="Edit user" onClick={() => openEdit(user)}>
                         <UserCog size={16} />
                       </Button>
                       <Button variant="ghost" size="sm" type="button" title="Toggle active status" onClick={() => toggleStatus(user)}>
-                        <Power size={16} color={user.status === 'ACTIVE' ? '#f87171' : '#4ade80'} />
+                        <Power
+                          size={16}
+                          className={user.status === 'ACTIVE' ? 'icon-action-deactivate' : 'icon-action-activate'}
+                        />
                       </Button>
                     </div>
                   </td>
                 </tr>
               ))}
             </Table>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '12px',
-                marginTop: '20px',
-                paddingTop: '16px',
-                borderTop: '1px solid rgba(255,255,255,0.06)',
-              }}
-            >
-              <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+            <div className="admin-pagination">
+              <span className="admin-pagination__info">
                 {total === 0 ? '0 users' : `${(page - 1) * limit + 1}–${Math.min(page * limit, total)} of ${total}`}
               </span>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div className="admin-pagination__controls">
                 <Button variant="outline" size="sm" type="button" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
                   <ChevronLeft size={16} />
                   Previous
                 </Button>
-                <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+                <span className="admin-pagination__info">
                   Page {page} / {totalPages}
                 </span>
                 <Button variant="outline" size="sm" type="button" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
@@ -370,83 +338,56 @@ const UsersPage: React.FC = () => {
         <div
           role="dialog"
           aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.65)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '24px',
-          }}
+          className="admin-modal-overlay"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeModal();
           }}
         >
-          <div
-            style={{ width: '100%', maxWidth: '440px', position: 'relative' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={closeModal}
-              style={{
-                position: 'absolute',
-                top: '12px',
-                right: '12px',
-                zIndex: 1,
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--color-text-muted)',
-                cursor: 'pointer',
-                padding: '4px',
-              }}
-            >
+          <div className="admin-modal-panel" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="admin-modal-close" aria-label="Close" onClick={closeModal}>
               <X size={20} />
             </button>
-            <Card>
-            <h2 style={{ marginTop: 0, marginBottom: '8px' }}>{modalMode === 'create' ? 'New user' : 'Edit user'}</h2>
-            <p style={{ marginTop: 0, marginBottom: '24px', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-              {modalMode === 'create'
-                ? 'Creates an account via POST /v1/users (requires users:write).'
-                : 'Updates name and email via PATCH /v1/users/:id.'}
-            </p>
+            <Card className="modal-card">
+              <h2 className="modal-title">{modalMode === 'create' ? 'New user' : 'Edit user'}</h2>
+              <p className="modal-desc">
+                {modalMode === 'create'
+                  ? 'Creates an account via POST /v1/users (requires users:write).'
+                  : 'Updates name and email via PATCH /v1/users/:id.'}
+              </p>
 
-            {formErrors.form && <div className="login-error" style={{ marginBottom: '16px' }}>{formErrors.form}</div>}
+              {formErrors.form && <div className="admin-alert admin-alert--error">{formErrors.form}</div>}
 
-            <form onSubmit={modalMode === 'create' ? submitCreate : submitEdit}>
-              <Input label="Full name" value={formName} onChange={(e) => setFormName(e.target.value)} error={formErrors.name} autoComplete="name" />
-              <Input
-                label="Email"
-                type="email"
-                value={formEmail}
-                onChange={(e) => setFormEmail(e.target.value)}
-                error={formErrors.email}
-                autoComplete="email"
-              />
-              {modalMode === 'create' && (
+              <form onSubmit={modalMode === 'create' ? submitCreate : submitEdit}>
+                <Input label="Full name" value={formName} onChange={(e) => setFormName(e.target.value)} error={formErrors.name} autoComplete="name" />
                 <Input
-                  label="Initial password"
-                  type="password"
-                  value={formPassword}
-                  onChange={(e) => setFormPassword(e.target.value)}
-                  error={formErrors.password}
-                  autoComplete="new-password"
-                  placeholder="Min. 10 chars, mixed case, number, symbol"
+                  label="Email"
+                  type="email"
+                  value={formEmail}
+                  onChange={(e) => setFormEmail(e.target.value)}
+                  error={formErrors.email}
+                  autoComplete="email"
                 />
-              )}
+                {modalMode === 'create' && (
+                  <Input
+                    label="Initial password"
+                    type="password"
+                    value={formPassword}
+                    onChange={(e) => setFormPassword(e.target.value)}
+                    error={formErrors.password}
+                    autoComplete="new-password"
+                    placeholder="Min. 10 chars, mixed case, number, symbol"
+                  />
+                )}
 
-              <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-end' }}>
-                <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>
-                  Cancel
-                </Button>
-                <Button type="submit" isLoading={saving}>
-                  {modalMode === 'create' ? 'Create user' : 'Save changes'}
-                </Button>
-              </div>
-            </form>
+                <div className="modal-form-actions">
+                  <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" isLoading={saving}>
+                    {modalMode === 'create' ? 'Create user' : 'Save changes'}
+                  </Button>
+                </div>
+              </form>
             </Card>
           </div>
         </div>
