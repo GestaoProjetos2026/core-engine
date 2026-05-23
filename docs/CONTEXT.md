@@ -7,12 +7,12 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 8 — **Task 2 concluída**: `Layout.css` / `Layout.tsx` refatorados para AppShell ADR — sidebar 240px (`--color-bg-sidebar`), item ativo com `--color-brand-muted` + borda esquerda brand, topbar 56px (`--color-bg-header`), ícones de nav com estados muted/brand, logo `--color-icon-brand`, logout com `--color-danger`. Mobile overlay preservado. Build OK.
+- Sprint 8 — **Task 3 concluída**: componentes UI alinhados ao ADR — `Button.css` (primary/secondary/ghost/outline/danger + estados hover/active/disabled), `Input.css` (38px, focus ring brand), `Card.css`, `Badge.css` (tokens semânticos muted/border), `Table.css` (overline, hover). Sem tokens legados em `components/ui/`. Build OK.
 
 ## Arquivos modificados recentemente
-- `frontend/src/components/Layout.css` — AppShell ADR (sidebar, topbar, nav ativo).
-- `frontend/src/components/Layout.tsx` — logo via classe CSS, a11y nos botões mobile.
-- `docs/CONTEXT.md` — atualizado (esta sessão).
+- `frontend/src/components/ui/Button.css`, `Input.css`, `Card.css`, `Badge.css`, `Table.css`
+- `frontend/src/components/ui/Badge.tsx` — variant `danger` adicionada
+- `docs/CONTEXT.md` — atualizado (esta sessão)
 - `docs/CONTEXT.md` — atualizado (esta sessão).
 - `docs/PRD_DEVELOPMENT.md` — Sprint 7 Task 1 registrada como concluída.
 
@@ -33,7 +33,7 @@
 - Listagem de aplicações (`GET /v1/applications`) não inclui escopos no payload; o frontend carrega escopos por app em paralelo (`GET /v1/applications/:id/scopes`) na página atual — aceitável para páginas pequenas; considerar otimização se o volume crescer.
 
 ## Proximo foco
-- Sprint 8 — **Task 3**: Biblioteca UI base (`Button`, `Input`, `Card`, `Badge`, `Table`) em `frontend/src/components/ui/`.
+- Sprint 8 — **Task 4**: Páginas CRUD (`UsersPage`, `RolesPage`, `ApplicationsPage`) — aplicar Design System e remover estilos inline.
 - Sprint 7 (pendente): Tasks 2–3 — SDK/Snippet e Workshop de Integração.
 
 ## Tasks concluidas na sessao
