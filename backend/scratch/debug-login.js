@@ -16,7 +16,8 @@ async function debugLogin() {
   try {
     console.log('Attempting login for admin@example.com...');
     const result = await authService.login({
-      email: 'admin@example.com',
+      // email: 'admin@example.com',
+      email: 'admin@hotmail.com',
       password: 'Password123!'
     });
     console.log('Login Success!', result);
