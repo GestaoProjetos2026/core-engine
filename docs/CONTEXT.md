@@ -7,10 +7,11 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 8 — **Task 1 concluída**: `frontend/src/index.css` reescrito com tokens ADR-001 completos (primitivas, semânticas, status, gradientes, tipografia, espaçamento, radius, sombras), aliases legados para compatibilidade, `h1`–`h6`, utilities (`.text-page-title`, etc.) e `:focus-visible` global. Build `npm run build` OK.
+- Sprint 8 — **Task 2 concluída**: `Layout.css` / `Layout.tsx` refatorados para AppShell ADR — sidebar 240px (`--color-bg-sidebar`), item ativo com `--color-brand-muted` + borda esquerda brand, topbar 56px (`--color-bg-header`), ícones de nav com estados muted/brand, logo `--color-icon-brand`, logout com `--color-danger`. Mobile overlay preservado. Build OK.
 
 ## Arquivos modificados recentemente
-- `Sprints/Sprints.md` — Sprint 8 expandida com tasks 1–6 (migração ADR-001 no `frontend/`); tasks 7–9 (bug bash, auditoria, entrega).
+- `frontend/src/components/Layout.css` — AppShell ADR (sidebar, topbar, nav ativo).
+- `frontend/src/components/Layout.tsx` — logo via classe CSS, a11y nos botões mobile.
 - `docs/CONTEXT.md` — atualizado (esta sessão).
 - `docs/CONTEXT.md` — atualizado (esta sessão).
 - `docs/PRD_DEVELOPMENT.md` — Sprint 7 Task 1 registrada como concluída.
@@ -32,7 +33,7 @@
 - Listagem de aplicações (`GET /v1/applications`) não inclui escopos no payload; o frontend carrega escopos por app em paralelo (`GET /v1/applications/:id/scopes`) na página atual — aceitável para páginas pequenas; considerar otimização se o volume crescer.
 
 ## Proximo foco
-- Sprint 8 — **Task 2**: AppShell (Sidebar/Topbar) em `Layout.tsx` / `Layout.css` conforme ADR-001.
+- Sprint 8 — **Task 3**: Biblioteca UI base (`Button`, `Input`, `Card`, `Badge`, `Table`) em `frontend/src/components/ui/`.
 - Sprint 7 (pendente): Tasks 2–3 — SDK/Snippet e Workshop de Integração.
 
 ## Tasks concluidas na sessao
