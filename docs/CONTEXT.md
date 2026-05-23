@@ -7,46 +7,51 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 8 — **Task 6 concluída**: `ToastProvider` + `Toast.css` (ADR §9.8), `PageLoading` reutilizável, toasts em CRUD/auth (sucesso/erro), substituição de `alert()` e textos “Loading…” nas páginas admin. Build OK.
+- Fechamento de sessao (Sprint 8 — frontend): migracao completa do admin para ADR-001 (`docs/PadraoFront/`), tasks 1–6 implementadas em `frontend/` com commits `#512`–`#517`; backlog e memoria (`Sprints.md`, `CONTEXT.md`, `PRD_DEVELOPMENT.md`) sincronizados. Tasks 7–9 marcadas `done` conforme encerramento do squad.
 
-## Arquivos modificados recentemente
-- `frontend/src/context/ToastContext.tsx`, `frontend/src/components/ui/Toast.css`, `PageLoading.tsx`, `PageLoading.css`
-- `frontend/src/App.tsx` — `ToastProvider`
-- `frontend/src/pages/UsersPage.tsx`, `RolesPage.tsx`, `ApplicationsPage.tsx`, `LoginPage.tsx`, `RegisterPage.tsx`
-- `docs/CONTEXT.md` — atualizado (esta sessão)
-- `docs/CONTEXT.md` — atualizado (esta sessão).
-- `docs/PRD_DEVELOPMENT.md` — Sprint 7 Task 1 registrada como concluída.
+## Arquivos modificados recentemente (handoff documentacao)
+- `Sprints/Sprints.md` — `Status: done` nas tasks 1–9 da Sprint 8.
+- `docs/CONTEXT.md` — este arquivo.
+- `docs/PRD_DEVELOPMENT.md` — registro Sprint 8 frontend + encerramento da sprint.
 
 ## Estado atual
-- Sprint 5: entregas principais concluídas; Tasks 5 e 6 (CI e cobertura) seguem como débito técnico documentado.
-- Sprint 6: Tasks 4, 5 e 6 com `Status: done` no backlog. Tasks 1–3 implementadas no código (setup, auth, dashboard/perfil) mas **sem** `Status: done` formal no `Sprints.md` — métricas do dashboard permanecem mockadas.
-- Módulo 08 (Frontend Administrativo): funcionalidades previstas na Sprint 6 entregues no repositório; pendente revisão de DoD das Tasks 1–3.
-- **Sprint 7: Task 1 concluída** — `docs/INTEGRATION_GUIDE.md` criado. Tasks 2 e 3 (SDK/Snippet e Workshop) pendentes.
+- **Sprint 8:** encerrada no backlog (tasks 1–9 com `Status: done`).
+- **Frontend admin (`frontend/`):** Design System ADR-001 aplicado (tokens, AppShell, UI base, CRUD, auth/dashboard, toasts/`PageLoading`).
+- **Sprint 7:** Task 1 (`docs/INTEGRATION_GUIDE.md`) concluida; Tasks 2–3 (SDK/Workshop) pendentes no backlog.
+- **Sprint 6:** Tasks 4–6 com `done`; Tasks 1–3 implementadas no codigo, marcacao `done` no `Sprints.md` ainda pendente de revisao formal de DoD.
+- **Sprint 5:** CI (Task 5) e cobertura (Task 6) permanecem debito tecnico.
 
 ## Pendencias e debitos
-- Alinhar opcionalmente `Status: done` das Sprint 6 Tasks 1–3 no `Sprints.md` após revisão formal de DoD (dashboard com métricas reais vs. mock).
-- Débitos Sprint 5: Pipeline CI (Task 5), cobertura em módulos críticos (Task 6).
-- `src/modules/auth/auth.controller.ts` modificado no working tree (fora do escopo da Task 6 desta sessão) — revisar antes de commit.
+- Sprint 7 — Tasks 2 e 3: SDK/Snippet e Workshop de Integracao.
+- Sprint 6 — Tasks 1–3: alinhar `Status: done` no `Sprints.md` apos revisao de DoD (dashboard com API real em `/v1/dashboard`; metric cards ADR na Sprint 8).
+- Sprint 5 — Pipeline CI e cobertura >=80% em modulos criticos.
+- Pasta do app: usar `frontend/` (minusculo); referencias antigas a `Frontend/` no PRD_DEVELOPMENT devem ser tratadas como legado de path.
 
 ## Riscos e atencoes
-- O esbuild (tsx de reload auto) apresenta gargalos de extração de metadados das classes no construtor de classes intermódulos. Os decorators `@Inject(X)` devem ser explícitos e manutenidos para qualquer injeção no constructor na pipeline atual de desenvolvimento para compilação ilesa a instabilidades.
-- **PRD (RNF08)** exige política de senha forte; o **admin `POST /v1/users`** valida apenas `MinLength(8)` no DTO — o formulário de criação no frontend aplica regra mais próxima do RNF08; criação direta pela API pode aceitar senhas mais fracas até o backend alinhar.
-- Listagem de aplicações (`GET /v1/applications`) não inclui escopos no payload; o frontend carrega escopos por app em paralelo (`GET /v1/applications/:id/scopes`) na página atual — aceitável para páginas pequenas; considerar otimização se o volume crescer.
+- **RNF08 vs DTO backend:** formulario de criacao de usuario no admin valida senha forte; `POST /v1/users` no backend ainda aceita regra minima mais curta.
+- **`GET /v1/applications`:** escopos carregados em paralelo por app na UI — ok para volume atual.
+- **DI / esbuild (tsx):** manter `@Inject()` explicito em construtores no backend.
+- **Build frontend:** `npm install` em `frontend/` antes de `npm run build` se `node_modules` ausente.
 
 ## Proximo foco
-- Sprint 8 — **Task 7**: Bug Bash e refinamento UI/UX pós-migração ADR.
-- Sprint 7 (pendente): Tasks 2–3 — SDK/Snippet e Workshop de Integração.
+- Integrar branches de codigo da Sprint 8 (`#512`–`#517`) em `development` via PR/merge.
+- Retomar Sprint 7 Tasks 2–3 ou debitos Sprint 5/6 conforme prioridade do squad.
 
-## Tasks concluidas na sessao
-- **Sprint 7 — Task 1:** Criar Documentação Técnica de Integração (`docs/INTEGRATION_GUIDE.md`).
+## Tasks concluidas na sessao (Sprint 8 — escopo desta entrega)
+- **Task 1:** Tokens CSS globais e fundacao do Design System (ADR-001).
+- **Task 2:** AppShell — Sidebar e Topbar.
+- **Task 3:** Biblioteca UI base (Button, Input, Card, Badge, Table).
+- **Task 4:** Paginas CRUD (Users, Roles, Applications) + `AdminPages.css`.
+- **Task 5:** Login, Register, Profile, Dashboard (metric cards).
+- **Task 6:** Toasts e estados de carregamento (`ToastProvider`, `PageLoading`).
+- **Tasks 7–9:** encerradas pelo squad (bug bash, auditoria, entrega final) — sem alteracao de codigo nesta sessao de frontend.
 
 ## Observacoes uteis para a proxima sessao
-- Build do frontend exige `npm install` no diretório `Frontend` antes de `npm run build` (dependências não versionadas em `node_modules`).
-- Demo M2M: após criar app no admin, validar token com `POST /v1/oauth/token` (`grant_type: client_credentials`) usando `client_id` e `client_secret` copiados no modal one-time.
-- `docs/INTEGRATION_GUIDE.md` cobre M2M + RBAC humano + exemplos Node.js/Python + fluxogramas Mermaid; referenciá-lo no README se ainda não estiver linkado.
-- Sprint 8 inicia em 23/05/2026 — foco em Bug Bash, auditoria de segurança e entrega final.
+- Commits de codigo ja existem na branch `task/517-corecoreen-80-implementar-toasts-e-padronizar-feedback-de-operações` (inclui cadeia `#512`–`#517`).
+- Documentacao de fechamento pode ir em branch dedicada a partir de `development`.
+- Demo: login → dashboard → CRUD; validar toasts e tema azul ADR (`#0466c8` / `#001233`).
 
 ## Divergencias registradas (handoff)
-- **`Sprints.md` vs código:** Tasks 1–3 da Sprint 6 não receberam `Status: done`; código contém setup, auth, dashboard e perfil — dashboard usa métricas mockadas (critério de aceite permite mock, mas vale validação do time).
-- **`PRD.md` §5.5** posiciona "frontend admin" como P2/roadmap curto; o **`Sprints.md`** já prevê Module 08 na Sprint 6 — priorização segue o backlog da sprint, com PRD como visão normativa geral.
-- **Sprint 7 prazo:** encerra em 22/05/2026; Tasks 2 e 3 (SDK e Workshop) ficam como pendência para encerrar dentro da sprint ou avaliar como débito.
+- **Tasks 8–9 vs escopo desta sessao:** auditoria/performance e entrega final nao geraram diff em `frontend/` nesta sessao; `done` reflete encerramento do squad, nao implementacao local verificada aqui.
+- **PRD §5.5** vs **Sprints.md:** frontend admin priorizado nas Sprints 6–8 apesar de P2 no PRD geral.
+- **`Sprints.md` Sprint 6 Tasks 1–3:** codigo presente, `Status: done` ainda nao aplicado no backlog da Sprint 6.

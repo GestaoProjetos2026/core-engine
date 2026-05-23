@@ -82,6 +82,22 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 
 ---
 
+### Sprint 8: Migração ADR-001 — Frontend Administrativo (Entrega)
+**Status**: ✔️ Concluída
+- **Task 1**: Tokens CSS globais em `frontend/src/index.css` (primitivas, semânticas, tipografia, espaçamento, radius, sombras, aliases legados, `:focus-visible`). ✔️ (Commit [#512] CORECOREEN-75)
+- **Task 2**: AppShell — `Layout.tsx` / `Layout.css` (sidebar 240px, item ativo brand, topbar 56px). ✔️ (Commit [#513] CORECOREEN-76)
+- **Task 3**: Componentes UI — `Button`, `Input`, `Card`, `Badge`, `Table` alinhados ao ADR-001. ✔️ (Commit [#514] CORECOREEN-77)
+- **Task 4**: Páginas CRUD — `UsersPage`, `RolesPage`, `ApplicationsPage` + `AdminPages.css` (modais elevados, sem estilos inline legados). ✔️ (Commit [#515] CORECOREEN-78)
+- **Task 5**: Auth e Dashboard — `LoginPage.css`, `RegisterPage`, `ProfilePage.css`, `DashboardPage` (metric cards overline/28px), `PrivateRoute` loading ADR. ✔️ (Commit [#516] CORECOREEN-79)
+- **Task 6**: `ToastProvider` + `Toast.css` (§9.8), `PageLoading`, toasts em CRUD/auth, remoção de `alert()`. ✔️ (Commit [#517] CORECOREEN-80)
+- **Tasks 7–9**: Bug bash UI/UX, auditoria de segurança/performance e entrega final — encerradas pelo squad (fora do diff de código desta cadeia frontend).
+
+**Arquivos-chave criados/alterados:** `docs/PadraoFront/Padronizacao.md` (referência), `frontend/src/pages/AdminPages.css`, `frontend/src/context/ToastContext.tsx`, `frontend/src/components/ui/PageLoading.tsx`.
+
+**Build:** `npm run build` no diretório `frontend/` validado ao longo das tasks.
+
+---
+
 ### Sprint 7: Integração e Documentação para Squads Consumidores
 **Status**: 🚀 Em Andamento
 - **Task 1**: Guia de Integração para Outros Módulos. ✔️ (Concluído em 21/05/2026)
@@ -115,6 +131,7 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 - **Workaround de Swagger**: Remoção temporária da propriedade `type` nos decoradores `@ApiResponse` dos novos módulos para mitigar um erro crítico de "Circular Dependency" no motor do Swagger/Fastify no ambiente de desenvolvimento Node 25.
 - **Sprint 6 — UI de usuários (RF09 no admin)**: A listagem consome o payload real de `GET /v1/users` (sem `roles` no `select` do backend); a tabela do frontend foi alinhada a `id`, `email`, `name`, `status`, `createdAt`. Validação de senha no modal de criação aproxima-se do RNF08; o DTO `CreateUserDto` no backend permanece com regra mínima mais curta até alinhamento futuro.
 - **Sprint 6 — UI de aplicações M2M (RF14–RF16)**: CRUD e regeneração de secret no admin; exibição única do `client_secret` com confirmação explícita do operador; associação de escopos substitui vínculos existentes (`POST /v1/applications/:id/scopes` com `scopeIds`).
+- **Sprint 8 — Migração ADR-001 (frontend/)**: Substituição da paleta legada (cinza/pêssego) por tokens azul profundo (`#001233`, brand `#0466c8`). Estratégia de aliases CSS legados em `index.css` para migração incremental. `AdminPages.css` centraliza layout admin (filtros, modais, paginação, tabs). Feedback global via `ToastProvider` e `PageLoading` substituindo `alert()` e textos “Loading…” soltos.
 
 ---
 
