@@ -47,7 +47,7 @@ const LoginPage: React.FC = () => {
       <div className="login-container animate-fade-in">
         <div className="login-header">
           <div className="login-logo pulse">
-            <ShieldCheck size={56} color="var(--color-highlight)" />
+            <ShieldCheck size={56} className="login-logo-icon" aria-hidden />
           </div>
           <h1>Welcome Back</h1>
           <p>Access the Core Engine & Auth System</p>
@@ -55,7 +55,7 @@ const LoginPage: React.FC = () => {
 
         <Card className="login-card">
           <form onSubmit={handleSubmit} className="login-form">
-            {error && <div className="login-error">{error}</div>}
+            {error && <div className="auth-alert auth-alert--error">{error}</div>}
 
             <Input
               label="Email Address"
@@ -90,7 +90,7 @@ const LoginPage: React.FC = () => {
         <p className="login-footer">
           Don't have an account? <Link to="/register">Create one</Link>
         </p>
-        <p className="login-footer" style={{ marginTop: '-20px' }}>
+        <p className="login-footer login-footer--compact">
           Need help? <a href="#">Contact support</a>
         </p>
       </div>

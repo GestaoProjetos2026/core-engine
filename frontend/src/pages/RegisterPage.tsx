@@ -37,7 +37,7 @@ const RegisterPage: React.FC = () => {
       <div className="login-container animate-fade-in">
         <div className="login-header">
           <div className="login-logo">
-            <ShieldCheck size={48} color="var(--color-highlight)" />
+            <ShieldCheck size={48} className="login-logo-icon" aria-hidden />
           </div>
           <h1>Create Account</h1>
           <p>Join the ERP Core Auth System</p>
@@ -45,7 +45,7 @@ const RegisterPage: React.FC = () => {
 
         <Card className="login-card">
           <form onSubmit={handleSubmit} className="login-form">
-            {error && <div className="login-error">{error}</div>}
+            {error && <div className="auth-alert auth-alert--error">{error}</div>}
             
             <Input
               label="Full Name"

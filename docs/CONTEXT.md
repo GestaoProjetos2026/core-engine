@@ -7,7 +7,7 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 8 — **Task 4 concluída**: páginas CRUD (`UsersPage`, `RolesPage`, `ApplicationsPage`) refatoradas com `AdminPages.css` — filtros, tabelas, paginação, tabs, modais elevados (`modal-card`), alerts semânticos, ícones de ação via classes (sem hex inline). Build OK.
+- Sprint 8 — **Task 5 concluída**: Login/Register (`LoginPage.css` — bg app, card surface, auth alerts, logo brand), Profile (`ProfilePage.css` — badges ADR), Dashboard (`metric-card` com overline + valor 28px, tons brand/info/success/danger), `PrivateRoute` loading sem cores hardcoded. Build OK.
 
 ## Arquivos modificados recentemente
 - `frontend/src/pages/AdminPages.css` — **CRIADO** — estilos compartilhados admin CRUD
@@ -33,7 +33,7 @@
 - Listagem de aplicações (`GET /v1/applications`) não inclui escopos no payload; o frontend carrega escopos por app em paralelo (`GET /v1/applications/:id/scopes`) na página atual — aceitável para páginas pequenas; considerar otimização se o volume crescer.
 
 ## Proximo foco
-- Sprint 8 — **Task 5**: Telas de autenticação e Dashboard (metric cards ADR).
+- Sprint 8 — **Task 6**: Toasts e estados de loading padronizados.
 - Sprint 7 (pendente): Tasks 2–3 — SDK/Snippet e Workshop de Integração.
 
 ## Tasks concluidas na sessao

@@ -37,7 +37,7 @@ const ProfilePage: React.FC = () => {
               <Shield size={20} className="detail-icon" />
               <div>
                 <span className="detail-label">Account ID</span>
-                <span className="detail-value text-muted">{user.userId}</span>
+                <span className="detail-value detail-value--mono">{user.userId}</span>
               </div>
             </div>
           </div>
@@ -49,7 +49,7 @@ const ProfilePage: React.FC = () => {
             {user.roles && user.roles.length > 0 ? (
               <div className="badge-list">
                 {user.roles.map((role) => (
-                  <span key={role} className="badge role-badge">{role}</span>
+                  <span key={role} className="profile-badge role-badge">{role}</span>
                 ))}
               </div>
             ) : (
@@ -62,7 +62,7 @@ const ProfilePage: React.FC = () => {
             {user.perms && user.perms.length > 0 ? (
               <div className="badge-list">
                 {user.perms.map((perm) => (
-                  <span key={perm} className="badge perm-badge">{perm}</span>
+                  <span key={perm} className="profile-badge perm-badge">{perm}</span>
                 ))}
               </div>
             ) : (
