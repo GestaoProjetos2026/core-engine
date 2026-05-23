@@ -50,4 +50,4 @@ EXPOSE 80 3000
 
 # Comando para iniciar ambos os serviços
 # Substitui dinamicamente a porta do Nginx, inicia o Nginx e aguarda o banco de dados ficar pronto para rodar as migrations e o seed antes de ligar a API
-CMD ["sh", "-c", "sed -i \"s/listen 3000;/listen ${PORT:-3000};/g\" /etc/nginx/http.d/default.conf && nginx || true; dokku=0; until npx prisma migrate deploy || [ $dokku -eq 10 ]; do dokku=$((dokku+1)); echo 'Waiting for DB...'; sleep 3; done; node dist/prisma/seed.js || true; node dist/src/main.js"]
+CMD ["sh", "-c", "sed -i \"s/listen 3000;/listen ${PORT:-3000};/g\" /etc/nginx/http.d/default.conf && nginx || true; dokku=0; until npx prisma migrate deploy || [ $dokku -eq 10 ]; do dokku=$((dokku+1)); echo 'Waiting for DB...'; sleep 3; done; if [ \"${SEED_ON_STARTUP:-true}\" != \"false\" ]; then node dist/prisma/seed.js || { if [ \"$NODE_ENV\" = \"production\" ] || [ \"$SEED_STRICT\" = \"true\" ]; then echo 'Seed failed (strict mode)'; exit 1; fi; echo 'Seed failed (non-strict, continuing)'; }; fi; node dist/src/main.js"]

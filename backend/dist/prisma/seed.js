@@ -68,18 +68,30 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var client_1 = require("@prisma/client");
 var pg_1 = require("pg");
 var adapter_pg_1 = require("@prisma/adapter-pg");
 var dotenv = __importStar(require("dotenv"));
 var bcrypt = __importStar(require("bcrypt"));
+var seed_data_1 = require("./seed-data");
 dotenv.config();
 var pool = new pg_1.Pool({ connectionString: process.env.DATABASE_URL });
 var adapter = new adapter_pg_1.PrismaPg(pool);
 var prisma = new client_1.PrismaClient({ adapter: adapter });
+var isProduction = process.env.NODE_ENV === 'production';
+var updatePasswords = process.env.SEED_UPDATE_PASSWORDS === 'true' ||
+    (!isProduction && process.env.SEED_UPDATE_PASSWORDS !== 'false');
 var permissionDefs = [
-    // Identity & Access Management (IAM)
     { code: 'users:read', description: 'Visualizar lista e detalhes de usuários' },
     { code: 'users:write', description: 'Criar, atualizar e excluir usuários' },
     { code: 'roles:read', description: 'Visualizar papéis de acesso' },
@@ -87,16 +99,13 @@ var permissionDefs = [
     { code: 'roles:manage', description: 'Vincular usuários e permissões a papéis' },
     { code: 'permissions:read', description: 'Visualizar catálogo de permissões' },
     { code: 'permissions:write', description: 'Gerenciar permissões do sistema' },
-    // Integration & M2M
     { code: 'applications:read', description: 'Visualizar aplicações integradas' },
     { code: 'applications:write', description: 'Gerenciar aplicações e segredos' },
     { code: 'scopes:read', description: 'Visualizar catálogo de escopos' },
     { code: 'scopes:write', description: 'Gerenciar escopos e vínculos' },
-    // Observability & System
     { code: 'audit:read', description: 'Visualizar logs de auditoria e eventos críticos' },
     { code: 'health:read', description: 'Visualizar status de saúde do sistema' },
     { code: 'dashboard:read', description: 'Visualizar resumo e métricas do dashboard' },
-    // Domain Placeholders (Consumer Squads / ERP Modules)
     { code: 'orders:read', description: 'Visualizar pedidos (Módulo Vendas)' },
     { code: 'orders:write', description: 'Gerenciar pedidos (Módulo Vendas)' },
     { code: 'customers:read', description: 'Visualizar clientes (Módulo CRM)' },
@@ -106,20 +115,212 @@ var permissionDefs = [
     { code: 'inventory:read', description: 'Visualizar estoque' },
     { code: 'inventory:write', description: 'Movimentar estoque' },
 ];
+var scopeDefs = [
+    { code: 'read:all', description: 'Leitura total (M2M)' },
+    { code: 'write:all', description: 'Escrita total (M2M)' },
+    { code: 'orders:read', description: 'Leitura de pedidos' },
+    { code: 'orders:write', description: 'Criação/alteração de pedidos' },
+    { code: 'customers:read', description: 'Leitura de clientes' },
+    { code: 'customers:write', description: 'Escrita de clientes' },
+    { code: 'products:read', description: 'Leitura de produtos' },
+    { code: 'products:write', description: 'Escrita de produtos' },
+    { code: 'inventory:read', description: 'Leitura de estoque' },
+    { code: 'inventory:write', description: 'Escrita de estoque' },
+];
+function resolveSecret(envKey, fallback) {
+    var _a;
+    var fromEnv = (_a = process.env[envKey]) === null || _a === void 0 ? void 0 : _a.trim();
+    if (fromEnv) {
+        return fromEnv;
+    }
+    if (isProduction) {
+        throw new Error("Missing required env ".concat(envKey, " for production seed (set via cluster secrets)"));
+    }
+    return fallback;
+}
+function seedAdminUsers(adminRole, defs) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _i, defs_1, def, plainPassword, passwordHash, user;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _i = 0, defs_1 = defs;
+                    _a.label = 1;
+                case 1:
+                    if (!(_i < defs_1.length)) return [3 /*break*/, 6];
+                    def = defs_1[_i];
+                    plainPassword = resolveSecret(def.passwordEnvKey, def.defaultPassword);
+                    return [4 /*yield*/, bcrypt.hash(plainPassword, 12)];
+                case 2:
+                    passwordHash = _a.sent();
+                    return [4 /*yield*/, prisma.user.upsert({
+                            where: { email: def.email },
+                            update: updatePasswords ? { passwordHash: passwordHash, name: def.name, status: 'ACTIVE' } : { name: def.name, status: 'ACTIVE' },
+                            create: {
+                                email: def.email,
+                                name: def.name,
+                                passwordHash: passwordHash,
+                                status: 'ACTIVE',
+                            },
+                        })];
+                case 3:
+                    user = _a.sent();
+                    return [4 /*yield*/, prisma.userRole.upsert({
+                            where: {
+                                userId_roleId: {
+                                    userId: user.id,
+                                    roleId: adminRole.id,
+                                },
+                            },
+                            update: {},
+                            create: {
+                                userId: user.id,
+                                roleId: adminRole.id,
+                            },
+                        })];
+                case 4:
+                    _a.sent();
+                    console.log("   - admin user: ".concat(def.email, " (role: admin)"));
+                    _a.label = 5;
+                case 5:
+                    _i++;
+                    return [3 /*break*/, 1];
+                case 6: return [2 /*return*/];
+            }
+        });
+    });
+}
+function seedViewerUser(viewerRole) {
+    return __awaiter(this, void 0, void 0, function () {
+        var def, plainPassword, passwordHash, user;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    def = seed_data_1.viewerUserDef;
+                    plainPassword = resolveSecret(def.passwordEnvKey, def.defaultPassword);
+                    return [4 /*yield*/, bcrypt.hash(plainPassword, 12)];
+                case 1:
+                    passwordHash = _a.sent();
+                    return [4 /*yield*/, prisma.user.upsert({
+                            where: { email: def.email },
+                            update: updatePasswords ? { passwordHash: passwordHash, name: def.name, status: 'ACTIVE' } : { name: def.name, status: 'ACTIVE' },
+                            create: {
+                                email: def.email,
+                                name: def.name,
+                                passwordHash: passwordHash,
+                                status: 'ACTIVE',
+                            },
+                        })];
+                case 2:
+                    user = _a.sent();
+                    return [4 /*yield*/, prisma.userRole.upsert({
+                            where: {
+                                userId_roleId: {
+                                    userId: user.id,
+                                    roleId: viewerRole.id,
+                                },
+                            },
+                            update: {},
+                            create: {
+                                userId: user.id,
+                                roleId: viewerRole.id,
+                            },
+                        })];
+                case 3:
+                    _a.sent();
+                    console.log("   - viewer user: ".concat(def.email, " (role: viewer)"));
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function linkAllScopesToApp(applicationId, scopes) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _i, scopes_1, scope;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _i = 0, scopes_1 = scopes;
+                    _a.label = 1;
+                case 1:
+                    if (!(_i < scopes_1.length)) return [3 /*break*/, 4];
+                    scope = scopes_1[_i];
+                    return [4 /*yield*/, prisma.applicationScope.upsert({
+                            where: {
+                                applicationId_scopeId: {
+                                    applicationId: applicationId,
+                                    scopeId: scope.id,
+                                },
+                            },
+                            update: {},
+                            create: {
+                                applicationId: applicationId,
+                                scopeId: scope.id,
+                            },
+                        })];
+                case 2:
+                    _a.sent();
+                    _a.label = 3;
+                case 3:
+                    _i++;
+                    return [3 /*break*/, 1];
+                case 4: return [2 /*return*/];
+            }
+        });
+    });
+}
+function seedM2mApplication(def, scopes) {
+    return __awaiter(this, void 0, void 0, function () {
+        var clientSecret, clientSecretHash, app;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    clientSecret = def.clientId === 'test-client-id'
+                        ? def.defaultSecret
+                        : resolveSecret(def.secretEnvKey, def.defaultSecret);
+                    return [4 /*yield*/, bcrypt.hash(clientSecret, 12)];
+                case 1:
+                    clientSecretHash = _a.sent();
+                    return [4 /*yield*/, prisma.application.upsert({
+                            where: { clientId: def.clientId },
+                            update: updatePasswords
+                                ? { clientSecretHash: clientSecretHash, name: def.name, status: 'ACTIVE' }
+                                : { name: def.name, status: 'ACTIVE' },
+                            create: {
+                                name: def.name,
+                                clientId: def.clientId,
+                                clientSecretHash: clientSecretHash,
+                                status: 'ACTIVE',
+                            },
+                        })];
+                case 2:
+                    app = _a.sent();
+                    return [4 /*yield*/, linkAllScopesToApp(app.id, scopes)];
+                case 3:
+                    _a.sent();
+                    console.log("   - m2m app: ".concat(def.clientId, " (all scopes linked)"));
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var permissions, adminRole, viewerRole, managerRole, _i, permissions_1, permission, viewerPerms, _a, viewerPerms_1, permission, managerPerms, _b, managerPerms_1, permission, defaultPassword, passwordHash, adminUser, viewerUser, testAppSecret, testAppSecretHash, testApp, scopeDefs, scopes, _c, scopes_1, scope;
-        return __generator(this, function (_d) {
-            switch (_d.label) {
-                case 0: return [4 /*yield*/, Promise.all(permissionDefs.map(function (p) {
-                        return prisma.permission.upsert({
-                            where: { code: p.code },
-                            update: { description: p.description },
-                            create: { code: p.code, description: p.description },
-                        });
-                    }))];
+        var permissions, adminRole, viewerRole, managerRole, _i, permissions_1, permission, viewerPerms, _a, viewerPerms_1, permission, managerPerms, _b, managerPerms_1, permission, scopes, _c, m2mAppDefs_1, def, _d, adminUserDefs_1, def, _e, _f, def;
+        var _g;
+        return __generator(this, function (_h) {
+            switch (_h.label) {
+                case 0:
+                    console.log("Seed mode: NODE_ENV=".concat((_g = process.env.NODE_ENV) !== null && _g !== void 0 ? _g : 'undefined', ", updatePasswords=").concat(updatePasswords));
+                    return [4 /*yield*/, Promise.all(permissionDefs.map(function (p) {
+                            return prisma.permission.upsert({
+                                where: { code: p.code },
+                                update: { description: p.description },
+                                create: { code: p.code, description: p.description },
+                            });
+                        }))];
                 case 1:
-                    permissions = _d.sent();
+                    permissions = _h.sent();
                     console.log("\u2705 ".concat(permissions.length, " permissions upserted"));
                     return [4 /*yield*/, prisma.role.upsert({
                             where: { name: 'admin' },
@@ -127,24 +328,24 @@ function main() {
                             create: { name: 'admin' },
                         })];
                 case 2:
-                    adminRole = _d.sent();
+                    adminRole = _h.sent();
                     return [4 /*yield*/, prisma.role.upsert({
                             where: { name: 'viewer' },
                             update: {},
                             create: { name: 'viewer' },
                         })];
                 case 3:
-                    viewerRole = _d.sent();
+                    viewerRole = _h.sent();
                     return [4 /*yield*/, prisma.role.upsert({
                             where: { name: 'manager' },
                             update: {},
                             create: { name: 'manager' },
                         })];
                 case 4:
-                    managerRole = _d.sent();
+                    managerRole = _h.sent();
                     console.log('✅ Roles (admin, viewer, manager) upserted');
                     _i = 0, permissions_1 = permissions;
-                    _d.label = 5;
+                    _h.label = 5;
                 case 5:
                     if (!(_i < permissions_1.length)) return [3 /*break*/, 8];
                     permission = permissions_1[_i];
@@ -162,8 +363,8 @@ function main() {
                             },
                         })];
                 case 6:
-                    _d.sent();
-                    _d.label = 7;
+                    _h.sent();
+                    _h.label = 7;
                 case 7:
                     _i++;
                     return [3 /*break*/, 5];
@@ -171,7 +372,7 @@ function main() {
                     console.log('✅ Admin linked to all permissions');
                     viewerPerms = permissions.filter(function (p) { return p.code.endsWith(':read'); });
                     _a = 0, viewerPerms_1 = viewerPerms;
-                    _d.label = 9;
+                    _h.label = 9;
                 case 9:
                     if (!(_a < viewerPerms_1.length)) return [3 /*break*/, 12];
                     permission = viewerPerms_1[_a];
@@ -189,8 +390,8 @@ function main() {
                             },
                         })];
                 case 10:
-                    _d.sent();
-                    _d.label = 11;
+                    _h.sent();
+                    _h.label = 11;
                 case 11:
                     _a++;
                     return [3 /*break*/, 9];
@@ -204,7 +405,7 @@ function main() {
                             p.code.startsWith('inventory:');
                     });
                     _b = 0, managerPerms_1 = managerPerms;
-                    _d.label = 13;
+                    _h.label = 13;
                 case 13:
                     if (!(_b < managerPerms_1.length)) return [3 /*break*/, 16];
                     permission = managerPerms_1[_b];
@@ -222,101 +423,20 @@ function main() {
                             },
                         })];
                 case 14:
-                    _d.sent();
-                    _d.label = 15;
+                    _h.sent();
+                    _h.label = 15;
                 case 15:
                     _b++;
                     return [3 /*break*/, 13];
                 case 16:
                     console.log("\u2705 Manager linked to ".concat(managerPerms.length, " permissions"));
-                    defaultPassword = 'Password123!';
-                    return [4 /*yield*/, bcrypt.hash(defaultPassword, 12)];
+                    console.log('✅ Seeding admin users:');
+                    return [4 /*yield*/, seedAdminUsers(adminRole, seed_data_1.adminUserDefs)];
                 case 17:
-                    passwordHash = _d.sent();
-                    return [4 /*yield*/, prisma.user.upsert({
-                            where: { email: 'admin@example.com' },
-                            update: { passwordHash: passwordHash },
-                            create: {
-                                // email: 'admin@example.com',
-                                email: 'admin@hotmail.com',
-                                name: 'Admin User',
-                                passwordHash: passwordHash,
-                                status: 'ACTIVE',
-                            },
-                        })];
+                    _h.sent();
+                    return [4 /*yield*/, seedViewerUser(viewerRole)];
                 case 18:
-                    adminUser = _d.sent();
-                    return [4 /*yield*/, prisma.userRole.upsert({
-                            where: {
-                                userId_roleId: {
-                                    userId: adminUser.id,
-                                    roleId: adminRole.id,
-                                },
-                            },
-                            update: {},
-                            create: {
-                                userId: adminUser.id,
-                                roleId: adminRole.id,
-                            },
-                        })];
-                case 19:
-                    _d.sent();
-                    return [4 /*yield*/, prisma.user.upsert({
-                            where: { email: 'viewer@example.com' },
-                            update: { passwordHash: passwordHash },
-                            create: {
-                                email: 'viewer@example.com',
-                                name: 'Viewer User',
-                                passwordHash: passwordHash,
-                                status: 'ACTIVE',
-                            },
-                        })];
-                case 20:
-                    viewerUser = _d.sent();
-                    return [4 /*yield*/, prisma.userRole.upsert({
-                            where: {
-                                userId_roleId: {
-                                    userId: viewerUser.id,
-                                    roleId: viewerRole.id,
-                                },
-                            },
-                            update: {},
-                            create: {
-                                userId: viewerUser.id,
-                                roleId: viewerRole.id,
-                            },
-                        })];
-                case 21:
-                    _d.sent();
-                    console.log('✅ Default users created and linked to roles');
-                    console.log('   - admin@example.com / Password123!');
-                    console.log('   - viewer@example.com / Password123!');
-                    testAppSecret = 'test-client-secret';
-                    return [4 /*yield*/, bcrypt.hash(testAppSecret, 12)];
-                case 22:
-                    testAppSecretHash = _d.sent();
-                    return [4 /*yield*/, prisma.application.upsert({
-                            where: { clientId: 'test-client-id' },
-                            update: { clientSecretHash: testAppSecretHash, status: 'ACTIVE' },
-                            create: {
-                                name: 'Test Application',
-                                clientId: 'test-client-id',
-                                clientSecretHash: testAppSecretHash,
-                                status: 'ACTIVE',
-                            },
-                        })];
-                case 23:
-                    testApp = _d.sent();
-                    scopeDefs = [
-                        { code: 'read:all', description: 'Leitura total (M2M)' },
-                        { code: 'write:all', description: 'Escrita total (M2M)' },
-                        { code: 'orders:read', description: 'Leitura de pedidos' },
-                        { code: 'orders:write', description: 'Criação/alteração de pedidos' },
-                        { code: 'customers:read', description: 'Leitura de clientes' },
-                        { code: 'customers:write', description: 'Escrita de clientes' },
-                        { code: 'products:read', description: 'Leitura de produtos' },
-                        { code: 'products:write', description: 'Escrita de produtos' },
-                    ];
+                    _h.sent();
                     return [4 /*yield*/, Promise.all(scopeDefs.map(function (s) {
                             return prisma.scope.upsert({
                                 where: { code: s.code },
@@ -324,36 +444,42 @@ function main() {
                                 create: { code: s.code, description: s.description },
                             });
                         }))];
-                case 24:
-                    scopes = _d.sent();
+                case 19:
+                    scopes = _h.sent();
                     console.log("\u2705 ".concat(scopes.length, " scopes upserted"));
-                    _c = 0, scopes_1 = scopes;
-                    _d.label = 25;
-                case 25:
-                    if (!(_c < scopes_1.length)) return [3 /*break*/, 28];
-                    scope = scopes_1[_c];
-                    return [4 /*yield*/, prisma.applicationScope.upsert({
-                            where: {
-                                applicationId_scopeId: {
-                                    applicationId: testApp.id,
-                                    scopeId: scope.id,
-                                },
-                            },
-                            update: {},
-                            create: {
-                                applicationId: testApp.id,
-                                scopeId: scope.id,
-                            },
-                        })];
-                case 26:
-                    _d.sent();
-                    _d.label = 27;
-                case 27:
+                    console.log('✅ Seeding M2M applications:');
+                    _c = 0, m2mAppDefs_1 = seed_data_1.m2mAppDefs;
+                    _h.label = 20;
+                case 20:
+                    if (!(_c < m2mAppDefs_1.length)) return [3 /*break*/, 23];
+                    def = m2mAppDefs_1[_c];
+                    return [4 /*yield*/, seedM2mApplication(def, scopes)];
+                case 21:
+                    _h.sent();
+                    _h.label = 22;
+                case 22:
                     _c++;
-                    return [3 /*break*/, 25];
-                case 28:
-                    console.log('✅ Test Application linked to all scopes');
-                    console.log('   - clientId: test-client-id / clientSecret: test-client-secret');
+                    return [3 /*break*/, 20];
+                case 23: return [4 /*yield*/, seedM2mApplication(seed_data_1.e2eM2mAppDef, scopes)];
+                case 24:
+                    _h.sent();
+                    if (!isProduction) {
+                        console.log('\n📋 Local dev credentials (passwords from env or defaults in seed-data.ts):');
+                        for (_d = 0, adminUserDefs_1 = seed_data_1.adminUserDefs; _d < adminUserDefs_1.length; _d++) {
+                            def = adminUserDefs_1[_d];
+                            console.log("   - ".concat(def.email, " \u2192 env ").concat(def.passwordEnvKey, " or ").concat(def.defaultPassword));
+                        }
+                        console.log("   - ".concat(seed_data_1.viewerUserDef.email, " \u2192 env ").concat(seed_data_1.viewerUserDef.passwordEnvKey, " or ").concat(seed_data_1.viewerUserDef.defaultPassword));
+                        for (_e = 0, _f = __spreadArray(__spreadArray([], seed_data_1.m2mAppDefs, true), [seed_data_1.e2eM2mAppDef], false); _e < _f.length; _e++) {
+                            def = _f[_e];
+                            console.log("   - ".concat(def.clientId, " \u2192 env ").concat(def.secretEnvKey, " or ").concat(def.defaultSecret));
+                        }
+                    }
+                    else {
+                        console.log('\n📋 Production seed complete (credentials not logged; use cluster secrets).');
+                        console.log('   Admin emails:', seed_data_1.adminUserDefs.map(function (d) { return d.email; }).join(', '));
+                        console.log('   M2M client_ids:', __spreadArray(__spreadArray([], seed_data_1.m2mAppDefs, true), [seed_data_1.e2eM2mAppDef], false).map(function (d) { return d.clientId; }).join(', '));
+                    }
                     console.log('\n🎉 Seed completed');
                     return [2 /*return*/];
             }
@@ -370,6 +496,9 @@ main()
         switch (_a.label) {
             case 0: return [4 /*yield*/, prisma.$disconnect()];
             case 1:
+                _a.sent();
+                return [4 /*yield*/, pool.end()];
+            case 2:
                 _a.sent();
                 return [2 /*return*/];
         }
