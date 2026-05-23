@@ -237,7 +237,8 @@ function main() {
                             where: { email: 'admin@example.com' },
                             update: { passwordHash: passwordHash },
                             create: {
-                                email: 'admin@example.com',
+                                // email: 'admin@example.com',
+                                email: 'admin@hotmail.com',
                                 name: 'Admin User',
                                 passwordHash: passwordHash,
                                 status: 'ACTIVE',
