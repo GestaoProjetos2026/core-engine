@@ -18,6 +18,8 @@ import {
   Check,
   Layers,
 } from 'lucide-react';
+import { PageLoading } from '../components/ui/PageLoading';
+import { useToast } from '../context/ToastContext';
 import './AdminPages.css';
 
 type ApiErrorShape = { error?: { message?: string; code?: string } };
@@ -38,6 +40,7 @@ async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 const ApplicationsPage: React.FC = () => {
+  const { showToast } = useToast();
   const [apps, setApps] = useState<ApplicationListItem[]>([]);
   const [scopesByAppId, setScopesByAppId] = useState<Record<string, Scope[]>>({});
   const [total, setTotal] = useState(0);
@@ -156,7 +159,9 @@ const ApplicationsPage: React.FC = () => {
       setAllScopes(catalogRes.data);
       setSelectedScopeIds(appScopesRes.data.map((s) => s.id));
     } catch (err) {
-      setFormErrors({ form: parseApiError(err) });
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
     } finally {
       setScopesLoading(false);
     }
@@ -207,7 +212,9 @@ const ApplicationsPage: React.FC = () => {
         response.data.clientSecret,
       );
     } catch (err) {
-      setFormErrors({ form: parseApiError(err) });
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -221,9 +228,12 @@ const ApplicationsPage: React.FC = () => {
     try {
       await api.patch(`/v1/applications/${editingApp.id}`, { name: formName.trim() });
       closeModal();
-      fetchApps();
+      await fetchApps();
+      showToast('Application updated successfully.', 'success');
     } catch (err) {
-      setFormErrors({ form: parseApiError(err) });
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -235,9 +245,10 @@ const ApplicationsPage: React.FC = () => {
     if (!window.confirm(`Are you sure you want to ${label} "${app.name}"?`)) return;
     try {
       await api.patch(`/v1/applications/${app.id}/status`, { status: newStatus });
-      fetchApps();
+      await fetchApps();
+      showToast(`Application ${newStatus === 'ACTIVE' ? 'activated' : 'deactivated'}.`, 'success');
     } catch (err) {
-      alert(parseApiError(err));
+      showToast(parseApiError(err), 'error');
     }
   };
 
@@ -254,8 +265,9 @@ const ApplicationsPage: React.FC = () => {
         `/v1/applications/${app.id}/regenerate-secret`,
       )) as unknown as ApiResponse<ApplicationWithSecret>;
       openSecretReveal('Secret regenerated', response.data.clientId, response.data.clientSecret);
+      showToast('Client secret regenerated. Copy it from the dialog.', 'warning');
     } catch (err) {
-      alert(parseApiError(err));
+      showToast(parseApiError(err), 'error');
     }
   };
 
@@ -273,9 +285,12 @@ const ApplicationsPage: React.FC = () => {
     try {
       await api.post(`/v1/applications/${editingApp.id}/scopes`, { scopeIds: selectedScopeIds });
       closeModal();
-      fetchApps();
+      await fetchApps();
+      showToast('Application scopes saved.', 'success');
     } catch (err) {
-      setFormErrors({ form: parseApiError(err) });
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -285,7 +300,10 @@ const ApplicationsPage: React.FC = () => {
     const ok = await copyToClipboard(value);
     if (ok) {
       setCopiedField(field);
+      showToast(field === 'secret' ? 'Client secret copied.' : 'Client ID copied.', 'success');
       window.setTimeout(() => setCopiedField(null), 2000);
+    } else {
+      showToast('Could not copy to clipboard.', 'error');
     }
   };
 
@@ -352,7 +370,7 @@ const ApplicationsPage: React.FC = () => {
 
       <Card>
         {loading ? (
-          <div className="admin-state-message">Loading applications…</div>
+          <PageLoading message="Loading applications…" />
         ) : apps.length === 0 ? (
           <div className="admin-state-message">No applications match the current filters.</div>
         ) : (
@@ -508,7 +526,7 @@ const ApplicationsPage: React.FC = () => {
               {formErrors.form && <div className="admin-alert admin-alert--error">{formErrors.form}</div>}
 
               {scopesLoading ? (
-                <p className="admin-td-muted">Loading scopes…</p>
+                <PageLoading message="Loading scopes…" compact />
               ) : allScopes.length === 0 ? (
                 <p className="admin-td-muted">No scopes in the catalog. Create scopes via the API (POST /v1/scopes) first.</p>
               ) : (

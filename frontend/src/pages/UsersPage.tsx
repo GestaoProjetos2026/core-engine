@@ -7,6 +7,8 @@ import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Plus, UserCog, Power, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { PageLoading } from '../components/ui/PageLoading';
+import { useToast } from '../context/ToastContext';
 import './AdminPages.css';
 
 type ApiErrorShape = { error?: { message?: string; code?: string } };
@@ -37,6 +39,7 @@ function validatePasswordPolicy(password: string): string | undefined {
 }
 
 const UsersPage: React.FC = () => {
+  const { showToast } = useToast();
   const [users, setUsers] = useState<AdminUserListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -169,9 +172,12 @@ const UsersPage: React.FC = () => {
         password: formPassword,
       });
       closeModal();
-      fetchUsers();
+      await fetchUsers();
+      showToast('User created successfully.', 'success');
     } catch (err) {
-      setFormErrors({ form: parseApiError(err) });
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -188,9 +194,12 @@ const UsersPage: React.FC = () => {
         email: formEmail.trim(),
       });
       closeModal();
-      fetchUsers();
+      await fetchUsers();
+      showToast('User updated successfully.', 'success');
     } catch (err) {
-      setFormErrors({ form: parseApiError(err) });
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -200,9 +209,10 @@ const UsersPage: React.FC = () => {
     const newStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     try {
       await api.patch(`/v1/users/${user.id}/status`, { status: newStatus });
-      fetchUsers();
+      await fetchUsers();
+      showToast(`User ${newStatus === 'ACTIVE' ? 'activated' : 'deactivated'}.`, 'success');
     } catch (err) {
-      alert(parseApiError(err));
+      showToast(parseApiError(err), 'error');
     }
   };
 
@@ -282,7 +292,7 @@ const UsersPage: React.FC = () => {
 
       <Card>
         {loading ? (
-          <div className="admin-state-message">Loading users…</div>
+          <PageLoading message="Loading users…" />
         ) : users.length === 0 ? (
           <div className="admin-state-message">No users match the current filters.</div>
         ) : (

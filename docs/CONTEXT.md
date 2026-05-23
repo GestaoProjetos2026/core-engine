@@ -7,11 +7,12 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 8 — **Task 4 concluída**: páginas CRUD (`UsersPage`, `RolesPage`, `ApplicationsPage`) refatoradas com `AdminPages.css` — filtros, tabelas, paginação, tabs, modais elevados (`modal-card`), alerts semânticos, ícones de ação via classes (sem hex inline). Build OK.
+- Sprint 8 — **Task 6 concluída**: `ToastProvider` + `Toast.css` (ADR §9.8), `PageLoading` reutilizável, toasts em CRUD/auth (sucesso/erro), substituição de `alert()` e textos “Loading…” nas páginas admin. Build OK.
 
 ## Arquivos modificados recentemente
-- `frontend/src/pages/AdminPages.css` — **CRIADO** — estilos compartilhados admin CRUD
-- `frontend/src/pages/UsersPage.tsx`, `RolesPage.tsx`, `ApplicationsPage.tsx`
+- `frontend/src/context/ToastContext.tsx`, `frontend/src/components/ui/Toast.css`, `PageLoading.tsx`, `PageLoading.css`
+- `frontend/src/App.tsx` — `ToastProvider`
+- `frontend/src/pages/UsersPage.tsx`, `RolesPage.tsx`, `ApplicationsPage.tsx`, `LoginPage.tsx`, `RegisterPage.tsx`
 - `docs/CONTEXT.md` — atualizado (esta sessão)
 - `docs/CONTEXT.md` — atualizado (esta sessão).
 - `docs/PRD_DEVELOPMENT.md` — Sprint 7 Task 1 registrada como concluída.
@@ -33,7 +34,7 @@
 - Listagem de aplicações (`GET /v1/applications`) não inclui escopos no payload; o frontend carrega escopos por app em paralelo (`GET /v1/applications/:id/scopes`) na página atual — aceitável para páginas pequenas; considerar otimização se o volume crescer.
 
 ## Proximo foco
-- Sprint 8 — **Task 5**: Telas de autenticação e Dashboard (metric cards ADR).
+- Sprint 8 — **Task 7**: Bug Bash e refinamento UI/UX pós-migração ADR.
 - Sprint 7 (pendente): Tasks 2–3 — SDK/Snippet e Workshop de Integração.
 
 ## Tasks concluidas na sessao
