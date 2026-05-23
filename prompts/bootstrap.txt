@@ -1,19 +1,7 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-2) SDK/Snippet de Integração Rápida
-
-Pertence a: Module 6 — APIs / Common
-Título: Desenvolver Middleware/Utilitário de Validação de Token
-Descrição: Criar um pequeno pacote ou snippet reutilizável para que outros squads validem o JWT do Core/Auth facilmente.
-Critérios de aceitação:
-- Código testado e documentado
-- Suporte a verificação de scopes/permissions
-Prioridade: High
-Estimativa: 3 SP
-Label: devx, integration, middleware, sprint-7
-
-
+2) Ler docs/PadraoFront/ e criar novas tasks de alteração no /Frontend/ para a sprint 8.
 Passos obrigatorios:
 1) Localize e leia o documento normativo principal do produto.
    - Neste repositorio, trate `PRD.md` como fonte normativa atual (visao, escopo, arquitetura e regras).

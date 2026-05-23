@@ -7,11 +7,11 @@
 - Fonte oficial de backlog e priorizacao por sprint: `Sprints.md`
 
 ## Ultima acao realizada
-- Sprint 7 — Task 1 concluída: criação do documento `docs/INTEGRATION_GUIDE.md` — Guia de Integração para Outros Módulos. Cobre fluxo M2M (client_credentials), fluxo de usuário humano (RBAC), validação de JWT, middleware/guards em Node.js e Python, tratamento de erros, variáveis de ambiente e checklist de onboarding. Exemplos em cURL, Node.js (fetch + axios) e Python (requests + FastAPI). Fluxogramas Mermaid de sequência e visão de ecossistema.
+- Sprint 8 — **Task 1 concluída**: `frontend/src/index.css` reescrito com tokens ADR-001 completos (primitivas, semânticas, status, gradientes, tipografia, espaçamento, radius, sombras), aliases legados para compatibilidade, `h1`–`h6`, utilities (`.text-page-title`, etc.) e `:focus-visible` global. Build `npm run build` OK.
 
 ## Arquivos modificados recentemente
-- `docs/INTEGRATION_GUIDE.md` — **CRIADO** — Guia de Integração para Outros Módulos (Sprint 7 Task 1).
-- `Sprints/Sprints.md` — `Status: done` na Task 1 da Sprint 7.
+- `Sprints/Sprints.md` — Sprint 8 expandida com tasks 1–6 (migração ADR-001 no `frontend/`); tasks 7–9 (bug bash, auditoria, entrega).
+- `docs/CONTEXT.md` — atualizado (esta sessão).
 - `docs/CONTEXT.md` — atualizado (esta sessão).
 - `docs/PRD_DEVELOPMENT.md` — Sprint 7 Task 1 registrada como concluída.
 
@@ -32,8 +32,8 @@
 - Listagem de aplicações (`GET /v1/applications`) não inclui escopos no payload; o frontend carrega escopos por app em paralelo (`GET /v1/applications/:id/scopes`) na página atual — aceitável para páginas pequenas; considerar otimização se o volume crescer.
 
 ## Proximo foco
-- Sprint 7 — **Task 2**: SDK/Snippet de Integração Rápida — middleware/utilitário de validação de token reutilizável para outros squads.
-- Sprint 7 — **Task 3**: Workshop de Integração e Homologação — alinhamento técnico com squads consumidores.
+- Sprint 8 — **Task 2**: AppShell (Sidebar/Topbar) em `Layout.tsx` / `Layout.css` conforme ADR-001.
+- Sprint 7 (pendente): Tasks 2–3 — SDK/Snippet e Workshop de Integração.
 
 ## Tasks concluidas na sessao
 - **Sprint 7 — Task 1:** Criar Documentação Técnica de Integração (`docs/INTEGRATION_GUIDE.md`).
