@@ -178,7 +178,7 @@ async function main() {
   },
   {
     email: 'crm@example.com',
-    name: 'Lucas Barbosa',
+    name: 'CRM',
     password: 'CRM123456!',
   },
   {
