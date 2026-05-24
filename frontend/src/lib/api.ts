@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ||
-    'http://api.core-engine.40.82.176.176.nip.io/',
+    'http://api.core-engine.40.82.176.176.nip.io',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -29,7 +29,12 @@ api.interceptors.response.use(
             refreshToken,
           });
           
-          const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+          // const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+          // ajustr depois
+
+          const payload = response.data.data ?? response.data;
+          const { accessToken, refreshToken: newRefreshToken } = payload;
+
           localStorage.setItem('access_token', accessToken);
           localStorage.setItem('refresh_token', newRefreshToken);
           

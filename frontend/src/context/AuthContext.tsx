@@ -17,8 +17,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async () => {
     try {
-      const response = (await api.get<ApiResponse<User>>('/v1/auth/me')) as unknown as ApiResponse<User>;
-      setUser(response.data);
+      // const response = (await api.get<ApiResponse<User>>('/v1/auth/me')) as unknown as ApiResponse<User>;
+      // setUser(response.data);
+      // ajustar depois
+
+      const response = await api.get('/v1/auth/me') as ApiResponse<User> | User;
+      const user = 'data' in response ? response.data : response;
+      setUser(user);
+      
     } catch {
       setUser(null);
     } finally {
@@ -37,8 +43,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = (await api.post<ApiResponse<{ accessToken: string; refreshToken: string }>>('/v1/auth/login', { email, password })) as unknown as ApiResponse<{ accessToken: string; refreshToken: string }>;
-    const { accessToken, refreshToken } = response.data;
+    // const response = (await api.post<ApiResponse<{ accessToken: string; refreshToken: string }>>('/v1/auth/login', { email, password })) as unknown as ApiResponse<{ accessToken: string; refreshToken: string }>;
+    // const { accessToken, refreshToken } = response.data;
+    //ajustar depois
+
+    const response = await api.post('/v1/auth/login', { email, password }) as
+    | ApiResponse<{ accessToken: string; refreshToken: string }>
+    | { accessToken: string; refreshToken: string };
+
+    const tokens = 'data' in response ? response.data : response;
+
+    const { accessToken, refreshToken } = tokens;
 
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('refresh_token', refreshToken);

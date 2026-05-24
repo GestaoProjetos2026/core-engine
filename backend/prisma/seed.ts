@@ -174,7 +174,7 @@ async function main() {
   {
     email: 'admin@hotmail.com',
     name: 'Administrador Principal',
-    password: 'Admin123!',
+    password: 'Admin12345!',
   },
   {
     email: 'crm@example.com',
