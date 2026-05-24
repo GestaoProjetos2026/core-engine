@@ -73,7 +73,7 @@ COPY prisma ./prisma/
 RUN npm install
 
 # Gera o Prisma Client
-RUN npx prisma generate
+RUN DATABASE_URL="postgresql://admin:admin123@localhost:5432/erp_core?schema=public" npx prisma generate
 
 # Copia o restante do código fonte e configurações
 COPY . .
