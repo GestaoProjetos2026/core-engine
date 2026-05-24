@@ -36,6 +36,8 @@ COPY --from=backend-builder /app/backend/package*.json ./
 COPY --from=backend-builder /app/backend/node_modules ./node_modules
 COPY --from=backend-builder /app/backend/dist ./dist
 COPY --from=backend-builder /app/backend/prisma ./prisma
+# Lucas adicionou aqui
+COPY --from=backend-builder /app/backend/prisma.config.mts ./prisma.config.mts
 
 # O Frontend/nginx.conf aponta para /usr/share/nginx/html e escuta na porta 3000
 RUN mkdir -p /usr/share/nginx/html /run/nginx
