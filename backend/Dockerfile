@@ -113,4 +113,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost:3000/v1/health || exit 1
 
 # Comando para iniciar a aplicação
-CMD ["node", "dist/src/main.js"]
+# CMD ["node", "dist/src/main.js"]
+
+CMD ["sh", "-c", "set -e; echo '🔥 BACKEND DOCKERFILE ATUALIZADO - STARTUP'; echo '🚀 Running Prisma migrate...'; npx prisma migrate deploy; echo '🚀 Running Prisma seed...'; npx prisma db seed; echo '✅ Prisma seed completed'; exec node dist/src/main.js"]
