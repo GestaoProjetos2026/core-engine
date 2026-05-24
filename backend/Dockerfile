@@ -98,6 +98,8 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+# Lucas adicionou aqui
+COPY --from=builder /app/prisma.config.mts ./prisma.config.mts
 
 # Cria um usuário sem privilégios de root para segurança
 RUN addgroup -S nodejs && adduser -S nestjs -G nodejs
