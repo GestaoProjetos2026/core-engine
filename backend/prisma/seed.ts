@@ -139,60 +139,123 @@ async function main() {
   console.log(`✅ Manager linked to ${managerPerms.length} permissions`);
 
   // Criar usuários semente
-  const defaultPassword = 'Password123!';
-  const passwordHash = await bcrypt.hash(defaultPassword, 12);
+  // const defaultPassword = 'Password123!';
+  // const passwordHash = await bcrypt.hash(defaultPassword, 12);
 
-  const adminUser = await prisma.user.upsert({
-    // where: { email: 'admin@example.com' },
-    where: { email: 'admin@hotmail.com' },
-    update: { passwordHash },
-    create: {
-      // email: 'admin@example.com',
-      email: 'admin@hotmail.com',
-      name: 'Admin User',
-      passwordHash,
-      status: 'ACTIVE',
-    },
-  });
+  // const adminUser = await prisma.user.upsert({
+  //   // where: { email: 'admin@example.com' },
+  //   where: { email: 'admin@hotmail.com' },
+  //   update: { passwordHash },
+  //   create: {
+  //     // email: 'admin@example.com',
+  //     email: 'admin@hotmail.com',
+  //     name: 'Admin User',
+  //     passwordHash,
+  //     status: 'ACTIVE',
+  //   },
+  // });
 
-  await prisma.userRole.upsert({
-    where: {
-      userId_roleId: {
+  // await prisma.userRole.upsert({
+  //   where: {
+  //     userId_roleId: {
+  //       userId: adminUser.id,
+  //       roleId: adminRole.id,
+  //     },
+  //   },
+  //   update: {},
+  //   create: {
+  //     userId: adminUser.id,
+  //     roleId: adminRole.id,
+  //   },
+  // });
+  //TUDO ISSO PODE SER ALTERADO DEPOIS
+
+  const defaultAdmins = [
+  {
+    email: 'admin@hotmail.com',
+    name: 'Administrador Principal',
+    password: 'Admin123!',
+  },
+  {
+    email: 'crm@example.com',
+    name: 'Lucas Barbosa',
+    password: 'CRM123456!',
+  },
+  {
+    email: 'service-desk@example.com',
+    name: 'Service Desk',
+    password: 'ServiceDesk123!',
+  },
+  {
+    email: 'fiscal@example.com',
+    name: 'Fiscal',
+    password: 'Fiscal123!',
+  },
+  {
+    email: 'devOps@example.com',
+    name: 'DevOps',
+    password: 'DevOps123!',
+  },
+];
+
+  for (const admin of defaultAdmins) {
+    const passwordHash = await bcrypt.hash(admin.password, 12);
+    const adminUser = await prisma.user.upsert({
+      where: { email: admin.email },
+      update: {
+        passwordHash,
+        status: 'ACTIVE',
+      },
+      create: {
+        email: admin.email,
+        name: admin.name,
+        passwordHash,
+        status: 'ACTIVE',
+      },
+    });
+
+    await prisma.userRole.upsert({
+        where: {
+        userId_roleId: {
+          userId: adminUser.id,
+          roleId: adminRole.id,
+        },
+      },
+      update: {},
+      create: {
         userId: adminUser.id,
         roleId: adminRole.id,
       },
-    },
-    update: {},
-    create: {
-      userId: adminUser.id,
-      roleId: adminRole.id,
-    },
-  });
+    });
 
-  const viewerUser = await prisma.user.upsert({
-    where: { email: 'viewer@example.com' },
-    update: { passwordHash },
-    create: {
-      email: 'viewer@example.com',
-      name: 'Viewer User',
-      passwordHash,
-      status: 'ACTIVE',
-    },
-  });
+    console.log(`✅ Admin user ensured: ${admin.email}`);
+  }
 
-  await prisma.userRole.upsert({
-    where: {
-      userId_roleId: {
-        userId: viewerUser.id,
-        roleId: viewerRole.id,
-      },
-    },
-    update: {},
-    create: {
-      userId: viewerUser.id,
-      roleId: viewerRole.id,
-    },
-  });
+  // const viewerUser = await prisma.user.upsert({
+  //   where: { email: 'viewer@example.com' },
+  //   update: { passwordHash },
+  //   create: {
+  //     email: 'viewer@example.com',
+  //     name: 'Viewer User',
+  //     passwordHash,
+  //     status: 'ACTIVE',
+  //   },
+  // });
+
+  // await prisma.userRole.upsert({
+  //   where: {
+  //     userId_roleId: {
+  //       userId: viewerUser.id,
+  //       roleId: viewerRole.id,
+  //     },
+  //   },
+  //   update: {},
+  //   create: {
+  //     userId: viewerUser.id,
+  //     roleId: viewerRole.id,
+  //   },
+  // });
+  //TUDO ISSO PODE SER ALTERADO DEPOIS
 
   console.log('✅ Default users created and linked to roles');
   console.log('   - admin@example.com / Password123!');
