@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ||
-    'http://api.core-engine.40.82.176.176.nip.io',
+    'http://api.core-engine.40.82.176.176.nip.io/',
   headers: {
     'Content-Type': 'application/json',
   },
