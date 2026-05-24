@@ -5,7 +5,8 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 import api from '../lib/api';
-import './LoginPage.css'; // Reusing login styles
+import { useToast } from '../context/ToastContext';
+import './LoginPage.css';
 
 const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -15,6 +16,7 @@ const RegisterPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +28,9 @@ const RegisterPage: React.FC = () => {
       navigate('/login', { state: { message: 'Account created! Please login.' } });
     } catch (err: unknown) {
       const errorData = err as { error?: { message?: string } };
-      setError(errorData.error?.message || 'Registration failed. Please try again.');
+      const msg = errorData.error?.message || 'Registration failed. Please try again.';
+      setError(msg);
+      showToast(msg, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +41,7 @@ const RegisterPage: React.FC = () => {
       <div className="login-container animate-fade-in">
         <div className="login-header">
           <div className="login-logo">
-            <ShieldCheck size={48} color="var(--color-highlight)" />
+            <ShieldCheck size={48} className="login-logo-icon" aria-hidden />
           </div>
           <h1>Create Account</h1>
           <p>Join the ERP Core Auth System</p>
@@ -45,7 +49,7 @@ const RegisterPage: React.FC = () => {
 
         <Card className="login-card">
           <form onSubmit={handleSubmit} className="login-form">
-            {error && <div className="login-error">{error}</div>}
+            {error && <div className="auth-alert auth-alert--error">{error}</div>}
             
             <Input
               label="Full Name"
