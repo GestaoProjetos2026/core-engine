@@ -16,7 +16,7 @@ export default defineConfig({
   //     return new PrismaPg({ connectionString });
   //   },
   // },
-  datasource: {
-    url: env("DATABASE_URL"),
-  },
+//   datasource: {
+//     url: env("DATABASE_URL"),
+//   },
 });
