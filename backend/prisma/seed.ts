@@ -1,22 +1,10 @@
 import { PrismaClient } from '@prisma/client';
-import { Pool } from 'pg';
-import { PrismaPg } from '@prisma/adapter-pg';
 import * as dotenv from 'dotenv';
 import * as bcrypt from 'bcrypt';
 
 dotenv.config();
 
-const connectionString = process.env.DATABASE_URL || '';
-const url = new URL(connectionString);
-const schema = url.searchParams.get('schema');
-
-const pool = new Pool({ 
-  connectionString,
-  ...(schema ? { options: `-c search_path="${schema}",public` } : {})
-});
-
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 const permissionDefs: { code: string; description: string }[] = [
   // Identity & Access Management (IAM)
