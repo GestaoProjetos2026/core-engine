@@ -73,7 +73,9 @@ COPY prisma ./prisma/
 RUN npm install
 
 # Gera o Prisma Client
-RUN DATABASE_URL="postgresql://admin:admin123@localhost:5432/erp_core?schema=public" npx prisma generate
+# Lucas alterou aqui
+# RUN DATABASE_URL="postgresql://admin:admin123@localhost:5432/erp_core?schema=public" npx prisma generate
+RUN DATABASE_URL="postgresql://user_core_engine:SenhaCore123!@postgres-svc.infra-banco.svc.cluster.local:5432/infra_banco" npx prisma generate
 
 # Copia o restante do código fonte e configurações
 COPY . .
@@ -118,6 +120,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # CMD ["node", "dist/src/main.js"]
 
 # Lucas Alterou aqui
-# CMD ["sh", "-c", "set -e; echo '🔥 BACKEND DOCKERFILE ATUALIZADO - STARTUP'; echo '🚀 Running Prisma migrate...'; npx prisma migrate deploy; echo '🚀 Running Prisma seed...'; npx prisma db seed; echo '✅ Prisma seed completed'; exec node dist/src/main.js"]
+CMD ["sh", "-c", "set -e; echo '🔥 BACKEND DOCKERFILE ATUALIZADO - STARTUP'; echo '🚀 Running Prisma migrate...'; npx prisma migrate deploy; echo '🚀 Running Prisma seed...'; npx prisma db seed; echo '✅ Prisma seed completed'; exec node dist/src/main.js"]
 # CMD ["sh", "-c", "set -e; echo '🔥 BACKEND DOCKERFILE ATUALIZADO - STARTUP'; echo '🚀 Running Prisma migrate...'; npx prisma migrate deploy || echo '⚠️ Prisma migrate failed; continuing to seed/start app'; echo '🚀 Running Prisma seed...'; npx prisma db seed; echo '✅ Prisma seed completed'; exec node dist/src/main.js"]
-CMD ["sh", "-c", "set -e; echo '🔥 BACKEND DOCKERFILE ATUALIZADO - STARTUP'; echo '🚀 Running Prisma db push...'; npx prisma db push --accept-data-loss; echo '🚀 Running Prisma seed...'; npx prisma db seed; echo '✅ Prisma seed completed'; exec node dist/src/main.js"]
+# CMD ["sh", "-c", "set -e; echo '🔥 BACKEND DOCKERFILE ATUALIZADO - STARTUP'; echo '🚀 Running Prisma db push...'; npx prisma db push --accept-data-loss; echo '🚀 Running Prisma seed...'; npx prisma db seed; echo '✅ Prisma seed completed'; exec node dist/src/main.js"]
