@@ -7,7 +7,14 @@ import * as bcrypt from 'bcrypt';
 dotenv.config();
 
 const pool = new Pool(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : undefined);
-const adapter = new PrismaPg(pool);
+let schema = 'core_engine';
+if (process.env.DATABASE_URL) {
+  try {
+    const url = new URL(process.env.DATABASE_URL);
+    schema = url.searchParams.get('schema') || 'core_engine';
+  } catch (e) {}
+}
+const adapter = new PrismaPg(pool, { schema });
 const prisma = new PrismaClient({ adapter });
 
 const permissionDefs: { code: string; description: string }[] = [
