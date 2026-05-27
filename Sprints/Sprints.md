@@ -139,7 +139,7 @@ Notas de calendário (sprints semanais: sábado a sexta-feira)
 - **Sprint 5 (finalização):** 25/04/2026 a 08/05/2026 — Segurança operacional, observabilidade, CI/CD, hardening e encerramento do MVP.
 - **Sprint 6 (Frontend):** 09/05/2026 a 15/05/2026 — Desenvolvimento completo da interface administrativa (Módulo 08).
 - **Sprint 7 (Integração):** 16/05/2026 a 22/05/2026 — Guia de integração para outros módulos e squads.
-- **Sprint 8 (Entrega):** 23/05/2026 a 28/05/2026 — Finalização do projeto, correções finais e entrega final.
+- **Sprint 8 (Entrega integrada):** 23/05/2026 a 29/05/2026 — Migração ADR-001 no admin (tasks 1–9 concluídas) + Alicerce para squads consumidoras: papel `suporte`, multi-tenant, gateway multi-módulo e demo do checklist técnico (tasks 10–17).
 
 ---
 
@@ -577,6 +577,8 @@ RBAC completo (CRUD, vínculos, seed e matriz docs) + Integrações M2M (Apps, e
 
 Sprint 5 — 25/04/2026 a 08/05/2026
 
+> **Status da sprint:** ✔️ Encerrada — segurança operacional, observabilidade e encerramento do MVP backend (CI/cobertura tratados pela Squad 5 no ecossistema).
+
 1) Rate limit e lockout (RNF07)
 Status: done
 
@@ -739,6 +741,8 @@ Segurança operacional (rate limit, hardening HTTP) + observabilidade + auditori
 
 Sprint 6 — 09/05/2026 a 15/05/2026
 
+> **Status da sprint:** ✔️ Encerrada — frontend administrativo completo (auth, CRUD, RBAC, M2M). RNF08 (política de senha) implementada no backend e no formulário admin.
+
 1) Setup do Projeto Frontend (React + Vite + TS)
 Status: done
 
@@ -832,6 +836,8 @@ Desenvolvimento completo do Frontend Administrativo (Módulo 08), incluindo Auth
 
 Sprint 7 — 16/05/2026 a 22/05/2026
 
+> **Status da sprint:** ✔️ Encerrada — guia de integração, snippet de validação JWT e homologação com squads consumidores.
+
 1) Guia de Integração para Outros Módulos
 Status: done
 
@@ -881,6 +887,8 @@ Foco total na documentação de integração, guias técnicos e suporte para que
 
 Sprint 8 — 23/05/2026 a 29/05/2026
 
+> **Status da sprint:** 🚀 Em andamento — tasks 1–9 (frontend ADR-001) concluídas; tasks 10–17 (Alicerce integrado + demo CTO até **29/05/2026**).
+>
 > **Origem das tasks 1–6:** bootstrap (`prompts/bootstrap.txt`) + delta entre `docs/PadraoFront/Padronizacao.md` (ADR-001) e o código atual em `frontend/`. Pasta real do app: `frontend/` (não `Frontend/`).
 
 1) Tokens CSS globais e fundação do Design System (ADR-001)
@@ -994,32 +1002,141 @@ Prioridade: High
 Estimativa: 3 SP
 Label: security, performance, audit, sprint-8
 
-9) Entrega Final e Encerramento do Projeto
+9) Encerramento do escopo frontend (ADR-001)
 Status: done
 
 Pertence a: Squad 1 — Planejamento
-Título: Apresentação Final e Documento de Encerramento
-Descrição: Demonstração do produto final (Frontend + Backend) com interface ADR-001 aplicada e formalização da entrega do MVP.
+Título: Formalizar conclusão da migração ADR no admin
+Descrição: Registrar conclusão das tasks 1–8 da Sprint 8; entrega Alicerce integrada e apresentação ao CTO nas tasks 10–17 (mesma sprint, até 29/05/2026).
 Critérios de aceitação:
-- Demo realizada com sucesso
-- Documentação de encerramento assinada (check de DoD final)
+- Build `frontend/` verde
+- Checklist ADR-001 assinado pelo squad
+Prioridade: High
+Estimativa: 1 SP
+Label: delivery, frontend, sprint-8
+
+10) Papel `suporte` e usuário demo (integração Squad 4)
+Status: pending
+
+Pertence a: Module 5 — Banco de Dados / Module 1 — Auth
+Título: Criar role `suporte` com RBAC restrito
+Descrição: Adicionar papel `suporte` no seed com permissões de leitura operacional (ex.: `customers:read`, service-desk) **sem** permissões financeiras (`finance:*` ou equivalentes acordados com Squad 2). Criar usuário demo `suporte@example.com` vinculado ao papel. Atualizar `docs/PERMISSIONS_MATRIX.md`.
+Critérios de aceitação:
+- Role `suporte` existe após `npx prisma db seed`
+- Token de login do usuário demo contém `roles: ["suporte"]` e **não** contém perms de domínio financeiro
+- Squad 4 consegue demonstrar 403 na API Fiscal com esse token
 Prioridade: Urgent
 Estimativa: 3 SP
-Label: delivery, final, dod, sprint-8
+Label: rbac, seed, suporte, squad-4, sprint-8
+
+11) API de identidade M2M para squads consumidoras (Squad 2 e 3)
+Status: pending
+
+Pertence a: Module 6 — APIs / Module 2 — Integração
+Título: Expor leitura de usuário por UUID para integração server-to-server
+Descrição: Endpoint dedicado (ex.: `GET /v1/integration/users/:id`) protegido por JWT `integration_access` e escopo mínimo (`users:read` ou `identity:read`), retornando `id`, `name`, `email`, `status` — sem senha. Documentar em `docs/INTEGRATION_GUIDE.md` com URL K8s (`core-engine-svc...`) e fluxo client_credentials. Squad 2 usa para emitente; Squad 3 para exibir nome do usuário logado a partir do `sub` do JWT.
+Critérios de aceitação:
+- Token M2M com escopo correto obtém 200; sem escopo ou token humano inadequado retorna 403
+- Resposta no envelope padrão; OpenAPI atualizado
+- Exemplo cURL no guia de integração
+Prioridade: Urgent
+Estimativa: 5 SP
+Label: integration, m2m, users, squad-2, squad-3, sprint-8
+
+12) Multi-tenant: modelo de dados e claim `tenant_id`
+Status: pending
+
+Pertence a: Module 5 — Banco de Dados / Module 1 — Auth
+Título: Introduzir tenant no domínio e no JWT de usuário
+Descrição: Modelar entidade `Tenant` (ou `tenant_id` em `User`) com seed de tenant padrão; incluir claim `tenant_id` no access token (`user_access`) junto a `sub` (user_id), `roles` e `perms`. Documentar equivalência `sub` ↔ `user_id` para o checklist do CTO.
+Critérios de aceitação:
+- Migração Prisma aplicável ao schema `core_engine`
+- Login emite JWT com `tenant_id` preenchido
+- `GET /v1/auth/me` retorna `tenantId` (ou objeto tenant)
+Prioridade: Urgent
+Estimativa: 8 SP
+Label: multi-tenant, jwt, database, sprint-8
+
+13) Multi-tenant: propagação em headers e isolamento de consultas
+Status: pending
+
+Pertence a: Module 6 — Common / Module 1 — Auth
+Título: Propagar `X-Tenant-Id` e filtrar dados por tenant
+Descrição: Middleware que exige/propaga header `X-Tenant-Id` (ou extrai de JWT) em rotas administrativas; queries Prisma de usuários (e demais entidades tenant-scoped) filtradas por `tenant_id`. Demonstrar que dados de um tenant não aparecem para outro (prova de isolamento do Alicerce).
+Critérios de aceitação:
+- Requisições sem tenant coerente com o token retornam 400/403 documentado
+- Listagem/detalhe de usuários respeita tenant do token
+- Nota técnica no guia de integração para squads replicarem o header nas chamadas ao Core
+Prioridade: Urgent
+Estimativa: 5 SP
+Label: multi-tenant, isolation, headers, sprint-8
+
+14) Gateway multi-módulo (roteamento para squads)
+Status: pending
+
+Pertence a: Module 7 — Infraestrutura
+Título: Configurar proxy/gateway para APIs do ecossistema
+Descrição: Estender configuração de gateway (nginx no `frontend/nginx.conf` e/ou compose/K8s) para rotear prefixos aos serviços das squads (ex.: fiscal, crm-leads, service-desk) mantendo `/v1/auth` e `/v1/integration` no Core. Variáveis de ambiente para upstreams (`*_SVC_URL`). Alinhar com Squad 5 (Portal Conexus) sem duplicar login nas outras squads.
+Critérios de aceitação:
+- Documento `docs/GATEWAY.md` (ou seção no README) com mapa de rotas e hosts internos K8s
+- Demo local ou staging: uma URL de entrada encaminha ao Core e a pelo menos um módulo externo
+- Nenhuma rota de login nas squads consumidoras — apenas validação do JWT do Core
+Prioridade: Urgent
+Estimativa: 5 SP
+Label: gateway, nginx, infra, squad-5, sprint-8
+
+15) Seed de aplicações M2M por squad e escopos de identidade
+Status: pending
+
+Pertence a: Module 5 — Banco de Dados / Module 2 — Integração
+Título: Registrar clientes M2M (`finance-fiscal`, `crm-leads`, etc.)
+Descrição: No seed, criar Applications com `client_id`/`client_secret` de demonstração para squads consumidoras e vincular escopos (`users:read` / `identity:read`, domínios acordados). Secrets apenas para ambiente de demo; documentar rotação em produção.
+Critérios de aceitação:
+- Cada squad consumidora tem app de teste documentada
+- `POST /v1/oauth/token` com `client_credentials` retorna token utilizável na task 11
+Prioridade: High
+Estimativa: 3 SP
+Label: seed, m2m, applications, sprint-8
+
+16) Roteiro de demo e checklist CTO (5 passos)
+Status: pending
+
+Pertence a: Module 7 — Documentação / Squad 1 — Planejamento
+Título: Documentar roteiro de apresentação integrada
+Descrição: Criar ou atualizar `docs/DEMO_CTO.md` mapeando: (1) multi-tenant/`tenant_id`, (2) SSO/JWT entre squads, (3) schema isolado, (4) resiliência (papel Squad 2/5), (5) docker-compose integrado. Incluir scripts cURL, usuários de demo e ordem de falas para entrega do Alicerce.
+Critérios de aceitação:
+- Checklist do CTO respondido ponto a ponto com evidências
+- Tech leads 2–4 validaram endpoints necessários (users M2M, suporte, UUID)
+Prioridade: High
+Estimativa: 2 SP
+Label: docs, demo, cto, sprint-8
+
+17) Apresentação final ao CTO (29/05/2026)
+Status: pending
+
+Pertence a: Squad 1 — Planejamento
+Título: Demo Alicerce + checklist técnico
+Descrição: Demonstrar Central de Identidade, claims do token (`user_id`/`sub`, `tenant_id`, `roles`), API de gateway e isolamento; reforçar regra de ouro (login só no Core). Suporte às demos dependentes das Squads 2, 3 e 4.
+Critérios de aceitação:
+- Demo realizada com sucesso em 29/05/2026
+- Tasks 10–16 concluídas ou débitos explícitos registrados
+Prioridade: Urgent
+Estimativa: 2 SP
+Label: delivery, cto, demo, sprint-8
 
 Resumo Sprint 8
-Sprint encerrada: migração ADR-001 no frontend admin (tasks 1–6 em código), bug bash, auditoria e entrega final (tasks 7–9) concluídas pelo squad.
+Frontend ADR-001 concluído (tasks 1–9). Em andamento até **29/05/2026**: papel **suporte**, **multi-tenant** (claim + header + isolamento), **gateway multi-módulo**, API M2M de usuários (Squads 2–3), seeds M2M, roteiro e demo CTO (tasks 10–17).
 
 ---
 
-Resumo geral (Sprints 2 a 8 até 05/06/2026)
+Resumo geral (Sprints 2 a 8 até 29/05/2026)
 
-| Sprint | Período | Foco principal |
-|--------|---------|----------------|
-| 2 | 22/03–27/03 | Nest, envelope, Swagger, docs de erros, Docker, Prisma alinhado ao PRD |
-| 3 | 28/03–17/04 | Auth (register/login/refresh/me), JWT, docs JWT, e2e humano, spike RBAC, PermissionsGuard, CRUD de Usuários |
-| 4 | 18/04–24/04 | RBAC completo (CRUD, vínculos, seed e matriz docs) + Integrações M2M (Apps, escopos, tokens, OAuth endpoint, ScopesGuard e docs) |
-| 5 | 25/04–08/05 | Segurança, observabilidade, CI/CD, qualidade, documentação final e encerramento MVP |
-| 6 | 09/05–15/05 | Desenvolvimento completo do Frontend Administrativo (Módulo 08) |
-| 7 | 16/05–22/05 | Guia de integração para outros módulos e suporte técnico |
-| 8 | 23/05–29/05 | ADR-001 no frontend admin, bug bash, auditoria e entrega final do projeto |
+| Sprint | Período | Foco principal | Status |
+|--------|---------|----------------|--------|
+| 2 | 22/03–27/03 | Nest, envelope, Swagger, docs de erros, Docker, Prisma alinhado ao PRD | Encerrada |
+| 3 | 28/03–17/04 | Auth (register/login/refresh/me), JWT, docs JWT, e2e humano, spike RBAC, PermissionsGuard, CRUD de Usuários | Encerrada |
+| 4 | 18/04–24/04 | RBAC completo + Integrações M2M (Apps, escopos, tokens, OAuth, ScopesGuard) | Encerrada |
+| 5 | 25/04–08/05 | Segurança, observabilidade, hardening e encerramento MVP backend | Encerrada |
+| 6 | 09/05–15/05 | Frontend administrativo (auth, CRUD, RBAC, M2M); **RNF08** (política de senha) implementada | Encerrada |
+| 7 | 16/05–22/05 | Guia de integração, snippet e homologação com squads | Encerrada |
+| 8 | 23/05–29/05 | ADR-001 no admin (done) + Alicerce: `suporte`, multi-tenant, gateway, API M2M, demo CTO | Em andamento |

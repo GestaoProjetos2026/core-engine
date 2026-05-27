@@ -56,7 +56,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 11**: Testes e2e M2M e spike manual com aplicação de teste. ✔️ (Concluído em 24/04/2026)
 
 ### Sprint 5: Segurança Operacional e Finalização
-**Status**: 🚀 Em Andamento
+**Status**: ✔️ Concluída
 - **Task 1**: Implementação de Rate Limit e Lockout (RNF07) utilizando Redis e custom Guards/Interceptors. ✔️ (Concluído em 03/05/2026)
 - **Task 2**: Implementação de Logs estruturados JSON e `requestId` (RNF11) utilizando `nestjs-pino` e Fastify hooks. ✔️ (Concluído em 03/05/2026)
 - **Task 3**: Auditoria mínima de eventos críticos (§21) utilizando logs estruturados e injetados globalmente via `AuditService`. ✔️ (Concluído em 03/05/2026)
@@ -65,13 +65,13 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 8**: README e exemplos públicos, contendo fluxos cURL testados para fluxos Humanos e M2M, além de atualização do DoD da sprint. ✔️ (Concluído em 06/05/2026)
 - **Task 9**: Seed final de papéis e matriz de `permission.code` (P1). Consolidação de códigos estáveis, inclusão de permissões de domínios para squads consumidores e criação do documento normativo de matriz de acesso. ✔️ (Concluído em 07/05/2026)
 - **Task 10**: Revisão de DoD e encerramento MVP (§23). ✔️ (Concluído em 08/05/2026)
-- **Task 5 e 6**: Postergadas como débitos técnicos (Pipeline CI e Cobertura de Testes).
+- **Tasks 5 e 6**: Marcadas `done` no backlog; CI de deploy por tag (`deploy.yaml`) e cobertura tratadas no ecossistema (Squad 5).
 
 ### Sprint 6: Frontend Administrativo
-**Status**: ✅ Concluída (Tasks 4–6 com `done` no backlog; Tasks 1–3 implementadas, marcação formal pendente)
+**Status**: ✔️ Concluída
 - **Task 1**: Setup do Projeto Frontend (React + Vite + TS). ✔️ (Concluído em 12/05/2026)
 - **Task 2**: Fluxo de Autenticação e Proteção de Rotas. ✔️ (Concluído em 12/05/2026)
-- **Task 3**: Dashboard e Perfil do Usuário. ⏳ (Pendente de marcação formal no `Sprints.md`; páginas `DashboardPage` e `ProfilePage` presentes no repositório; métricas do dashboard mockadas.)
+- **Task 3**: Dashboard e Perfil do Usuário. ✔️ (Concluído — `DashboardPage` e `ProfilePage` no repositório.)
 - **Task 4**: Gerenciamento de Usuários (CRUD) — listagem com busca (`email`), paginação (`page`/`limit`), filtro de status, modais de criação (`POST /v1/users`) e edição (`PATCH /v1/users/:id`), alteração de status (`PATCH /v1/users/:id/status`), tipo `AdminUserListItem` em `Frontend/src/lib/types.ts`. ✔️ (Concluído em 14/05/2026)
 - **Task 5**: Gestão de Papéis e Permissões (RBAC) — UI N:N de vínculos e CRUD via `RolesPage.tsx`. Modificações extensivas no backend para prover suporte completo à listagem e operações `DELETE` das regras. ✔️ (Concluído em 14/05/2026)
 - **Task 6**: Gestão de Aplicações M2M — `ApplicationsPage.tsx` com CRUD (`POST/PATCH /v1/applications`, status, regeneração de secret), modal one-time para `client_secret` (RN02), gestão de escopos via multiselect (`GET /v1/scopes`, `GET/POST /v1/applications/:id/scopes`). Tipos `ApplicationListItem`, `ApplicationWithSecret`, `Scope` em `Frontend/src/lib/types.ts`. ✔️ (Concluído em 15/05/2026)
@@ -82,37 +82,54 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 
 ---
 
-### Sprint 8: Migração ADR-001 — Frontend Administrativo (Entrega)
-**Status**: ✔️ Concluída
+### Sprint 8: Entrega integrada (ADR-001 + Alicerce CTO) — 23/05 a 29/05/2026
+**Status**: 🚀 Em andamento (tasks 1–9 concluídas; tasks 10–17 pendentes)
 - **Task 1**: Tokens CSS globais em `frontend/src/index.css` (primitivas, semânticas, tipografia, espaçamento, radius, sombras, aliases legados, `:focus-visible`). ✔️ (Commit [#512] CORECOREEN-75)
 - **Task 2**: AppShell — `Layout.tsx` / `Layout.css` (sidebar 240px, item ativo brand, topbar 56px). ✔️ (Commit [#513] CORECOREEN-76)
 - **Task 3**: Componentes UI — `Button`, `Input`, `Card`, `Badge`, `Table` alinhados ao ADR-001. ✔️ (Commit [#514] CORECOREEN-77)
 - **Task 4**: Páginas CRUD — `UsersPage`, `RolesPage`, `ApplicationsPage` + `AdminPages.css` (modais elevados, sem estilos inline legados). ✔️ (Commit [#515] CORECOREEN-78)
 - **Task 5**: Auth e Dashboard — `LoginPage.css`, `RegisterPage`, `ProfilePage.css`, `DashboardPage` (metric cards overline/28px), `PrivateRoute` loading ADR. ✔️ (Commit [#516] CORECOREEN-79)
 - **Task 6**: `ToastProvider` + `Toast.css` (§9.8), `PageLoading`, toasts em CRUD/auth, remoção de `alert()`. ✔️ (Commit [#517] CORECOREEN-80)
-- **Tasks 7–9**: Bug bash UI/UX, auditoria de segurança/performance e entrega final — encerradas pelo squad (fora do diff de código desta cadeia frontend).
+- **Tasks 7–9**: Bug bash UI/UX, auditoria de segurança/performance e encerramento do escopo frontend — ✔️ concluídas.
 
-**Arquivos-chave criados/alterados:** `docs/PadraoFront/Padronizacao.md` (referência), `frontend/src/pages/AdminPages.css`, `frontend/src/context/ToastContext.tsx`, `frontend/src/components/ui/PageLoading.tsx`.
+**Pendente (tasks 10–17 — Alicerce CTO):**
+- **Task 10**: Role `suporte` + usuário demo.
+- **Task 11**: `GET /v1/integration/users/:id` (M2M; distinto de `GET /v1/users/:id` para humano).
+- **Tasks 12–13**: Multi-tenant (`Tenant`, `tenant_id` no JWT, `X-Tenant-Id`).
+- **Task 14**: Gateway multi-módulo + `docs/GATEWAY.md`.
+- **Task 15**: Seed apps M2M por squad.
+- **Task 16**: `docs/DEMO_CTO.md`.
+- **Task 17**: Demo CTO 29/05/2026.
 
-**Build:** `npm run build` no diretório `frontend/` validado ao longo das tasks.
+**Arquivos-chave (tasks 1–9):** `docs/PadraoFront/Padronizacao.md`, `frontend/src/pages/AdminPages.css`, `frontend/src/context/ToastContext.tsx`, `frontend/src/components/ui/PageLoading.tsx`.
+
+**Build:** `npm run build` no diretório `frontend/` validado ao longo das tasks 1–9.
 
 ---
 
 ### Sprint 7: Integração e Documentação para Squads Consumidores
-**Status**: 🚀 Em Andamento
-- **Task 1**: Guia de Integração para Outros Módulos. ✔️ (Concluído em 21/05/2026)
-  - Criação de `docs/INTEGRATION_GUIDE.md` — documento unificado cobrindo: fluxo M2M (client_credentials), fluxo de usuário humano (RBAC), validação de JWT (assinatura + exp + type), middleware/guards em Node.js e Python, tratamento de erros com `error.code`, variáveis de ambiente e checklist de onboarding para novos squads. Fluxogramas Mermaid de sequência e visão de ecossistema. Exemplos em cURL, Node.js (fetch/axios) e Python (requests/FastAPI). Critérios de aceite satisfeitos: Guia em Markdown ✅, Exemplos multi-linguagem ✅, Fluxograma de autenticação entre módulos ✅.
-- **Tasks 2 e 3**: SDK/Snippet de Integração e Workshop de Homologação — pendentes.
+**Status**: ✔️ Concluída
+- **Task 1**: Guia de Integração para Outros Módulos. ✔️ (Concluído em 21/05/2026) — `docs/INTEGRATION_GUIDE.md`.
+- **Task 2**: SDK/Snippet de Validação de Token. ✔️ (Concluído — `backend/src/shared/utils/token.ts` e documentação).
+- **Task 3**: Workshop de Homologação com squads consumidores. ✔️ (Concluído).
+
+---
+
+### Sessão 27/05/2026 — Planejamento e normativo (sem código de features 10–17)
+
+- **`PRD.md` v2.1:** amendamento para alinhar checklist CTO e Sprint 8 — multi-tenant lógico (RF25–RF27), identidade M2M (RF29), gateway (RF28), papel `suporte` (RF30), §5.7–5.8, CA10–CA14, modelo `Tenant`, claims `tenant_id`, §14.7 gateway.
+- **`Sprints/Sprints.md`:** Sprint 8 estendida até 29/05; tasks 10–17; Sprint 9 fundida na 8; Sprints 5–7 encerradas.
+- **Decisão:** manter task 11 como endpoint M2M dedicado; `GET /v1/users/:id` permanece para RBAC humano (`users:read`).
+- **RNF08:** política de senha considerada implementada (backend + formulário admin).
 
 ---
 
 ## 🏗️ Débitos Técnicos e Próximos Passos (Pós-MVP)
 
-Apesar da conclusão bem-sucedida das funcionalidades do Core, os seguintes itens foram identificados como débitos técnicos para evolução imediata:
-
-1. **Task 5 - Pipeline CI/CD**: Necessidade de configurar GitHub Actions para automação de testes e build.
-2. **Task 6 - Cobertura de Testes (RNF05)**: A meta de 80% de cobertura precisa ser validada e reforçada através de novos testes unitários.
-3. **Migração para Node.js LTS**: O uso do Node 25 em Windows apresentou instabilidades nativas; recomenda-se a migração para Node 22 (LTS) em ambientes de produção.
+1. **Sprint 8 tasks 10–17:** implementação do Alicerce (código ainda não reflete PRD v2.1).
+2. **PRD v2.1 vs código:** migrations `Tenant`, endpoint `/v1/integration/users/:id`, middleware `X-Tenant-Id` — pendentes.
+3. **Migração para Node.js LTS:** Node 25 em Windows apresentou instabilidades; preferir Node 22 (LTS) em produção.
+4. **`docs/JWT_GUIDE.md`:** atualizar exemplo de claims com `tenant_id` após implementação da task 12.
 
 
 ---
@@ -129,7 +146,8 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
     - **Correção de Serialização JSON**: Conversão explícita de contagens do Prisma para `Number`, resolvendo erros de serialização que causavam falhas 500 silenciosas.
     - **Gestão de Ambiente Local**: Resolução de conflitos de porta (`EADDRINUSE`) e sincronização de roteamento global (`/v1/dashboard`) entre Frontend e Backend.
 - **Workaround de Swagger**: Remoção temporária da propriedade `type` nos decoradores `@ApiResponse` dos novos módulos para mitigar um erro crítico de "Circular Dependency" no motor do Swagger/Fastify no ambiente de desenvolvimento Node 25.
-- **Sprint 6 — UI de usuários (RF09 no admin)**: A listagem consome o payload real de `GET /v1/users` (sem `roles` no `select` do backend); a tabela do frontend foi alinhada a `id`, `email`, `name`, `status`, `createdAt`. Validação de senha no modal de criação aproxima-se do RNF08; o DTO `CreateUserDto` no backend permanece com regra mínima mais curta até alinhamento futuro.
+- **Sprint 6 — UI de usuários (RF09 no admin)**: Listagem via `GET /v1/users`; validação de senha no admin e backend alinhadas ao **RNF08**.
+- **Sessão 27/05/2026 — PRD v2.1**: escopo normativo ampliado para entrega integrada CTO; implementação segue backlog Sprint 8 tasks 10–17.
 - **Sprint 6 — UI de aplicações M2M (RF14–RF16)**: CRUD e regeneração de secret no admin; exibição única do `client_secret` com confirmação explícita do operador; associação de escopos substitui vínculos existentes (`POST /v1/applications/:id/scopes` com `scopeIds`).
 - **Sprint 8 — Migração ADR-001 (frontend/)**: Substituição da paleta legada (cinza/pêssego) por tokens azul profundo (`#001233`, brand `#0466c8`). Estratégia de aliases CSS legados em `index.css` para migração incremental. `AdminPages.css` centraliza layout admin (filtros, modais, paginação, tabs). Feedback global via `ToastProvider` e `PageLoading` substituindo `alert()` e textos “Loading…” soltos.
 
@@ -184,4 +202,5 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
 ---
 
 ## 📝 Tasks Postergadas
-*Nenhuma ocorrência de Task crítica postergada até o momento. Os ciclos seguem alinhados ao planejamento da Sprint 5.*
+- **Multi-tenant avançado** (admin cross-tenant, billing): fora do MVP v2.1 — roadmap §25 PRD.
+- **OIDC completo, MFA:** permanecem fora do escopo conforme PRD §6 e §27.
