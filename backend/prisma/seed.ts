@@ -1,10 +1,14 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
 import * as bcrypt from 'bcrypt';
 
 dotenv.config();
 
-const prisma = new PrismaClient();
+const pool = new Pool(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : undefined);
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 const permissionDefs: { code: string; description: string }[] = [
   // Identity & Access Management (IAM)
