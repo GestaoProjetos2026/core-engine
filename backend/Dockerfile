@@ -117,5 +117,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Comando para iniciar a aplicação
 # CMD ["node", "dist/src/main.js"]
 
+# Lucas Alterou aqui
 # CMD ["sh", "-c", "set -e; echo '🔥 BACKEND DOCKERFILE ATUALIZADO - STARTUP'; echo '🚀 Running Prisma migrate...'; npx prisma migrate deploy; echo '🚀 Running Prisma seed...'; npx prisma db seed; echo '✅ Prisma seed completed'; exec node dist/src/main.js"]
-CMD ["sh", "-c", "set -e; echo '🔥 BACKEND DOCKERFILE ATUALIZADO - STARTUP'; echo '🚀 Running Prisma migrate...'; npx prisma migrate deploy || echo '⚠️ Prisma migrate failed; continuing to seed/start app'; echo '🚀 Running Prisma seed...'; npx prisma db seed; echo '✅ Prisma seed completed'; exec node dist/src/main.js"]
+# CMD ["sh", "-c", "set -e; echo '🔥 BACKEND DOCKERFILE ATUALIZADO - STARTUP'; echo '🚀 Running Prisma migrate...'; npx prisma migrate deploy || echo '⚠️ Prisma migrate failed; continuing to seed/start app'; echo '🚀 Running Prisma seed...'; npx prisma db seed; echo '✅ Prisma seed completed'; exec node dist/src/main.js"]
+CMD ["sh", "-c", "set -e; echo '🔥 BACKEND DOCKERFILE ATUALIZADO - STARTUP'; echo '🚀 Running Prisma db push...'; npx prisma db push --accept-data-loss; echo '🚀 Running Prisma seed...'; npx prisma db seed; echo '✅ Prisma seed completed'; exec node dist/src/main.js"]
