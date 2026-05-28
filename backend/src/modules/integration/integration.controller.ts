@@ -16,6 +16,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiBearerAuth,
+  ApiHeader,
   ApiParam,
 } from '@nestjs/swagger';
 import { IntegrationService } from './integration.service';
@@ -25,6 +26,8 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ScopesGuard } from '../auth/guards/scopes.guard';
 import { IntegrationTokenGuard } from '../auth/guards/integration-token.guard';
 import { RequireScopes } from '../auth/decorators/require-scopes.decorator';
+import { TenantGuard } from '../auth/guards/tenant.guard';
+import { CurrentTenant } from '../auth/decorators/current-tenant.decorator';
 
 @ApiTags('Integration')
 @Controller()
@@ -229,15 +232,20 @@ export class IntegrationController {
   }
 
   @Get('integration/users/:id')
-  @UseGuards(JwtAuthGuard, IntegrationTokenGuard, ScopesGuard)
+  @UseGuards(JwtAuthGuard, IntegrationTokenGuard, TenantGuard, ScopesGuard)
   @RequireScopes('identity:read')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get user identity by UUID (M2M)',
     description:
-      'RF29: Returns id, name, email and status for squads consuming Core identity (e.g. Fiscal emitente, CRM logged-in name). Requires JWT `integration_access` and scope `identity:read`. Human tokens are rejected.',
+      'RF29: Returns id, name, email and status for squads consuming Core identity (e.g. Fiscal emitente, CRM logged-in name). Requires JWT `integration_access`, scope `identity:read`, and header `X-Tenant-Id`. Human tokens are rejected.',
   })
   @ApiParam({ name: 'id', type: String, description: 'User UUID (same as JWT claim `sub` for human users)' })
+  @ApiHeader({
+    name: 'X-Tenant-Id',
+    required: true,
+    description: 'Tenant UUID for row-level isolation (RF27)',
+  })
   @ApiResponse({
     status: 200,
     description: 'User identity found',
@@ -281,7 +289,7 @@ export class IntegrationController {
       },
     },
   })
-  async getUserIdentity(@Param('id') id: string) {
-    return this.integrationService.findUserIdentityById(id);
+  async getUserIdentity(@Param('id') id: string, @CurrentTenant() tenantId: string) {
+    return this.integrationService.findUserIdentityById(id, tenantId);
   }
 }

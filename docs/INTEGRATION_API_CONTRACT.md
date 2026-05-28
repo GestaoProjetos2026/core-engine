@@ -79,6 +79,10 @@ Uso recomendado:
 | 401 | `AUTH_REFRESH_INVALID` | Refresh inexistente, expirado ou usuario inativo |
 | 401 | `AUTH_REFRESH_REUSED` | Refresh ja revogado ou reuso (CA04); possivel corrida concorrente |
 | 403 | `AUTHZ_FORBIDDEN` | Sem permissao ou escopo |
+| 403 | `TENANT_MISMATCH` | Header `X-Tenant-Id` diferente do claim `tenant_id` do JWT humano |
+| 403 | `TENANT_CONTEXT_REQUIRED` | JWT humano sem claim `tenant_id` |
+| 400 | `TENANT_HEADER_REQUIRED` | Header `X-Tenant-Id` obrigatorio (ex.: rotas M2M tenant-scoped) |
+| 400 | `TENANT_HEADER_INVALID` | `X-Tenant-Id` nao e UUID valido |
 | 404 | `RESOURCE_NOT_FOUND` | Recurso inexistente |
 | 409 | `RESOURCE_CONFLICT` | Duplicidade |
 | 429 | `RATE_LIMIT_EXCEEDED` | Limite de tentativas/throttling |
