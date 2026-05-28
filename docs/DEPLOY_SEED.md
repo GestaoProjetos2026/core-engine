@@ -90,5 +90,6 @@ O JWT deve ter `type: integration_access` e `scopes` com o catálogo completo vi
 ## Referências
 
 - Dados declarativos: [`backend/prisma/seed-data.ts`](../backend/prisma/seed-data.ts)
-- Script: [`backend/prisma/seed.ts`](../backend/prisma/seed.ts)
+- Script: [`backend/prisma/seed.ts`](../backend/prisma/seed.ts) (dev: `npm run prisma:seed:dev`; produção: `node dist/prisma/seed.js`)
+- Constantes tenant: [`backend/prisma/constants.ts`](../backend/prisma/constants.ts)
 - Variáveis: [`backend/.env.example`](../backend/.env.example)

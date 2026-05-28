@@ -10,7 +10,7 @@ import {
   viewerUserDef,
   type M2mAppDef,
 } from './seed-data';
-import { DEFAULT_TENANT_ID, DEFAULT_TENANT_SLUG } from '../src/shared/constants/tenant';
+import { DEFAULT_TENANT_ID, DEFAULT_TENANT_SLUG } from './constants';
 
 dotenv.config();
 

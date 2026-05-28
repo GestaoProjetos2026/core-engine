@@ -84,6 +84,7 @@ var pg_1 = require("pg");
 var dotenv = __importStar(require("dotenv"));
 var bcrypt = __importStar(require("bcrypt"));
 var seed_data_1 = require("./seed-data");
+var constants_1 = require("./constants");
 dotenv.config();
 var pool = new pg_1.Pool(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : undefined);
 var schema = 'core_engine';
@@ -172,56 +173,27 @@ function linkRoleToPermissions(roleId, permissionList, codes) {
         });
     });
 }
-/** Demo-only secrets (task 15). Rotate via POST /v1/applications/:id/regenerate-secret in production. */
-var SQUAD_M2M_APPS = [
-    {
-        name: 'Finance Fiscal (Squad 2)',
-        clientId: 'finance-fiscal',
-        clientSecret: 'FinanceFiscal-Demo2026!',
-        scopeCodes: ['identity:read', 'finance:read'],
-        squad: 'Squad 2',
-    },
-    {
-        name: 'CRM Leads (Squad 3)',
-        clientId: 'crm-leads',
-        clientSecret: 'CrmLeads-Demo2026!',
-        scopeCodes: ['identity:read', 'customers:read'],
-        squad: 'Squad 3',
-    },
-    {
-        name: 'Service Desk (Squad 4)',
-        clientId: 'service-desk',
-        clientSecret: 'ServiceDesk-Demo2026!',
-        scopeCodes: ['identity:read', 'tickets:read'],
-        squad: 'Squad 4',
-    },
-];
-var TEST_M2M_APP = {
-    name: 'Test Application (E2E / integração)',
-    clientId: 'test-client-id',
-    clientSecret: 'test-client-secret',
-    scopeCodes: [
-        'identity:read',
-        'read:all',
-        'write:all',
-        'test:scope',
-        'orders:read',
-        'orders:write',
-        'customers:read',
-        'customers:write',
-        'products:read',
-        'products:write',
-    ],
-    squad: 'Core QA',
-};
+function resolveM2mSecret(def) {
+    var _a;
+    var fromEnv = (_a = process.env[def.secretEnvKey]) === null || _a === void 0 ? void 0 : _a.trim();
+    if (fromEnv)
+        return fromEnv;
+    if (isProduction && def.clientId !== 'test-client-id') {
+        throw new Error("Missing required env ".concat(def.secretEnvKey, " for M2M app ").concat(def.clientId, " in production"));
+    }
+    return def.defaultSecret;
+}
 function seedM2mApplication(def, scopeByCode) {
     return __awaiter(this, void 0, void 0, function () {
-        var clientSecretHash, app, _i, _a, code, scope;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
-                case 0: return [4 /*yield*/, bcrypt.hash(def.clientSecret, 12)];
+        var clientSecret, clientSecretHash, app, _i, _a, code, scope, squadLabel;
+        var _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    clientSecret = resolveM2mSecret(def);
+                    return [4 /*yield*/, bcrypt.hash(clientSecret, 12)];
                 case 1:
-                    clientSecretHash = _b.sent();
+                    clientSecretHash = _c.sent();
                     return [4 /*yield*/, prisma.application.upsert({
                             where: { clientId: def.clientId },
                             update: {
@@ -237,9 +209,9 @@ function seedM2mApplication(def, scopeByCode) {
                             },
                         })];
                 case 2:
-                    app = _b.sent();
+                    app = _c.sent();
                     _i = 0, _a = def.scopeCodes;
-                    _b.label = 3;
+                    _c.label = 3;
                 case 3:
                     if (!(_i < _a.length)) return [3 /*break*/, 6];
                     code = _a[_i];
@@ -261,14 +233,17 @@ function seedM2mApplication(def, scopeByCode) {
                             },
                         })];
                 case 4:
-                    _b.sent();
-                    _b.label = 5;
+                    _c.sent();
+                    _c.label = 5;
                 case 5:
                     _i++;
                     return [3 /*break*/, 3];
                 case 6:
-                    console.log("\u2705 M2M app [".concat(def.squad, "]: ").concat(def.clientId, " (scopes: ").concat(def.scopeCodes.join(', '), ")"));
-                    console.log("   \u26A0\uFE0F  Demo secret only \u2014 rotate in production (see docs/PERMISSIONS_MATRIX.md \u00A75)");
+                    squadLabel = (_b = def.squad) !== null && _b !== void 0 ? _b : def.name;
+                    console.log("\u2705 M2M app [".concat(squadLabel, "]: ").concat(def.clientId, " (scopes: ").concat(def.scopeCodes.join(', '), ")"));
+                    if (!isProduction) {
+                        console.log("   \u26A0\uFE0F  Secret from env ".concat(def.secretEnvKey, " or default (demo only)"));
+                    }
                     return [2 /*return*/];
             }
         });
@@ -293,12 +268,12 @@ function main() {
                     permissions = _j.sent();
                     console.log("\u2705 ".concat(permissions.length, " permissions upserted"));
                     return [4 /*yield*/, prisma.tenant.upsert({
-                            where: { slug: DEFAULT_TENANT_SLUG },
+                            where: { slug: constants_1.DEFAULT_TENANT_SLUG },
                             update: { name: 'Default Organization' },
                             create: {
-                                id: DEFAULT_TENANT_ID,
+                                id: constants_1.DEFAULT_TENANT_ID,
                                 name: 'Default Organization',
-                                slug: DEFAULT_TENANT_SLUG,
+                                slug: constants_1.DEFAULT_TENANT_SLUG,
                             },
                         })];
                 case 2:
@@ -613,14 +588,14 @@ function main() {
                 case 30:
                     if (!(_d < m2mAppDefs_1.length)) return [3 /*break*/, 33];
                     def = m2mAppDefs_1[_d];
-                    return [4 /*yield*/, seedM2mApplication(def, scopes)];
+                    return [4 /*yield*/, seedM2mApplication(def, scopeByCode)];
                 case 31:
                     _j.sent();
                     _j.label = 32;
                 case 32:
                     _d++;
                     return [3 /*break*/, 30];
-                case 33: return [4 /*yield*/, seedM2mApplication(seed_data_1.e2eM2mAppDef, scopes)];
+                case 33: return [4 /*yield*/, seedM2mApplication(seed_data_1.e2eM2mAppDef, scopeByCode)];
                 case 34:
                     _j.sent();
                     if (!isProduction) {

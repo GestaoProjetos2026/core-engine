@@ -41,4 +41,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost:3000/v1/health || exit 1
 
-CMD ["sh", "-c", "set -e; echo '🔥 BACKEND DOCKERFILE ATUALIZADO - STARTUP'; echo '🚀 Running Prisma migrate...'; npx prisma migrate deploy || echo '⚠️ Prisma migrate failed; continuing to seed/start app'; echo '🚀 Running Prisma seed...'; npx prisma db seed || echo '⚠️ Prisma seed failed; continuing'; echo '✅ Startup steps completed'; exec node dist/src/main.js"]
+CMD ["sh", "-c", "set -e; echo '🚀 Running Prisma migrate...'; npx prisma migrate deploy; if [ \"${SEED_ON_STARTUP:-true}\" != \"false\" ]; then echo '🚀 Running Prisma seed (compiled)...'; node dist/prisma/seed.js; fi; echo '✅ Startup steps completed'; exec node dist/src/main.js"]
