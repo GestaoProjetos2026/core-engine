@@ -3,14 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
 import * as bcrypt from 'bcrypt';
-import {
-  adminUserDefs,
-  e2eM2mAppDef,
-  m2mAppDefs,
-  viewerUserDef,
-  type AdminUserDef,
-  type M2mAppDef,
-} from './seed-data';
+import { DEFAULT_TENANT_ID, DEFAULT_TENANT_SLUG } from '../src/shared/constants/tenant';
 
 dotenv.config();
 
@@ -109,6 +102,17 @@ async function main() {
   );
 
   console.log(`✅ ${permissions.length} permissions upserted`);
+
+  const defaultTenant = await prisma.tenant.upsert({
+    where: { slug: DEFAULT_TENANT_SLUG },
+    update: { name: 'Default Organization' },
+    create: {
+      id: DEFAULT_TENANT_ID,
+      name: 'Default Organization',
+      slug: DEFAULT_TENANT_SLUG,
+    },
+  });
+  console.log(`✅ Default tenant ensured: ${defaultTenant.slug} (${defaultTenant.id})`);
 
   const adminRole = await prisma.role.upsert({
     where: { name: 'admin' },
@@ -277,12 +281,19 @@ async function main() {
   for (const admin of defaultAdmins) {
     const passwordHash = await bcrypt.hash(admin.password, 12);
     const adminUser = await prisma.user.upsert({
-      where: { email: admin.email },
+      where: {
+        tenantId_email: {
+          tenantId: defaultTenant.id,
+          email: admin.email,
+        },
+      },
       update: {
         passwordHash,
         status: 'ACTIVE',
+        tenantId: defaultTenant.id,
       },
       create: {
+        tenantId: defaultTenant.id,
         email: admin.email,
         name: admin.name,
         passwordHash,
@@ -310,13 +321,20 @@ async function main() {
   const suportePassword = 'Suporte123!';
   const suportePasswordHash = await bcrypt.hash(suportePassword, 12);
   const suporteUser = await prisma.user.upsert({
-    where: { email: 'suporte@example.com' },
+    where: {
+      tenantId_email: {
+        tenantId: defaultTenant.id,
+        email: 'suporte@example.com',
+      },
+    },
     update: {
       passwordHash: suportePasswordHash,
       status: 'ACTIVE',
       name: 'Agente Suporte Demo',
+      tenantId: defaultTenant.id,
     },
     create: {
+      tenantId: defaultTenant.id,
       email: 'suporte@example.com',
       name: 'Agente Suporte Demo',
       passwordHash: suportePasswordHash,

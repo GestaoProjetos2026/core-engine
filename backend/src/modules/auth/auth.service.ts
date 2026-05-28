@@ -18,8 +18,12 @@ import type { LoginDto } from './dto/login.dto';
 import type { RefreshDto } from './dto/refresh.dto';
 import type { RegisterDto } from './dto/register.dto';
 import { assertStrongPassword } from './password-policy';
+import { DEFAULT_TENANT_SLUG } from '../../shared/constants/tenant';
 
 const userAuthInclude = {
+  tenant: {
+    select: { id: true, name: true, slug: true },
+  },
   roles: {
     include: {
       role: {
@@ -37,6 +41,7 @@ type UserAccessJwtPayload = {
   sub: string;
   email: string;
   type: 'user_access';
+  tenant_id: string;
   roles: string[];
   perms: string[];
 };
@@ -61,9 +66,12 @@ export class AuthService {
     const rounds = this.bcryptRounds();
     const passwordHash = await hash(dto.password, rounds);
 
+    const tenantId = await this.resolveDefaultTenantId();
+
     try {
       const user = await this.prisma.user.create({
         data: {
+          tenantId,
           email: dto.email,
           name: dto.name,
           passwordHash,
@@ -87,8 +95,14 @@ export class AuthService {
   }
 
   async login(dto: LoginDto): Promise<AuthTokensDto> {
+    const tenantId = await this.resolveDefaultTenantId();
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: {
+        tenantId_email: {
+          tenantId,
+          email: dto.email,
+        },
+      },
       include: userAuthInclude,
     });
 
@@ -219,9 +233,24 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       type: 'user_access',
+      tenant_id: user.tenantId,
       roles,
       perms: [...perms],
     };
+  }
+
+  private async resolveDefaultTenantId(): Promise<string> {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { slug: DEFAULT_TENANT_SLUG },
+      select: { id: true },
+    });
+    if (!tenant) {
+      throw new BadRequestException({
+        message: 'Default tenant is not configured. Run database seed.',
+        errorCode: 'TENANT_NOT_CONFIGURED',
+      });
+    }
+    return tenant.id;
   }
 
   private async createRefreshToken(userId: string): Promise<string> {

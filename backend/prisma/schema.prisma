@@ -19,9 +19,22 @@ enum AppStatus {
   INACTIVE
 }
 
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  users     User[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("tenants")
+}
+
 model User {
   id            String         @id @default(uuid())
-  email         String         @unique
+  tenantId      String         @map("tenant_id")
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  email         String
   passwordHash  String         @map("password_hash")
   name          String
   status        UserStatus     @default(ACTIVE)
@@ -30,6 +43,7 @@ model User {
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
 
+  @@unique([tenantId, email])
   @@map("users")
 }
 

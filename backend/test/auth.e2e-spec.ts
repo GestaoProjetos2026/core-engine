@@ -101,6 +101,8 @@ describe('AuthModule (e2e)', () => {
     const body = JSON.parse(response.body);
     expect(body.success).toBe(true);
     expect(body.data.email).toBe(testEmail);
+    expect(body.data.tenantId).toBeDefined();
+    expect(typeof body.data.tenantId).toBe('string');
   });
 
   it('/v1/auth/me (GET) - No token', async () => {
