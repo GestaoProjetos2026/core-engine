@@ -35,24 +35,12 @@ npm run prisma:seed
 npm run dev
 ```
 
-### 3. Acessos Iniciais (Seed — desenvolvimento)
+### 3. Acessos Iniciais (Seed)
+- **Admin:** `admin@hotmail.com` / `Admin12345!`
+- **Suporte (Squad 4 demo):** `suporte@example.com` / `Suporte123!` — papel `suporte`, sem permissões `finance:*`
+- **App M2M:** `test-client-id` / `test-client-secret`
 
-Senhas padrão quando as variáveis `SEED_*` não estão definidas (ver [`backend/prisma/seed-data.ts`](backend/prisma/seed-data.ts)):
-
-| Tipo | Identificador | Senha / secret (dev) |
-|------|---------------|----------------------|
-| Admin Core | `admin@example.com` | `AdminCore2026!` |
-| Admin Hotmail | `admin@hotmail.com` | `AdminHotmail2026!` |
-| Admin CRM | `admincrm@example.com` | `AdminCrm2026!` |
-| Admin Fiscal | `adminfiscal@example.com` | `AdminFiscal2026!` |
-| Admin Desk | `admdesk@example.com` | `AdminDesk2026!` |
-| Admin DevOps | `admindevops@example.com` | `AdminDevops2026!` |
-| Viewer | `viewer@example.com` | `ViewerDemo2026!` |
-| M2M Core | `erp-core-client` | `M2mCore2026!Secret` |
-| M2M CRM | `erp-crm-client` | `M2mCrm2026!Secret` |
-| M2M E2E | `test-client-id` | `test-client-secret` |
-
-**Produção:** defina todas as variáveis `SEED_PASSWORD_*` e `SEED_M2M_SECRET_*` como secrets do cluster — ver [`docs/DEPLOY_SEED.md`](docs/DEPLOY_SEED.md).
+Detalhes de papéis e permissões: [`docs/PERMISSIONS_MATRIX.md`](docs/PERMISSIONS_MATRIX.md)
 
 ---
 

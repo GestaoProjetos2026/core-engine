@@ -1,11 +1,13 @@
 # Core Engine & Auth — Identity, Access & Integration Core (Squad 1)
 
-**Versão:** 2.0
+**Versão:** 2.1  
 **Código:** CORE-001  
 **Squad:** Squad 1  
 **Papel:** Produto central de identidade, autenticação, autorização, permissionamento e integração segura do ERP Modular Cloud-Native.
 
-**Escopo deste ficheiro:** PRD normativo do **MVP**: login e-mail/senha, **OAuth 2.0 (Authorization Server)**, JWT, RBAC, integração M2M com **client credentials**, escopos e validação no consumo. **Multi-tenant**, **login social**, **SSO/SAML**, **MFA e TOTP** estão **fora do escopo** — não há “segunda fase” de produto para esses itens; evoluções pontuais ficam em **§25** (roadmap técnico).
+**Alterações na v2.1 (entrega integrada CTO, 29/05/2026):** inclusão de **multi-tenant lógico** (`tenant_id` em JWT e isolamento por tenant no Core), **API de identidade M2M** (`GET /v1/integration/users/:id`), papel **`suporte`**, **gateway multi-módulo** (contrato de roteamento) e dependências explícitas das Squads 2–5. Alinhado ao backlog Sprint 8 (`Sprints.md`, tasks 10–17).
+
+**Escopo deste ficheiro:** PRD normativo do **MVP estendido**: login e-mail/senha, **OAuth 2.0 (Authorization Server)**, JWT, RBAC, **multi-tenant por organização (tenant)**, integração M2M com **client credentials**, escopos e validação no consumo, **gateway de entrada** para o ecossistema. **Login social**, **SSO/SAML** e **MFA/TOTP** permanecem **fora do escopo**; evoluções adicionais em **§25**.
 
 ---
 
@@ -40,7 +42,7 @@ Entregar um núcleo reutilizável de autenticação, autorização e integraçã
 
 **Valor interno:** acelerar o desenvolvimento dos demais módulos; reduzir inconsistência de login e permissões; simplificar governança de acesso; baixar custo de manutenção e suporte.
 
-**Valor comercial:** o Core pode ser posicionado como base de identidade e integração para sistemas internos, ERPs modulares, cenários **single-tenant** e integrações B2B com aplicações parceiras (credenciais + escopos), desde que o posicionamento de limites do MVP fique explícito para o cliente.
+**Valor comercial:** o Core pode ser posicionado como base de identidade e integração para sistemas internos, ERPs modulares, cenários **multi-tenant por organização** (um `tenant_id` por contexto de negócio) e integrações B2B com aplicações parceiras (credenciais + escopos), desde que o posicionamento de limites do MVP fique explícito para o cliente.
 
 ---
 
@@ -53,7 +55,7 @@ Entregar um núcleo reutilizável de autenticação, autorização e integraçã
 | **Desacoplamento** | Squads focam em domínio; IAM, RBAC e integração ficam no Core. |
 | **Interoperabilidade** | JWT, **OAuth 2.0** (token endpoint e grants acordados), REST, OpenAPI; consumo por qualquer stack. |
 | **Auditabilidade** | Logs e auditoria mínimos de autenticação e mudanças críticas de acesso. |
-| **Escalabilidade de produto** | Mesmo sem multi-tenant no MVP, atende uso interno e integrações controladas com escopos. |
+| **Escalabilidade de produto** | Multi-tenant lógico no Core (`tenant_id` + isolamento de dados); integrações controladas com escopos M2M. |
 | **Produto vendável** | Identidade e integração com **OAuth 2.0** no núcleo; **OpenID Connect** (camada de identidade sobre OAuth) permanece **fora** até decisão explícita — ver §25. |
 
 ---
@@ -84,6 +86,8 @@ Entregar um núcleo reutilizável de autenticação, autorização e integraçã
 - Proteção de rotas (Guards NestJS + validação JWT).
 - Logs e auditoria **básica** (ver seção 23).
 - Documentação **Swagger/OpenAPI 3** gerada e utilizável (“Try it out”).
+- **Multi-tenant (MVP estendido):** entidade `Tenant`; usuários vinculados a `tenant_id`; claim `tenant_id` no JWT humano; propagação via header `X-Tenant-Id`; consultas filtradas por tenant (isolamento do Alicerce).
+- Papel **`suporte`** no seed/RBAC: permissões operacionais **sem** acesso a domínio financeiro (coordenação com Squad 2 / Fiscal).
 
 ### 5.2. Camada de integração (aplicações)
 
@@ -91,11 +95,14 @@ Entregar um núcleo reutilizável de autenticação, autorização e integraçã
 - Escopos por aplicação (catálogo + vínculo aplicação–escopo).
 - Emissão de tokens M2M via **OAuth 2.0** `grant_type=client_credentials` no **token endpoint** (§14.7, **RF21–RF22**), com JWT de tipo integração e claims alinhados a **RF18**.
 - Documentação pública de integração (RFC 6749 + exemplos de `curl` — repositório e/ou Swagger).
+- **`GET /v1/integration/users/:id`:** leitura de identidade (id, name, email, status) para squads consumidoras via JWT `integration_access` e escopo mínimo (ex.: `identity:read` ou `users:read` no catálogo de escopos M2M). Complementa `GET /v1/users/:id` (RBAC humano com `users:read`).
+
 ### 5.3. Infraestrutura de entrega
 
 - Stack: **TypeScript**, **NestJS**, **PostgreSQL**, **Prisma**, **JWT**, **Passport** (estratégia JWT, conforme §12), **Swagger**, **Docker**, **Jest**, **class-validator**, **class-transformer**.
 - API versionada em **`/v1`**, JSON, Bearer Token onde aplicável.
 - **CI:** pipeline com lint, testes e build (alinhar ao DoD, §23).
+- **Gateway multi-módulo:** ponto de entrada HTTP (nginx/Portal Conexus — Squad 5) roteando `/v1/auth`, `/v1/integration` e prefixos dos módulos (Fiscal, CRM, Service Desk) **sem** expor login nas squads consumidoras — apenas validação do JWT emitido pelo Core (**regra de ouro**).
 
 ### 5.4. Resumo: núcleo do MVP vs evolução técnica
 
@@ -106,7 +113,9 @@ Não há “fase 2” de produto (sem MFA, sem promessa de roadmap em duas fases
 | Login humano | E-mail + senha → JWT (access + refresh); alinhado a **OAuth 2.0** onde aplicável (**RF21**, **RF24**) | — |
 | **OAuth 2.0** | **Authorization Server** com token endpoint (**RF21**), grants **client_credentials**, **refresh_token**, **password** (first-party, se ativado) | OIDC (discovery, `openid` scope), **authorization code + PKCE** para SPAs públicas, JWKS |
 | Tokens e abuso | RNF03 (TTL) e RNF07 (rate limit + lockout) | Rate limit distribuído (Redis) em cluster |
-| Integração M2M | **RFC 6749** `client_credentials` + escopos + **RF18** | Endurecimento adicional de governança de clientes |
+| Integração M2M | **RFC 6749** `client_credentials` + escopos + **RF18** + **RF26** (identidade por UUID) | Endurecimento adicional de governança de clientes |
+| Multi-tenant | `Tenant`, `tenant_id` em JWT, header `X-Tenant-Id`, filtro Prisma (**RF25–RF27**) | Multi-tenant avançado (billing por tenant, admin cross-tenant, sharding) — §25 |
+| Gateway | Contrato de roteamento documentado (**RF28**) | Service mesh / API Gateway dedicado em produção |
 | HTTP | Helmet; CSP por ambiente (dev vs produção) | CSP mais estrita, hardening contínuo |
 
 ### 5.5. Priorização (backlog)
@@ -115,7 +124,7 @@ Ordem sugerida para **cortar escopo sem travar go-live**:
 
 | Prioridade | Itens |
 |------------|--------|
-| **P0 (go-live)** | **OAuth 2.0:** token endpoint (**RF21**) com `client_credentials` e `refresh_token`; login/registro e-mail+senha e/ou `password` grant (**RF24**); access + refresh com rotação; `/auth/me`; CRUD users/roles/permissions; vínculos; RBAC; aplicações + `client_secret` + escopos; validação **RF18**; **RNF07**; OpenAPI **incluindo OAuth**; logs; `GET /health`. |
+| **P0 (go-live)** | **OAuth 2.0:** token endpoint (**RF21**) com `client_credentials` e `refresh_token`; login/registro e-mail+senha e/ou `password` grant (**RF24**); access + refresh com rotação; `/auth/me`; CRUD users/roles/permissions; vínculos; RBAC; papel **`suporte`**; aplicações + `client_secret` + escopos; validação **RF18**; **RF25–RF28** (tenant, identidade M2M, gateway); **RNF07**; OpenAPI **incluindo OAuth**; logs; `GET /health`. |
 | **P1 (ainda MVP, se couber no sprint)** | Exemplos públicos (README); matriz inicial de `permission.code` e escopos; Helmet/CSP fino por ambiente. |
 | **P2 (roadmap curto — §25)** | Logout com revogação; webhooks/eventos; RS256; frontend admin; OIDC / authorization code + PKCE. |
 
@@ -131,8 +140,21 @@ Ordem prática para o time — **não** constitui “fase 2” de produto.
 
 ### 5.7. Dependências entre squads
 
-- **O Core entrega:** **OAuth 2.0** (token endpoint e grants definidos); emissão e validação do contrato JWT; RBAC para usuários humanos; escopos para M2M; OpenAPI estável.  
-- **Os módulos consumidores:** devem validar o token (assinatura, `exp`, `type`) e aplicar apenas regras de negócio locais — **sem** novo login ou matriz de permissões paralela; alinhar-se aos códigos de `permission` e escopos acordados.
+- **O Core (Squad 1) entrega:** **OAuth 2.0**; emissão e validação JWT (`user_access` / `integration_access`); claims `sub` (user_id), `tenant_id`, `roles`, `perms` ou `scopes`; RBAC; **`GET /v1/integration/users/:id`**; papel **`suporte`**; isolamento por tenant no schema `core_engine`; documentação de gateway e integração.  
+- **Squad 2 (Fiscal):** consome identidade do emitente via API Core (M2M), não via banco do Core; protege rotas financeiras com `perms` do JWT.  
+- **Squad 3 (CRM):** exibe nome do usuário logado consultando Core por UUID (`sub`) ou `/auth/me`.  
+- **Squad 4 (Service Desk):** demonstra usuário **`suporte`** sem acesso financeiro (403 na Squad 2).  
+- **Squad 5 (DevOps/Portal):** banco centralizado com usuários/schemas por módulo; compose/K8s; CI/CD; URL de gateway (`http://<service>.<namespace>.svc.cluster.local:<porta>`).  
+- **Regra de ouro:** nenhuma squad consumidora implementa **login** próprio — apenas valida a assinatura JWT do Core.
+
+### 5.8. Entregáveis do Alicerce (demo CTO)
+
+| Entregável | Evidência |
+|------------|-----------|
+| Central de identidade | Login central (`POST /v1/auth/login`), refresh, admin |
+| Claims do token | JWT com `sub` (= `user_id`), `tenant_id`, `roles` (+ `perms` ou `scopes`) |
+| API de gateway | Roteamento documentado para Core + módulos (§14.8, `docs/GATEWAY.md`) |
+| Isolamento | Schema `core_engine` + filtro `tenant_id`; squads com DB user dedicado no `infra_banco` |
 
 ---
 
@@ -140,7 +162,7 @@ Ordem prática para o time — **não** constitui “fase 2” de produto.
 
 | Item | Status |
 |------|--------|
-| **Multi-tenant** | **Fora de escopo** — modelo single-tenant explícito. |
+| **Multi-tenant avançado** (admin cross-tenant, billing, sharding) | **Fora do escopo** — ver §25. O MVP estendido inclui **tenant lógico** por organização (**RF25–RF27**). |
 | **Login social / Google / provedores externos** | **Fora do escopo**. |
 | **Plataforma IAM completa estilo Keycloak** | **Fora do escopo** — produto enxuto. |
 | **OpenID Connect completo** (discovery, `id_token`, claims `openid`, etc.) | **Fora do MVP** — evolução em §25; **OAuth 2.0** (RFC 6749) está **no MVP**. |
@@ -151,7 +173,7 @@ Ordem prática para o time — **não** constitui “fase 2” de produto.
 | **Auditoria avançada** (dashboard dedicado, retenção longa) | Roadmap §25; MVP cobre logs + auditoria mínima (§21). |
 | **Eventos / webhooks públicos** | Roadmap §25. |
 
-**Nota:** O núcleo é **JWT + OAuth 2.0 + RBAC + integração por client credentials e escopos**, sem multi-tenant e **sem** OIDC no MVP.
+**Nota:** O núcleo é **JWT + OAuth 2.0 + RBAC + multi-tenant lógico + integração por client credentials e escopos**, **sem** OIDC completo no MVP.
 
 ---
 
@@ -180,6 +202,12 @@ Ordem prática para o time — **não** constitui “fase 2” de produto.
 | **RF22** | Suportar **`grant_type=client_credentials`** para clientes confidenciais, com validação de escopos solicitados ⊆ escopos cadastrados (**RF16**, **RF18**). |
 | **RF23** | Suportar **`grant_type=refresh_token`** alinhado à **RF04** (rotação obrigatória do refresh). |
 | **RF24** | Suportar **`grant_type=password`** apenas para **clientes first-party** internos (ex.: mesma organização), **ou** manter `POST /v1/auth/login` e `POST /v1/auth/refresh` como rotas de conveniência que produzem os **mesmos** tokens e semântica que os grants OAuth equivalentes — documentar uma das abordagens no OpenAPI para evitar dois comportamentos divergentes. |
+| **RF25** | Modelar **Tenant** e associar cada **User** a um `tenant_id`; seed com tenant padrão para demonstração. |
+| **RF26** | Incluir claim **`tenant_id`** no JWT `user_access` e retornar `tenantId` (ou objeto tenant) em `GET /v1/auth/me`. Documentar equivalência **`sub` = `user_id`**. |
+| **RF27** | Propagar contexto de tenant via header **`X-Tenant-Id`** (coerente com o JWT) e filtrar listagens/detalhes de usuários (e demais entidades tenant-scoped) por `tenant_id`. |
+| **RF28** | Documentar e configurar **gateway multi-módulo**: roteamento de prefixos HTTP para Core e squads consumidoras sem login duplicado. |
+| **RF29** | Expor **`GET /v1/integration/users/:id`** para leitura de identidade por UUID com JWT M2M e escopo mínimo (**RF18**). Manter **`GET /v1/users/:id`** para fluxo humano com permissão `users:read`. |
+| **RF30** | Papel **`suporte`** no catálogo de roles: permissões limitadas (sem domínio financeiro) e usuário de demonstração para integração com Squad 4. |
 
 ---
 
@@ -311,7 +339,8 @@ O PRD original citou eventos (`user.created`, etc.) via message broker — trata
 - **API monolítica modular** NestJS (adequado ao MVP).
 - **PostgreSQL** como fonte de verdade relacional.
 - **Docker Compose** para app + banco em desenvolvimento; variáveis por ambiente.
-- **Sem multi-tenant**: um único contexto organizacional por deployment (configurável por env).
+- **Multi-tenant lógico:** schema PostgreSQL dedicado (`core_engine` no banco `infra_banco`); usuário DB `user_core_engine`; isolamento por `tenant_id` no domínio do Core; demais squads com schemas/usuários próprios no mesmo cluster (Squad 5).
+- **Gateway:** entrada HTTP única (nginx local ou Portal Conexus) encaminhando para Core e módulos.
 
 ---
 
@@ -344,6 +373,14 @@ Métodos e corpos devem ser detalhados no Swagger; abaixo o contrato alvo.
 | `PATCH` | `/v1/users/:id` | Atualização parcial. |
 | `PATCH` | `/v1/users/:id/status` | Ativar/inativar. |
 
+*Rotas de usuário exigem JWT `user_access` e permissão RBAC (`users:read` / `users:write`). Respeitam isolamento por `tenant_id` (**RF27**).*
+
+### 14.3.1. Identidade para integração (M2M)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/v1/integration/users/:id` | Detalhe de usuário por UUID para squads consumidoras; JWT `integration_access` + escopo mínimo (**RF26**, **RF29**). |
+
 ### 14.4. Papéis e permissões
 
 | Método | Rota | Descrição |
@@ -370,12 +407,28 @@ Métodos e corpos devem ser detalhados no Swagger; abaixo o contrato alvo.
 | `POST` | `/v1/applications/:id/scopes` | Associa escopos à aplicação. |
 | `GET` | `/v1/applications/:id/scopes` | Lista escopos da aplicação. |
 | `POST` | `/v1/integration/token` | OAuth-style client credentials **simplificado** — retorna access token M2M. |
+| `POST` | `/v1/oauth/token` | Token endpoint OAuth 2.0 (**RF21**). |
 
 ### 14.6. Documentação
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | `GET` | `/v1/docs` ou `/api` | Swagger UI (convenção Nest; expor de forma segura por ambiente). |
+
+### 14.7. Gateway multi-módulo (contrato)
+
+O Core **não substitui** o Portal Conexus (Squad 5), mas define o contrato que o gateway deve cumprir:
+
+| Prefixo / destino | Serviço | Observação |
+|-------------------|---------|------------|
+| `/v1/auth`, `/v1/users`, `/v1/roles`, `/v1/oauth`, `/v1/integration`, `/v1/health` | Core Engine | Única origem de login humano e tokens |
+| `/v1/fiscal/*` (exemplo) | Squad 2 | Valida JWT do Core; sem `/login` local |
+| `/v1/crm/*` (exemplo) | Squad 3 | Idem |
+| `/v1/service-desk/*` (exemplo) | Squad 4 | Idem |
+
+Formato de URL interna (Kubernetes): `http://<nome-do-service>.<namespace>.svc.cluster.local:<porta>` — ex.: `http://core-engine-svc.default.svc.cluster.local:8080/v1/...`
+
+Documentação operacional: `docs/GATEWAY.md` (a produzir na Sprint 8, task 14).
 
 ---
 
@@ -385,6 +438,7 @@ Métodos e corpos devem ser detalhados no Swagger; abaixo o contrato alvo.
 
 ```mermaid
 erDiagram
+    TENANT ||--o{ USER : contains
     USER ||--o{ USER_ROLE : has
     ROLE ||--o{ USER_ROLE : contains
     ROLE ||--o{ ROLE_PERMISSION : includes
@@ -393,8 +447,15 @@ erDiagram
     APPLICATION ||--o{ APPLICATION_SCOPE : has
     SCOPE ||--o{ APPLICATION_SCOPE : limits
 
+    TENANT {
+        uuid id
+        string name UK
+        string slug UK
+    }
+
     USER {
         uuid id
+        uuid tenant_id FK
         string email UK
         string password_hash
         string name
@@ -419,7 +480,8 @@ erDiagram
 
 | Entidade | Descrição |
 |----------|-----------|
-| **User** | Dados de conta; `passwordHash`; `status` (enum: `ACTIVE`, `INACTIVE`, …). |
+| **Tenant** | Organização lógica; `name` e `slug` únicos; agrupa usuários. |
+| **User** | Dados de conta; `tenantId` obrigatório; `passwordHash`; `status` (enum: `ACTIVE`, `INACTIVE`, …). E-mail único **por tenant** (ou global — definir no OpenAPI; recomendado: único por tenant). |
 | **Role** | Papel agregador de permissões; `name` único. |
 | **Permission** | `code` único semântico; descrição. |
 | **UserRole** | N:N usuário e papel. |
@@ -443,8 +505,19 @@ enum AppStatus {
   INACTIVE
 }
 
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model User {
   id            String         @id @default(uuid())
+  tenantId      String
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
   email         String         @unique
   passwordHash  String
   name          String
@@ -539,12 +612,20 @@ model ApplicationScope {
   "sub": "uuid-do-usuario",
   "email": "user@company.com",
   "type": "user_access",
+  "tenant_id": "uuid-do-tenant",
   "roles": ["admin"],
-  "perms": ["user:write:all", "user:read:all"],
+  "perms": ["users:read", "users:write"],
   "iat": 1711049615,
   "exp": 1711053215
 }
 ```
+
+| Claim | Descrição |
+|-------|-----------|
+| `sub` | UUID do usuário — equivalente a **`user_id`** no checklist CTO. |
+| `tenant_id` | UUID do tenant do usuário; deve ser propagado em **`X-Tenant-Id`** nas chamadas entre serviços quando aplicável. |
+| `roles` | Nomes dos papéis (ex.: `admin`, `suporte`, `manager`). |
+| `perms` | Permissões efetivas (union dos papéis). |
 
 ### 16.2. JWT — integração (M2M)
 
@@ -565,6 +646,15 @@ model ApplicationScope {
 
 - **Usuários:** checagem de **permissions** nas rotas administrativas e de gestão.
 - **Integração:** checagem de **scopes** nas rotas que aceitam JWT M2M (subset de endpoints ou mesma API com `type` distinto — ver RF18 e §12.4).
+
+### 16.4. Headers entre serviços
+
+| Header | Obrigatório | Descrição |
+|--------|-------------|-----------|
+| `Authorization` | Sim (rotas protegidas) | `Bearer <JWT>` emitido pelo Core. |
+| `X-Tenant-Id` | Recomendado / conforme rota | UUID do tenant; deve coincidir com `tenant_id` do JWT humano quando ambos presentes (**RF27**). |
+
+Squads consumidoras devem validar JWT localmente (assinatura + `exp` + `type`) e **não** reimplementar login.
 
 ---
 
@@ -673,6 +763,11 @@ Formato: **JSON estruturado** com `requestId`, timestamp, rota, `userId` ou `cli
 | CA07 | Dado token de integração, quando escopo não inclui operação, então 403. |
 | CA08 | Dado e-mail duplicado no registro, então 409 `RESOURCE_CONFLICT`. |
 | CA09 | Swagger descreve todos os endpoints do catálogo MVP e exemplos de erro. |
+| CA10 | Dado login bem-sucedido, o access token contém `tenant_id` e `sub` (user_id). |
+| CA11 | Dado usuário do tenant A, quando lista usuários, então não vê registros do tenant B. |
+| CA12 | Dado token M2M com escopo de identidade, quando chama `GET /v1/integration/users/:id`, então recebe dados públicos do usuário. |
+| CA13 | Dado usuário com role `suporte`, quando token é emitido, então **não** inclui permissões de domínio financeiro acordadas com Squad 2. |
+| CA14 | Nenhuma squad consumidora expõe endpoint de login próprio na demo integrada. |
 
 ---
 
@@ -695,7 +790,7 @@ Formato: **JSON estruturado** com `requestId`, timestamp, rota, `userId` ou `cli
 |----------------|-----------|
 | HS256 com secret vazado compromete todos os tokens | Rotacionar secret; planejar RS256; secrets fortes e rotação operacional. |
 | Escopo de integração mal configurado | Revisão de API; testes de autorização por escopo. |
-| Sem multi-tenant | Documentar claramente para clientes que precisam isolamento por tenant em outro produto ou deployment. |
+| Multi-tenant parcial | MVP cobre tenant lógico no Core; isolamento físico entre squads via schema/DB user; evolução para multi-tenant avançado em §25. |
 | Indisponibilidade do Core bloqueia todos os módulos | Healthcheck e monitoramento; estratégia de deploy e, se necessário, janela de contingência documentada (o MVP assume dependência forte — é aceitável se explícito). |
 | Crescimento de integrações sem governança | Convenção de nomes de escopos e `permission.code`; revisão periódica; documentação obrigatória para novos clientes M2M. |
 
@@ -703,6 +798,7 @@ Formato: **JSON estruturado** com `requestId`, timestamp, rota, `userId` ou `cli
 
 ## 25. Roadmap futuro
 
+- **Multi-tenant avançado:** administração cross-tenant, provisionamento self-service, quotas e billing por tenant.
 - **OAuth 2.0 / OpenID Connect** como servidor de autorização (Authorization Server) — fluxos adicionais, discovery, JWKS.
 - **Eventos de domínio** — começar por **webhooks** ou fila leve se necessário; **Kafka/RabbitMQ** apenas quando volume e equipe justificarem.
 - **RS256** e rotação de chaves públicas.
@@ -713,7 +809,7 @@ Formato: **JSON estruturado** com `requestId`, timestamp, rota, `userId` ou `cli
 
 ## 26. Referências e consistência
 
-Este documento consolida a visão do **Core Engine & Auth** como **Identity, Access & Integration Core** (alinhamento com revisão CORE-001). Stack: **TypeScript, NestJS, PostgreSQL, Prisma, JWT, Passport (JWT), Swagger, Docker, Jest**, REST em **`/v1`**, envelope e `error.code`, modelo **User, Role, Permission, Application** com **RefreshToken**, **Scope** e **ApplicationScope**. **MVP deliberadamente enxuto:** sem MFA, sem multi-tenant, **OAuth/OIDC completo apenas como evolução** (§25, §27).
+Este documento consolida a visão do **Core Engine & Auth** como **Identity, Access & Integration Core** (alinhamento com revisão CORE-001). Stack: **TypeScript, NestJS, PostgreSQL, Prisma, JWT, Passport (JWT), Swagger, Docker, Jest**, REST em **`/v1`**, envelope e `error.code`, modelo **Tenant, User, Role, Permission, Application** com **RefreshToken**, **Scope** e **ApplicationScope**. **MVP estendido (v2.1):** multi-tenant lógico, identidade M2M, gateway documentado, papel `suporte`; **sem MFA**; **OAuth/OIDC completo** como evolução (§25, §27).
 
 ---
 

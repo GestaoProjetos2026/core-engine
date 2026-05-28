@@ -2,8 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
+const bcrypt_1 = require("bcrypt");
 const vitest_1 = require("vitest");
 const auth_service_1 = require("./auth.service");
+vitest_1.vi.mock('bcrypt', () => ({
+    hash: vitest_1.vi.fn(),
+    compare: vitest_1.vi.fn(),
+}));
 function makePrismaMock() {
     const prisma = {
         user: {
@@ -138,6 +143,51 @@ function makePrismaMock() {
         (0, vitest_1.expect)(out.refreshToken.length).toBeGreaterThan(20);
         (0, vitest_1.expect)(jwt.signAsync).toHaveBeenCalledOnce();
         (0, vitest_1.expect)(prisma.refreshToken.updateMany).toHaveBeenCalled();
+    });
+    (0, vitest_1.it)('login JWT for suporte role excludes finance permissions', async () => {
+        const prisma = makePrismaMock();
+        prisma.user.findUnique.mockResolvedValue({
+            id: 'u-sup',
+            email: 'suporte@example.com',
+            passwordHash: 'hash',
+            name: 'Agente Suporte Demo',
+            status: client_1.UserStatus.ACTIVE,
+            roles: [
+                {
+                    role: {
+                        name: 'suporte',
+                        permissions: [
+                            { permission: { code: 'customers:read' } },
+                            { permission: { code: 'tickets:read' } },
+                            { permission: { code: 'tickets:write' } },
+                            { permission: { code: 'dashboard:read' } },
+                        ],
+                    },
+                },
+            ],
+        });
+        prisma.refreshToken.create.mockResolvedValue({
+            id: 'rt1',
+            tokenHash: 'h',
+            userId: 'u-sup',
+            expiresAt: new Date(Date.now() + 86_400_000),
+            revokedAt: null,
+            replacedById: null,
+            createdAt: new Date(),
+        });
+        vitest_1.vi.mocked(bcrypt_1.compare).mockImplementation(async () => true);
+        const jwt = { signAsync: vitest_1.vi.fn().mockResolvedValue('access.jwt') };
+        const auditMock = { logLoginSuccess: vitest_1.vi.fn(), logLoginFailure: vitest_1.vi.fn(), logTokenRefresh: vitest_1.vi.fn() };
+        const service = new auth_service_1.AuthService(prisma, jwt, auditMock);
+        await service.login({ email: 'suporte@example.com', password: 'Suporte123!' });
+        (0, vitest_1.expect)(jwt.signAsync).toHaveBeenCalled();
+        const payload = jwt.signAsync.mock.calls[0][0];
+        (0, vitest_1.expect)(payload.type).toBe('user_access');
+        (0, vitest_1.expect)(payload.roles).toEqual(['suporte']);
+        (0, vitest_1.expect)(payload.perms).toContain('customers:read');
+        (0, vitest_1.expect)(payload.perms).toContain('tickets:read');
+        (0, vitest_1.expect)(payload.perms.some((p) => p.startsWith('finance:'))).toBe(false);
+        (0, vitest_1.expect)(payload.perms.some((p) => p.startsWith('orders:'))).toBe(false);
     });
     (0, vitest_1.it)('login rejects inactive user like invalid credentials', async () => {
         const prisma = makePrismaMock();

@@ -12,6 +12,7 @@ const integration_controller_1 = require("./integration.controller");
 const integration_service_1 = require("./integration.service");
 const applications_module_1 = require("../applications/applications.module");
 const auth_module_1 = require("../auth/auth.module");
+const users_module_1 = require("../users/users.module");
 const jwt_1 = require("@nestjs/jwt");
 const auth_time_util_1 = require("../auth/auth-time.util");
 let IntegrationModule = class IntegrationModule {
@@ -22,6 +23,7 @@ exports.IntegrationModule = IntegrationModule = __decorate([
         imports: [
             applications_module_1.ApplicationsModule,
             auth_module_1.AuthModule,
+            users_module_1.UsersModule,
             jwt_1.JwtModule.register({
                 global: false,
                 secret: process.env.JWT_SECRET ?? 'dev-insecure-change-me',

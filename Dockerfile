@@ -14,6 +14,9 @@ RUN apk add --no-cache python3 make g++
 WORKDIR /app/backend
 COPY backend/package*.json ./
 COPY backend/prisma ./prisma/
+#Lucas adicionou aqui
+COPY backend/prisma.config.mts ./prisma.config.mts 
+#Lucas adicionou aqui
 RUN npm install
 RUN npx prisma generate
 COPY backend/ ./
@@ -36,6 +39,8 @@ COPY --from=backend-builder /app/backend/package*.json ./
 COPY --from=backend-builder /app/backend/node_modules ./node_modules
 COPY --from=backend-builder /app/backend/dist ./dist
 COPY --from=backend-builder /app/backend/prisma ./prisma
+# Lucas adicionou aqui
+COPY --from=backend-builder /app/backend/prisma.config.mts ./prisma.config.mts
 
 # O Frontend/nginx.conf aponta para /usr/share/nginx/html e escuta na porta 3000
 RUN mkdir -p /usr/share/nginx/html /run/nginx
@@ -50,4 +55,8 @@ EXPOSE 80 3000
 
 # Comando para iniciar ambos os serviços
 # Substitui dinamicamente a porta do Nginx, inicia o Nginx e aguarda o banco de dados ficar pronto para rodar as migrations e o seed antes de ligar a API
-CMD ["sh", "-c", "sed -i \"s/listen 3000;/listen ${PORT:-3000};/g\" /etc/nginx/http.d/default.conf && nginx || true; dokku=0; until npx prisma migrate deploy || [ $dokku -eq 10 ]; do dokku=$((dokku+1)); echo 'Waiting for DB...'; sleep 3; done; if [ \"${SEED_ON_STARTUP:-true}\" != \"false\" ]; then node dist/prisma/seed.js || { if [ \"$NODE_ENV\" = \"production\" ] || [ \"$SEED_STRICT\" = \"true\" ]; then echo 'Seed failed (strict mode)'; exit 1; fi; echo 'Seed failed (non-strict, continuing)'; }; fi; node dist/src/main.js"]
+# CMD ["sh", "-c", "sed -i \"s/listen 3000;/listen ${PORT:-3000};/g\" /etc/nginx/http.d/default.conf && nginx || true; dokku=0; until npx prisma migrate deploy || [ $dokku -eq 10 ]; do dokku=$((dokku+1)); echo 'Waiting for DB...'; sleep 3; done; node dist/prisma/seed.js || true; node dist/src/main.js"]
+# CMD ["sh", "-c", "sed -i \"s/listen 3000;/listen ${PORT:-3000};/g\" /etc/nginx/http.d/default.conf && nginx || true; dokku=0; until npx prisma migrate deploy || [ $dokku -eq 10 ]; do dokku=$((dokku+1)); echo 'Waiting for DB...'; sleep 3; done; npx prisma db seed; node dist/src/main.js"]
+# CMD ["sh", "-c", "sed -i \"s/listen 3000;/listen 80;/g\" /etc/nginx/http.d/default.conf && nginx || true; dokku=0; until npx prisma migrate deploy || [ $dokku -eq 10 ]; do dokku=$((dokku+1)); echo 'Waiting for DB...'; sleep 3; done; npx prisma db seed; node dist/src/main.js"]
+# CMD ["sh", "-c", "set -e; nginx; dokku=0; until npx prisma migrate deploy; do dokku=$((dokku+1)); if [ $dokku -ge 10 ]; then echo '❌ DB unavailable after 10 attempts'; exit 1; fi; echo 'Waiting for DB...'; sleep 3; done; echo '🚀 Running Prisma seed...'; npx prisma db seed; echo '✅ Prisma seed completed'; exec node dist/src/main.js"]
+CMD ["sh", "-c", "set -e; echo '🔥 DOCKERFILE RAIZ ATUALIZADO - STARTUP'; nginx; echo '🚀 Running Prisma migrate...'; npx prisma migrate deploy; echo '🚀 Running Prisma seed...'; npx prisma db seed; echo '✅ Prisma seed completed'; exec node dist/src/main.js"]

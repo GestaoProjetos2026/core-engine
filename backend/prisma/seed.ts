@@ -1,6 +1,6 @@
-import { PrismaClient, type Role, type Scope } from '@prisma/client';
-import { Pool } from 'pg';
+import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
 import * as bcrypt from 'bcrypt';
 import {
@@ -14,8 +14,15 @@ import {
 
 dotenv.config();
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
+const pool = new Pool(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : undefined);
+let schema = 'core_engine';
+if (process.env.DATABASE_URL) {
+  try {
+    const url = new URL(process.env.DATABASE_URL);
+    schema = url.searchParams.get('schema') || 'core_engine';
+  } catch (e) {}
+}
+const adapter = new PrismaPg(pool, { schema });
 const prisma = new PrismaClient({ adapter });
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -46,141 +53,46 @@ const permissionDefs: { code: string; description: string }[] = [
   { code: 'products:write', description: 'Gerenciar catálogo de produtos' },
   { code: 'inventory:read', description: 'Visualizar estoque' },
   { code: 'inventory:write', description: 'Movimentar estoque' },
+
+  // Squad 2 — Fiscal (não concedidas ao papel suporte)
+  { code: 'finance:read', description: 'Visualizar dados financeiros e faturamento (Squad 2)' },
+  { code: 'finance:write', description: 'Emitir e alterar documentos fiscais (Squad 2)' },
+
+  // Squad 4 — Service Desk
+  { code: 'tickets:read', description: 'Visualizar chamados de suporte' },
+  { code: 'tickets:write', description: 'Criar e atualizar chamados de suporte' },
 ];
 
-const scopeDefs: { code: string; description: string }[] = [
-  { code: 'read:all', description: 'Leitura total (M2M)' },
-  { code: 'write:all', description: 'Escrita total (M2M)' },
-  { code: 'orders:read', description: 'Leitura de pedidos' },
-  { code: 'orders:write', description: 'Criação/alteração de pedidos' },
-  { code: 'customers:read', description: 'Leitura de clientes' },
-  { code: 'customers:write', description: 'Escrita de clientes' },
-  { code: 'products:read', description: 'Leitura de produtos' },
-  { code: 'products:write', description: 'Escrita de produtos' },
-  { code: 'inventory:read', description: 'Leitura de estoque' },
-  { code: 'inventory:write', description: 'Escrita de estoque' },
-];
+const SUPORTE_PERMISSION_CODES = [
+  'customers:read',
+  'tickets:read',
+  'tickets:write',
+  'dashboard:read',
+  'health:read',
+] as const;
 
-function resolveSecret(envKey: string, fallback: string): string {
-  const fromEnv = process.env[envKey]?.trim();
-  if (fromEnv) {
-    return fromEnv;
-  }
-  if (isProduction) {
-    throw new Error(
-      `Missing required env ${envKey} for production seed (set via cluster secrets)`,
-    );
-  }
-  return fallback;
-}
-
-async function seedAdminUsers(adminRole: Role, defs: AdminUserDef[]): Promise<void> {
-  for (const def of defs) {
-    const plainPassword = resolveSecret(def.passwordEnvKey, def.defaultPassword);
-    const passwordHash = await bcrypt.hash(plainPassword, 12);
-
-    const user = await prisma.user.upsert({
-      where: { email: def.email },
-      update: updatePasswords ? { passwordHash, name: def.name, status: 'ACTIVE' } : { name: def.name, status: 'ACTIVE' },
-      create: {
-        email: def.email,
-        name: def.name,
-        passwordHash,
-        status: 'ACTIVE',
-      },
-    });
-
-    await prisma.userRole.upsert({
+async function linkRoleToPermissions(
+  roleId: string,
+  permissionList: { id: string; code: string }[],
+  codes: readonly string[],
+) {
+  const selected = permissionList.filter((p) => codes.includes(p.code));
+  for (const permission of selected) {
+    await prisma.rolePermission.upsert({
       where: {
-        userId_roleId: {
-          userId: user.id,
-          roleId: adminRole.id,
+        roleId_permissionId: {
+          roleId,
+          permissionId: permission.id,
         },
       },
       update: {},
       create: {
-        userId: user.id,
-        roleId: adminRole.id,
-      },
-    });
-
-    console.log(`   - admin user: ${def.email} (role: admin)`);
-  }
-}
-
-async function seedViewerUser(viewerRole: Role): Promise<void> {
-  const def = viewerUserDef;
-  const plainPassword = resolveSecret(def.passwordEnvKey, def.defaultPassword);
-  const passwordHash = await bcrypt.hash(plainPassword, 12);
-
-  const user = await prisma.user.upsert({
-    where: { email: def.email },
-    update: updatePasswords ? { passwordHash, name: def.name, status: 'ACTIVE' } : { name: def.name, status: 'ACTIVE' },
-    create: {
-      email: def.email,
-      name: def.name,
-      passwordHash,
-      status: 'ACTIVE',
-    },
-  });
-
-  await prisma.userRole.upsert({
-    where: {
-      userId_roleId: {
-        userId: user.id,
-        roleId: viewerRole.id,
-      },
-    },
-    update: {},
-    create: {
-      userId: user.id,
-      roleId: viewerRole.id,
-    },
-  });
-
-  console.log(`   - viewer user: ${def.email} (role: viewer)`);
-}
-
-async function linkAllScopesToApp(applicationId: string, scopes: Scope[]): Promise<void> {
-  for (const scope of scopes) {
-    await prisma.applicationScope.upsert({
-      where: {
-        applicationId_scopeId: {
-          applicationId,
-          scopeId: scope.id,
-        },
-      },
-      update: {},
-      create: {
-        applicationId,
-        scopeId: scope.id,
+        roleId,
+        permissionId: permission.id,
       },
     });
   }
-}
-
-async function seedM2mApplication(def: M2mAppDef, scopes: Scope[]): Promise<void> {
-  const clientSecret =
-    def.clientId === 'test-client-id'
-      ? def.defaultSecret
-      : resolveSecret(def.secretEnvKey, def.defaultSecret);
-  const clientSecretHash = await bcrypt.hash(clientSecret, 12);
-
-  const app = await prisma.application.upsert({
-    where: { clientId: def.clientId },
-    update: updatePasswords
-      ? { clientSecretHash, name: def.name, status: 'ACTIVE' }
-      : { name: def.name, status: 'ACTIVE' },
-    create: {
-      name: def.name,
-      clientId: def.clientId,
-      clientSecretHash,
-      status: 'ACTIVE',
-    },
-  });
-
-  await linkAllScopesToApp(app.id, scopes);
-  console.log(`   - m2m app: ${def.clientId} (all scopes linked)`);
+  return selected.map((p) => p.code);
 }
 
 async function main() {
@@ -216,7 +128,13 @@ async function main() {
     create: { name: 'manager' },
   });
 
-  console.log('✅ Roles (admin, viewer, manager) upserted');
+  const suporteRole = await prisma.role.upsert({
+    where: { name: 'suporte' },
+    update: {},
+    create: { name: 'suporte' },
+  });
+
+  console.log('✅ Roles (admin, viewer, manager, suporte) upserted');
 
   for (const permission of permissions) {
     await prisma.rolePermission.upsert({
@@ -278,9 +196,207 @@ async function main() {
   }
   console.log(`✅ Manager linked to ${managerPerms.length} permissions`);
 
-  console.log('✅ Seeding admin users:');
-  await seedAdminUsers(adminRole, adminUserDefs);
-  await seedViewerUser(viewerRole);
+  const suporteLinkedCodes = await linkRoleToPermissions(
+    suporteRole.id,
+    permissions,
+    SUPORTE_PERMISSION_CODES,
+  );
+  const forbiddenForSuporte = permissions
+    .filter((p) => p.code.startsWith('finance:') || p.code.startsWith('orders:'))
+    .map((p) => p.code);
+  const suporteHasForbidden = suporteLinkedCodes.some((c) =>
+    forbiddenForSuporte.includes(c),
+  );
+  if (suporteHasForbidden) {
+    throw new Error('Role suporte must not include finance:* or orders:* permissions');
+  }
+  console.log(
+    `✅ Suporte linked to ${suporteLinkedCodes.length} permissions: ${suporteLinkedCodes.join(', ')}`,
+  );
+
+  // Criar usuários semente
+  // const defaultPassword = 'Password123!';
+  // const passwordHash = await bcrypt.hash(defaultPassword, 12);
+
+  // const adminUser = await prisma.user.upsert({
+  //   // where: { email: 'admin@example.com' },
+  //   where: { email: 'admin@hotmail.com' },
+  //   update: { passwordHash },
+  //   create: {
+  //     // email: 'admin@example.com',
+  //     email: 'admin@hotmail.com',
+  //     name: 'Admin User',
+  //     passwordHash,
+  //     status: 'ACTIVE',
+  //   },
+  // });
+
+  // await prisma.userRole.upsert({
+  //   where: {
+  //     userId_roleId: {
+  //       userId: adminUser.id,
+  //       roleId: adminRole.id,
+  //     },
+  //   },
+  //   update: {},
+  //   create: {
+  //     userId: adminUser.id,
+  //     roleId: adminRole.id,
+  //   },
+  // });
+  //TUDO ISSO PODE SER ALTERADO DEPOIS
+
+  const defaultAdmins = [
+  {
+    email: 'admin@hotmail.com',
+    name: 'Administrador Principal',
+    password: 'Admin12345!',
+  },
+  {
+    email: 'crm@example.com',
+    name: 'CRM',
+    password: 'CRM123456!',
+  },
+  {
+    email: 'service-desk@example.com',
+    name: 'Service Desk',
+    password: 'ServiceDesk123!',
+  },
+  {
+    email: 'fiscal@example.com',
+    name: 'Fiscal',
+    password: 'Fiscal123!',
+  },
+  {
+    email: 'devOps@example.com',
+    name: 'DevOps',
+    password: 'DevOps123!',
+  },
+];
+
+  for (const admin of defaultAdmins) {
+    const passwordHash = await bcrypt.hash(admin.password, 12);
+    const adminUser = await prisma.user.upsert({
+      where: { email: admin.email },
+      update: {
+        passwordHash,
+        status: 'ACTIVE',
+      },
+      create: {
+        email: admin.email,
+        name: admin.name,
+        passwordHash,
+        status: 'ACTIVE',
+      },
+    });
+
+    await prisma.userRole.upsert({
+        where: {
+        userId_roleId: {
+          userId: adminUser.id,
+          roleId: adminRole.id,
+        },
+      },
+      update: {},
+      create: {
+        userId: adminUser.id,
+        roleId: adminRole.id,
+      },
+    });
+
+    console.log(`✅ Admin user ensured: ${admin.email}`);
+  }
+
+  const suportePassword = 'Suporte123!';
+  const suportePasswordHash = await bcrypt.hash(suportePassword, 12);
+  const suporteUser = await prisma.user.upsert({
+    where: { email: 'suporte@example.com' },
+    update: {
+      passwordHash: suportePasswordHash,
+      status: 'ACTIVE',
+      name: 'Agente Suporte Demo',
+    },
+    create: {
+      email: 'suporte@example.com',
+      name: 'Agente Suporte Demo',
+      passwordHash: suportePasswordHash,
+      status: 'ACTIVE',
+    },
+  });
+
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId: {
+        userId: suporteUser.id,
+        roleId: suporteRole.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: suporteUser.id,
+      roleId: suporteRole.id,
+    },
+  });
+
+  console.log('✅ Suporte user ensured: suporte@example.com / Suporte123!');
+
+  // const viewerUser = await prisma.user.upsert({
+  //   where: { email: 'viewer@example.com' },
+  //   update: { passwordHash },
+  //   create: {
+  //     email: 'viewer@example.com',
+  //     name: 'Viewer User',
+  //     passwordHash,
+  //     status: 'ACTIVE',
+  //   },
+  // });
+
+  // await prisma.userRole.upsert({
+  //   where: {
+  //     userId_roleId: {
+  //       userId: viewerUser.id,
+  //       roleId: viewerRole.id,
+  //     },
+  //   },
+  //   update: {},
+  //   create: {
+  //     userId: viewerUser.id,
+  //     roleId: viewerRole.id,
+  //   },
+  // });
+  //TUDO ISSO PODE SER ALTERADO DEPOIS
+
+  console.log('✅ Default users created and linked to roles');
+  console.log('   - admin@example.com / Password123!');
+  console.log('   - viewer@example.com / Password123!');
+  
+  // Criar Aplicação Semente para Testes Manuais e E2E M2M
+  const testAppSecret = 'test-client-secret';
+  const testAppSecretHash = await bcrypt.hash(testAppSecret, 12);
+
+  const testApp = await prisma.application.upsert({
+    where: { clientId: 'test-client-id' },
+    update: { clientSecretHash: testAppSecretHash, status: 'ACTIVE' },
+    create: {
+      name: 'Test Application',
+      clientId: 'test-client-id',
+      clientSecretHash: testAppSecretHash,
+      status: 'ACTIVE',
+    },
+  });
+
+  // Criar Escopos Semente (M2M)
+  const scopeDefs: { code: string; description: string }[] = [
+    { code: 'identity:read', description: 'Leitura de identidade de usuários via API M2M (Core)' },
+    { code: 'read:all', description: 'Leitura total (M2M)' },
+    { code: 'write:all', description: 'Escrita total (M2M)' },
+    { code: 'orders:read', description: 'Leitura de pedidos' },
+    { code: 'orders:write', description: 'Criação/alteração de pedidos' },
+    { code: 'customers:read', description: 'Leitura de clientes' },
+    { code: 'customers:write', description: 'Escrita de clientes' },
+    { code: 'products:read', description: 'Leitura de produtos' },
+    { code: 'products:write', description: 'Escrita de produtos' },
+  ];
 
   const scopes = await Promise.all(
     scopeDefs.map((s) =>

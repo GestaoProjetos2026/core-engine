@@ -327,7 +327,56 @@ def fetch_orders(access_token: str) -> list:
 | `clientId` | Identificador público da aplicação |
 | `scopes` | Escopos concedidos neste token |
 
-### 4.6. Escopos disponíveis
+### 4.6. Consulta de identidade por UUID (RF29)
+
+Squads **2** (emitente na emissão fiscal) e **3** (nome do usuário logado) devem buscar dados de identidade **no Core**, não no banco do Core.
+
+| Item | Valor |
+|------|--------|
+| **Rota** | `GET /v1/integration/users/:id` |
+| **Token** | `integration_access` (não aceita token humano) |
+| **Escopo mínimo** | `identity:read` |
+| **K8s (exemplo)** | `http://core-engine-svc.default.svc.cluster.local:8080/v1/integration/users/{uuid}` |
+
+#### cURL
+
+```bash
+# 1) Obter token M2M com escopo identity:read
+TOKEN=$(curl -s -X POST http://localhost:3000/v1/oauth/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "grant_type": "client_credentials",
+    "client_id": "test-client-id",
+    "client_secret": "test-client-secret",
+    "scope": "identity:read"
+  }' | jq -r '.data.access_token')
+
+# 2) Buscar usuário pelo UUID (sub do JWT humano no CRM)
+curl -s http://localhost:3000/v1/integration/users/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+#### Resposta (200)
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "crm@example.com",
+    "name": "CRM",
+    "status": "ACTIVE",
+    "createdAt": "2026-05-01T10:00:00.000Z",
+    "updatedAt": "2026-05-01T10:00:00.000Z"
+  },
+  "timestamp": "2026-05-27T12:00:00.000Z",
+  "path": "/v1/integration/users/550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+> **Nota:** `GET /v1/users/:id` permanece para administradores humanos com permissão RBAC `users:read`. Serviços M2M devem usar **`/v1/integration/users/:id`**.
+
+### 4.7. Escopos disponíveis
 
 | Escopo | Descrição | Módulo-alvo |
 |--------|-----------|-------------|
@@ -337,6 +386,7 @@ def fetch_orders(access_token: str) -> list:
 | `customers:write` | Criação e atualização de clientes | CRM |
 | `products:read` | Leitura de catálogo de produtos | Catálogo |
 | `products:write` | Gerenciamento de produtos | Catálogo |
+| `identity:read` | Leitura de identidade de usuários (`GET /v1/integration/users/:id`) | Core/Auth |
 | `read:all` | Leitura global em todas as APIs permitidas | Global |
 | `write:all` | Escrita global em todas as APIs permitidas | Global |
 
