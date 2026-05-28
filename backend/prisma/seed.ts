@@ -3,6 +3,14 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
 import * as bcrypt from 'bcrypt';
+import {
+  adminUserDefs,
+  e2eM2mAppDef,
+  m2mAppDefs,
+  viewerUserDef,
+  type AdminUserDef,
+  type M2mAppDef,
+} from './seed-data';
 
 dotenv.config();
 
@@ -17,8 +25,12 @@ if (process.env.DATABASE_URL) {
 const adapter = new PrismaPg(pool, { schema });
 const prisma = new PrismaClient({ adapter });
 
+const isProduction = process.env.NODE_ENV === 'production';
+const updatePasswords =
+  process.env.SEED_UPDATE_PASSWORDS === 'true' ||
+  (!isProduction && process.env.SEED_UPDATE_PASSWORDS !== 'false');
+
 const permissionDefs: { code: string; description: string }[] = [
-  // Identity & Access Management (IAM)
   { code: 'users:read', description: 'Visualizar lista e detalhes de usuários' },
   { code: 'users:write', description: 'Criar, atualizar e excluir usuários' },
   { code: 'roles:read', description: 'Visualizar papéis de acesso' },
@@ -26,19 +38,13 @@ const permissionDefs: { code: string; description: string }[] = [
   { code: 'roles:manage', description: 'Vincular usuários e permissões a papéis' },
   { code: 'permissions:read', description: 'Visualizar catálogo de permissões' },
   { code: 'permissions:write', description: 'Gerenciar permissões do sistema' },
-
-  // Integration & M2M
   { code: 'applications:read', description: 'Visualizar aplicações integradas' },
   { code: 'applications:write', description: 'Gerenciar aplicações e segredos' },
   { code: 'scopes:read', description: 'Visualizar catálogo de escopos' },
   { code: 'scopes:write', description: 'Gerenciar escopos e vínculos' },
-
-  // Observability & System
   { code: 'audit:read', description: 'Visualizar logs de auditoria e eventos críticos' },
   { code: 'health:read', description: 'Visualizar status de saúde do sistema' },
   { code: 'dashboard:read', description: 'Visualizar resumo e métricas do dashboard' },
-
-  // Domain Placeholders (Consumer Squads / ERP Modules)
   { code: 'orders:read', description: 'Visualizar pedidos (Módulo Vendas)' },
   { code: 'orders:write', description: 'Gerenciar pedidos (Módulo Vendas)' },
   { code: 'customers:read', description: 'Visualizar clientes (Módulo CRM)' },
@@ -90,6 +96,8 @@ async function linkRoleToPermissions(
 }
 
 async function main() {
+  console.log(`Seed mode: NODE_ENV=${process.env.NODE_ENV ?? 'undefined'}, updatePasswords=${updatePasswords}`);
+
   const permissions = await Promise.all(
     permissionDefs.map((p) =>
       prisma.permission.upsert({
@@ -128,7 +136,6 @@ async function main() {
 
   console.log('✅ Roles (admin, viewer, manager, suporte) upserted');
 
-  // Admin: Tudo
   for (const permission of permissions) {
     await prisma.rolePermission.upsert({
       where: {
@@ -146,7 +153,6 @@ async function main() {
   }
   console.log('✅ Admin linked to all permissions');
 
-  // Viewer: Tudo que termina em :read
   const viewerPerms = permissions.filter((p) => p.code.endsWith(':read'));
   for (const permission of viewerPerms) {
     await prisma.rolePermission.upsert({
@@ -165,7 +171,6 @@ async function main() {
   }
   console.log(`✅ Viewer linked to ${viewerPerms.length} read permissions`);
 
-  // Manager: IAM Read + Domain Read/Write (sem permissão de gerenciar IAM)
   const managerPerms = permissions.filter(
     (p) =>
       p.code.endsWith(':read') ||
@@ -404,25 +409,26 @@ async function main() {
 
   console.log(`✅ ${scopes.length} scopes upserted`);
 
-  // Vincular escopos à aplicação de teste
-  for (const scope of scopes) {
-    await prisma.applicationScope.upsert({
-      where: {
-        applicationId_scopeId: {
-          applicationId: testApp.id,
-          scopeId: scope.id,
-        },
-      },
-      update: {},
-      create: {
-        applicationId: testApp.id,
-        scopeId: scope.id,
-      },
-    });
+  console.log('✅ Seeding M2M applications:');
+  for (const def of m2mAppDefs) {
+    await seedM2mApplication(def, scopes);
   }
+  await seedM2mApplication(e2eM2mAppDef, scopes);
 
-  console.log('✅ Test Application linked to all scopes');
-  console.log('   - clientId: test-client-id / clientSecret: test-client-secret');
+  if (!isProduction) {
+    console.log('\n📋 Local dev credentials (passwords from env or defaults in seed-data.ts):');
+    for (const def of adminUserDefs) {
+      console.log(`   - ${def.email} → env ${def.passwordEnvKey} or ${def.defaultPassword}`);
+    }
+    console.log(`   - ${viewerUserDef.email} → env ${viewerUserDef.passwordEnvKey} or ${viewerUserDef.defaultPassword}`);
+    for (const def of [...m2mAppDefs, e2eM2mAppDef]) {
+      console.log(`   - ${def.clientId} → env ${def.secretEnvKey} or ${def.defaultSecret}`);
+    }
+  } else {
+    console.log('\n📋 Production seed complete (credentials not logged; use cluster secrets).');
+    console.log('   Admin emails:', adminUserDefs.map((d) => d.email).join(', '));
+    console.log('   M2M client_ids:', [...m2mAppDefs, e2eM2mAppDef].map((d) => d.clientId).join(', '));
+  }
 
   console.log('\n🎉 Seed completed');
 }
@@ -434,4 +440,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });

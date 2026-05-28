@@ -5,7 +5,7 @@
   "main": "dist/main.js",
   "scripts": {
     "dev": "tsx watch src/main.ts",
-    "build": "tsc -p tsconfig.json && tsc prisma/seed.ts --esModuleInterop --skipLibCheck --outDir dist/prisma",
+    "build": "tsc -p tsconfig.json && tsc prisma/seed.ts prisma/seed-data.ts --esModuleInterop --skipLibCheck --outDir dist/prisma",
     "start": "node dist/src/main.js",
     "test": "vitest run --exclude \"dist/**\"",
     "prisma:seed": "tsx prisma/seed.ts"

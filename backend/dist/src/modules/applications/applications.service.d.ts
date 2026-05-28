@@ -10,90 +10,19 @@ export declare class ApplicationsService {
     private readonly audit;
     constructor(prisma: PrismaService, audit: AuditService);
     private generateClientCredentials;
-    create(createApplicationDto: CreateApplicationDto): Promise<{
-        clientSecret: string;
-        id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.AppStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        clientId: string;
-    }>;
+    create(createApplicationDto: CreateApplicationDto): Promise<any>;
     findAll(query: ListApplicationsQueryDto): Promise<{
-        items: {
-            id: string;
-            name: string;
-            status: import(".prisma/client").$Enums.AppStatus;
-            createdAt: Date;
-            updatedAt: Date;
-            clientId: string;
-        }[];
-        total: number;
+        items: any;
+        total: any;
         page: number;
         limit: number;
     }>;
-    findOne(id: string): Promise<{
-        id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.AppStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        clientId: string;
-    }>;
-    update(id: string, updateApplicationDto: UpdateApplicationDto): Promise<{
-        id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.AppStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        clientId: string;
-    }>;
-    changeStatus(id: string, changeStatusDto: ChangeApplicationStatusDto): Promise<{
-        id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.AppStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        clientId: string;
-    }>;
-    regenerateSecret(id: string): Promise<{
-        clientSecret: string;
-        id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.AppStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        clientId: string;
-    }>;
-    getScopes(applicationId: string): Promise<{
-        description: string;
-        id: string;
-        code: string;
-    }[]>;
-    associateScopes(applicationId: string, associateScopesDto: AssociateScopesDto): Promise<{
-        description: string;
-        id: string;
-        code: string;
-    }[]>;
-    validateCredentials(clientId: string, clientSecret: string): Promise<({
-        scopes: ({
-            scope: {
-                description: string;
-                id: string;
-                code: string;
-            };
-        } & {
-            applicationId: string;
-            scopeId: string;
-        })[];
-    } & {
-        id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.AppStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        clientId: string;
-        clientSecretHash: string;
-    }) | null>;
+    findOne(id: string): Promise<any>;
+    update(id: string, updateApplicationDto: UpdateApplicationDto): Promise<any>;
+    changeStatus(id: string, changeStatusDto: ChangeApplicationStatusDto): Promise<any>;
+    regenerateSecret(id: string): Promise<any>;
+    getScopes(applicationId: string): Promise<any>;
+    associateScopes(applicationId: string, associateScopesDto: AssociateScopesDto): Promise<any>;
+    validateCredentials(clientId: string, clientSecret: string): Promise<any>;
 }
 //# sourceMappingURL=applications.service.d.ts.map

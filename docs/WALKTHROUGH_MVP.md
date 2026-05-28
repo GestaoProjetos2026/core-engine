@@ -10,7 +10,7 @@ O sistema suporta login via e-mail/senha, emissão de JWT com claims de permiss�
 
 ### Login e Perfil
 1.  **Endpoint:** `POST /v1/auth/login`
-2.  **Credenciais Admin:** `admin@example.com` / `Password123!`
+2.  **Credenciais Admin (dev):** `admin@example.com` / `AdminCore2026!` (demais contas em [`docs/DEPLOY_SEED.md`](DEPLOY_SEED.md))
 3.  **Resultado:** Recebimento de `accessToken` e `refreshToken`.
 4.  **Consulta de Perfil:** `GET /v1/auth/me` (com Bearer Token) retorna os dados do usuário e a lista exata de permissões (ex: `users:read`, `users:write`).
 
