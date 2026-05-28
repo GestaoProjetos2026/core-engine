@@ -29,6 +29,8 @@ info:
     name: Internal — ERP Modular Cloud-Native
 
 servers:
+  - url: https://api.core-engine.40.82.176.176.nip.io/v1
+    description: Production server
   - url: http://20.246.82.149:8080
     description: Development server
   - url: http://localhost:3000
@@ -140,6 +142,9 @@ components:
       type: object
       properties:
         userId:
+          type: string
+          format: uuid
+        tenantId:
           type: string
           format: uuid
         email:
@@ -475,6 +480,7 @@ paths:
                 success: true
                 data:
                   userId: "550e8400-e29b-41d4-a716-446655440000"
+                  tenantId: "tnt-xyz123"
                   email: "admin@empresa.com"
                   roles: ["admin"]
                   perms: ["users:write", "users:read", "roles:read", "roles:write"]
@@ -514,6 +520,12 @@ paths:
       security:
         - bearer: []
       parameters:
+        - in: header
+          name: X-Tenant-Id
+          schema:
+            type: string
+            format: uuid
+          description: Tenant UUID for row-level isolation (RF27).
         - in: query
           name: email
           schema:
@@ -813,6 +825,120 @@ paths:
         "409":
           description: Role name already exists (RN06).
 
+  /v1/roles/{id}:
+    delete:
+      tags: [Roles]
+      summary: Delete a role
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Role deleted.
+
+  /v1/roles/{id}/users:
+    post:
+      tags: [Roles]
+      summary: Assign users to a role
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Users assigned.
+
+  /v1/roles/{id}/users/{userId}:
+    delete:
+      tags: [Roles]
+      summary: Remove user from a role
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User removed from role.
+
+  /v1/roles/{id}/permissions:
+    post:
+      tags: [Roles]
+      summary: Assign permissions to a role
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                permissionIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Permissions assigned.
+
+  /v1/roles/{id}/permissions/{permissionId}:
+    delete:
+      tags: [Roles]
+      summary: Remove permission from a role
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: permissionId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Permission removed from role.
+
   /v1/permissions:
     get:
       tags: [Permissions]
@@ -850,7 +976,207 @@ paths:
         "409":
           description: Permission code already exists (RN06).
 
-  # ── Integration — Sprint 5 ────────────────────────────────────
+  /v1/permissions/{id}:
+    delete:
+      tags: [Permissions]
+      summary: Delete a permission
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Permission deleted.
+
+  # ── Applications — Sprint 5 ────────────────────────────────────
+  /v1/applications:
+    get:
+      tags: [Applications]
+      summary: List applications
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: List of applications.
+    post:
+      tags: [Applications]
+      summary: Create an application
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+      responses:
+        "201":
+          description: Application created. Returns client_secret once.
+
+  /v1/applications/{id}:
+    get:
+      tags: [Applications]
+      summary: Get application details
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Application details.
+    patch:
+      tags: [Applications]
+      summary: Update application
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        "200":
+          description: Application updated.
+
+  /v1/applications/{id}/status:
+    patch:
+      tags: [Applications]
+      summary: Change application status
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [ACTIVE, INACTIVE]
+      responses:
+        "200":
+          description: Status updated.
+
+  /v1/applications/{id}/regenerate-secret:
+    post:
+      tags: [Applications]
+      summary: Regenerate application client_secret
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Secret regenerated.
+
+  /v1/applications/{id}/scopes:
+    get:
+      tags: [Applications]
+      summary: List application scopes
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Scopes listed.
+    post:
+      tags: [Applications]
+      summary: Associate scopes to application
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scopeIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "201":
+          description: Scopes associated.
+
+  # ── Integration — Sprint 5 & 8 ─────────────────────────────────
+  /v1/oauth/token:
+    post:
+      tags: [Integration]
+      summary: OAuth 2.0 token endpoint
+      description: |
+        OAuth 2.0 `grant_type=client_credentials` (RFC 6749).
+        Returns a `integration_access` JWT with granted scopes.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [client_id, client_secret, grant_type]
+              properties:
+                grant_type:
+                  type: string
+                  enum: [client_credentials]
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+                scope:
+                  type: string
+      responses:
+        "200":
+          description: M2M access token issued.
+        "401":
+          description: Invalid credentials.
+        "403":
+          description: Invalid scope requested.
+
   /v1/integration/token:
     post:
       tags: [Integration]
@@ -911,3 +1237,32 @@ paths:
           description: Invalid credentials or inactive application (RN04).
         "403":
           description: Requested scopes exceed registered scopes (RF22).
+
+  /v1/integration/users/{id}:
+    get:
+      tags: [Integration]
+      summary: Get user identity by UUID (M2M) (RF29)
+      description: |
+        Returns id, name, email and status. Requires JWT `integration_access`, scope `identity:read`, and header `X-Tenant-Id`.
+      security:
+        - bearer: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: header
+          name: X-Tenant-Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: User identity found.
+        "403":
+          description: Insufficient scopes.
+        "404":
+          description: User not found.
