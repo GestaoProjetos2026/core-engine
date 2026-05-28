@@ -14,17 +14,20 @@ O **Core Engine & Auth** é o núcleo de Identidade e Integração Segura do eco
 
 ### 2. Instalação e Setup
 ```bash
+cd backend
+
 # Instalar dependências
 npm install
 
 # Configurar variáveis de ambiente
 cp .env.example .env
 
-# Subir infra (PostgreSQL + Redis)
-# Nota: PostgreSQL mapeado para a porta 5433 no host
+# Na raiz do repo: subir infra (PostgreSQL + Redis)
+cd ..
 docker compose up -d
 
 # Sincronizar banco e popular dados iniciais
+cd backend
 npx prisma db push
 npm run prisma:seed
 
@@ -59,6 +62,7 @@ Aplicações podem obter tokens de integração via `POST /v1/oauth/token` usand
 | [`docs/WALKTHROUGH_MVP.md`](docs/WALKTHROUGH_MVP.md) | **Guia de Demonstração do MVP** |
 | [`docs/PERMISSIONS_MATRIX.md`](docs/PERMISSIONS_MATRIX.md) | Catálogo oficial de permissões e escopos |
 | [`docs/JWT_GUIDE.md`](docs/JWT_GUIDE.md) | Detalhes sobre Claims e validação de tokens |
+| [`docs/DEPLOY_SEED.md`](docs/DEPLOY_SEED.md) | Seed em produção (admins, M2M, secrets K8s) |
 
 ---
 
