@@ -3,6 +3,7 @@ import { IntegrationController } from './integration.controller';
 import { IntegrationService } from './integration.service';
 import { ApplicationsModule } from '../applications/applications.module';
 import { AuthModule } from '../auth/auth.module';
+import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { parseDurationToSeconds } from '../auth/auth-time.util';
 
@@ -10,6 +11,7 @@ import { parseDurationToSeconds } from '../auth/auth-time.util';
   imports: [
     ApplicationsModule,
     AuthModule,
+    UsersModule,
     JwtModule.register({
       global: false,
       secret: process.env.JWT_SECRET ?? 'dev-insecure-change-me',

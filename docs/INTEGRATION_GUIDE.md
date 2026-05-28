@@ -32,9 +32,10 @@ O **Core Engine & Auth** é a fonte única de verdade para identidade, autentica
 | **RBAC de usuário humano** | Usuários logados via browser/app | JWT `type: user_access` com claims `roles` e `perms` |
 | **Integração M2M** | Serviços, daemons, scripts automatizados | JWT `type: integration_access` com claim `scopes` via OAuth 2.0 `client_credentials` |
 
-**Base URL:** `http://localhost:3000` (desenvolvimento)  
+**Base URL (dev):** `http://localhost:3000` (backend direto) ou **`http://localhost`** (gateway Docker — recomendado para demo integrada)  
 **Prefixo de API:** `/v1`  
-**Swagger interativo:** `GET /v1/docs` (somente em ambiente de desenvolvimento)
+**Swagger interativo:** `GET /v1/docs` (somente em ambiente de desenvolvimento)  
+**Gateway multi-módulo:** ver [`docs/GATEWAY.md`](GATEWAY.md) (roteamento Core + squads 2–4, sem login duplicado)
 
 > **Regra de ouro:** Nenhum módulo deve manter sua própria matriz de permissões ou seu próprio mecanismo de login. Toda autorização vem dos claims do JWT emitido pelo Core.
 
@@ -327,7 +328,57 @@ def fetch_orders(access_token: str) -> list:
 | `clientId` | Identificador público da aplicação |
 | `scopes` | Escopos concedidos neste token |
 
-### 4.6. Escopos disponíveis
+### 4.6. Consulta de identidade por UUID (RF29)
+
+Squads **2** (emitente na emissão fiscal) e **3** (nome do usuário logado) devem buscar dados de identidade **no Core**, não no banco do Core.
+
+| Item | Valor |
+|------|--------|
+| **Rota** | `GET /v1/integration/users/:id` |
+| **Token** | `integration_access` (não aceita token humano) |
+| **Escopo mínimo** | `identity:read` |
+| **K8s (exemplo)** | `http://core-engine-svc.default.svc.cluster.local:8080/v1/integration/users/{uuid}` |
+
+#### cURL
+
+```bash
+# 1) Obter token M2M (ex.: Squad 3 — crm-leads; ver docs/PERMISSIONS_MATRIX.md §3)
+TOKEN=$(curl -s -X POST http://localhost/v1/oauth/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "grant_type": "client_credentials",
+    "client_id": "crm-leads",
+    "client_secret": "CrmLeads-Demo2026!",
+    "scope": "identity:read"
+  }' | jq -r '.data.access_token')
+
+# 2) Buscar usuário pelo UUID (sub do JWT humano no CRM)
+curl -s http://localhost:3000/v1/integration/users/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "X-Tenant-Id: 00000000-0000-4000-8000-000000000001"
+```
+
+#### Resposta (200)
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "crm@example.com",
+    "name": "CRM",
+    "status": "ACTIVE",
+    "createdAt": "2026-05-01T10:00:00.000Z",
+    "updatedAt": "2026-05-01T10:00:00.000Z"
+  },
+  "timestamp": "2026-05-27T12:00:00.000Z",
+  "path": "/v1/integration/users/550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+> **Nota:** `GET /v1/users/:id` permanece para administradores humanos com permissão RBAC `users:read`. Serviços M2M devem usar **`/v1/integration/users/:id`**.
+
+### 4.7. Escopos disponíveis
 
 | Escopo | Descrição | Módulo-alvo |
 |--------|-----------|-------------|
@@ -337,6 +388,7 @@ def fetch_orders(access_token: str) -> list:
 | `customers:write` | Criação e atualização de clientes | CRM |
 | `products:read` | Leitura de catálogo de produtos | Catálogo |
 | `products:write` | Gerenciamento de produtos | Catálogo |
+| `identity:read` | Leitura de identidade de usuários (`GET /v1/integration/users/:id`) | Core/Auth |
 | `read:all` | Leitura global em todas as APIs permitidas | Global |
 | `write:all` | Escrita global em todas as APIs permitidas | Global |
 
@@ -411,7 +463,36 @@ def login(email: str, password: str) -> dict:
 }
 ```
 
-### 5.3. Obtendo o perfil e permissões do usuário
+### 5.3. Contexto de tenant (`X-Tenant-Id`) — RF27
+
+Rotas administrativas do Core (ex.: `GET /v1/users`) filtram dados pelo **tenant** do token. Squads que chamam o Core em nome de um usuário humano devem propagar o mesmo contexto:
+
+| Cenário | Header `X-Tenant-Id` | Comportamento |
+|---------|----------------------|---------------|
+| Omitido | — | O Core usa o `tenant_id` do JWT (`user_access`). |
+| Presente e igual ao JWT | UUID do tenant | Aceito; reforça o contexto para gateways e logs. |
+| Presente e diferente do JWT | UUID divergente | **403** `TENANT_MISMATCH`. |
+| Token M2M em `GET /v1/integration/users/:id` | **Obrigatório** | Sem header → **400** `TENANT_HEADER_REQUIRED`. |
+
+**Exemplo — listar usuários (admin):**
+
+```bash
+curl -X GET "http://localhost:3000/v1/users?page=1&limit=10" \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "X-Tenant-Id: 00000000-0000-4000-8000-000000000001"
+```
+
+**Exemplo — identidade M2M (Squad 2/3):**
+
+```bash
+curl -X GET "http://localhost:3000/v1/integration/users/<user-uuid>" \
+  -H "Authorization: Bearer <integration_access_token>" \
+  -H "X-Tenant-Id: 00000000-0000-4000-8000-000000000001"
+```
+
+> O UUID do tenant default de demonstração está no seed (`prisma/seed.ts`) e em `docs/JWT_GUIDE.md` (claim `tenant_id`).
+
+### 5.4. Obtendo o perfil e permissões do usuário
 
 ```bash
 curl -X GET http://localhost:3000/v1/auth/me \
@@ -432,7 +513,7 @@ curl -X GET http://localhost:3000/v1/auth/me \
 }
 ```
 
-### 5.4. Renovação do token (refresh com rotação)
+### 5.5. Renovação do token (refresh com rotação)
 
 O `accessToken` expira em **15 minutos** por padrão. Implemente renovação proativa antes do vencimento.
 

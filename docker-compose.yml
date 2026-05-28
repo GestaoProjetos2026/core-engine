@@ -54,6 +54,18 @@ services:
       redis:
         condition: service_healthy
     networks:
+      erp-network:
+        aliases:
+          - core-engine-backend-svc
+
+  # Stubs Squads 2–4 para demo do gateway (task 14). Substituir por serviços reais em staging/prod.
+  module-stubs:
+    build:
+      context: ./infra/mock-modules
+      dockerfile: Dockerfile
+    container_name: erp-module-stubs
+    restart: unless-stopped
+    networks:
       - erp-network
 
   frontend:
@@ -61,15 +73,20 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # A URL precisa apontar para onde o backend estará exposto para o NAVEGADOR do usuário
-        - VITE_API_URL=http://localhost:3000
+        # Same-origin: browser chama /v1 via gateway na porta 80
+        VITE_API_URL: ""
     container_name: erp-frontend
     restart: always
+    environment:
+      - CORE_SVC_HOST=${CORE_SVC_HOST:-backend:3000}
+      - FISCAL_SVC_HOST=${FISCAL_SVC_HOST:-module-stubs:8080}
+      - CRM_SVC_HOST=${CRM_SVC_HOST:-module-stubs:8080}
+      - SERVICE_DESK_SVC_HOST=${SERVICE_DESK_SVC_HOST:-module-stubs:8080}
     ports:
-      # - "80:3000"
       - "80:80"
     depends_on:
       - backend
+      - module-stubs
     networks:
       - erp-network
 

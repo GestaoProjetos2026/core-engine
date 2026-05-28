@@ -3,6 +3,14 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
 import * as bcrypt from 'bcrypt';
+import {
+  adminUserDefs,
+  e2eM2mAppDef,
+  m2mAppDefs,
+  viewerUserDef,
+  type AdminUserDef,
+  type M2mAppDef,
+} from './seed-data';
 
 dotenv.config();
 
@@ -17,8 +25,12 @@ if (process.env.DATABASE_URL) {
 const adapter = new PrismaPg(pool, { schema });
 const prisma = new PrismaClient({ adapter });
 
+const isProduction = process.env.NODE_ENV === 'production';
+const updatePasswords =
+  process.env.SEED_UPDATE_PASSWORDS === 'true' ||
+  (!isProduction && process.env.SEED_UPDATE_PASSWORDS !== 'false');
+
 const permissionDefs: { code: string; description: string }[] = [
-  // Identity & Access Management (IAM)
   { code: 'users:read', description: 'Visualizar lista e detalhes de usuários' },
   { code: 'users:write', description: 'Criar, atualizar e excluir usuários' },
   { code: 'roles:read', description: 'Visualizar papéis de acesso' },
@@ -26,19 +38,13 @@ const permissionDefs: { code: string; description: string }[] = [
   { code: 'roles:manage', description: 'Vincular usuários e permissões a papéis' },
   { code: 'permissions:read', description: 'Visualizar catálogo de permissões' },
   { code: 'permissions:write', description: 'Gerenciar permissões do sistema' },
-
-  // Integration & M2M
   { code: 'applications:read', description: 'Visualizar aplicações integradas' },
   { code: 'applications:write', description: 'Gerenciar aplicações e segredos' },
   { code: 'scopes:read', description: 'Visualizar catálogo de escopos' },
   { code: 'scopes:write', description: 'Gerenciar escopos e vínculos' },
-
-  // Observability & System
   { code: 'audit:read', description: 'Visualizar logs de auditoria e eventos críticos' },
   { code: 'health:read', description: 'Visualizar status de saúde do sistema' },
   { code: 'dashboard:read', description: 'Visualizar resumo e métricas do dashboard' },
-
-  // Domain Placeholders (Consumer Squads / ERP Modules)
   { code: 'orders:read', description: 'Visualizar pedidos (Módulo Vendas)' },
   { code: 'orders:write', description: 'Gerenciar pedidos (Módulo Vendas)' },
   { code: 'customers:read', description: 'Visualizar clientes (Módulo CRM)' },
@@ -47,9 +53,149 @@ const permissionDefs: { code: string; description: string }[] = [
   { code: 'products:write', description: 'Gerenciar catálogo de produtos' },
   { code: 'inventory:read', description: 'Visualizar estoque' },
   { code: 'inventory:write', description: 'Movimentar estoque' },
+
+  // Squad 2 — Fiscal (não concedidas ao papel suporte)
+  { code: 'finance:read', description: 'Visualizar dados financeiros e faturamento (Squad 2)' },
+  { code: 'finance:write', description: 'Emitir e alterar documentos fiscais (Squad 2)' },
+
+  // Squad 4 — Service Desk
+  { code: 'tickets:read', description: 'Visualizar chamados de suporte' },
+  { code: 'tickets:write', description: 'Criar e atualizar chamados de suporte' },
 ];
 
+const SUPORTE_PERMISSION_CODES = [
+  'customers:read',
+  'tickets:read',
+  'tickets:write',
+  'dashboard:read',
+  'health:read',
+] as const;
+
+async function linkRoleToPermissions(
+  roleId: string,
+  permissionList: { id: string; code: string }[],
+  codes: readonly string[],
+) {
+  const selected = permissionList.filter((p) => codes.includes(p.code));
+  for (const permission of selected) {
+    await prisma.rolePermission.upsert({
+      where: {
+        roleId_permissionId: {
+          roleId,
+          permissionId: permission.id,
+        },
+      },
+      update: {},
+      create: {
+        roleId,
+        permissionId: permission.id,
+      },
+    });
+  }
+  return selected.map((p) => p.code);
+}
+
+type M2mAppSeed = {
+  name: string;
+  clientId: string;
+  clientSecret: string;
+  scopeCodes: readonly string[];
+  squad: string;
+};
+
+/** Demo-only secrets (task 15). Rotate via POST /v1/applications/:id/regenerate-secret in production. */
+const SQUAD_M2M_APPS: M2mAppSeed[] = [
+  {
+    name: 'Finance Fiscal (Squad 2)',
+    clientId: 'finance-fiscal',
+    clientSecret: 'FinanceFiscal-Demo2026!',
+    scopeCodes: ['identity:read', 'finance:read'],
+    squad: 'Squad 2',
+  },
+  {
+    name: 'CRM Leads (Squad 3)',
+    clientId: 'crm-leads',
+    clientSecret: 'CrmLeads-Demo2026!',
+    scopeCodes: ['identity:read', 'customers:read'],
+    squad: 'Squad 3',
+  },
+  {
+    name: 'Service Desk (Squad 4)',
+    clientId: 'service-desk',
+    clientSecret: 'ServiceDesk-Demo2026!',
+    scopeCodes: ['identity:read', 'tickets:read'],
+    squad: 'Squad 4',
+  },
+];
+
+const TEST_M2M_APP: M2mAppSeed = {
+  name: 'Test Application (E2E / integração)',
+  clientId: 'test-client-id',
+  clientSecret: 'test-client-secret',
+  scopeCodes: [
+    'identity:read',
+    'read:all',
+    'write:all',
+    'test:scope',
+    'orders:read',
+    'orders:write',
+    'customers:read',
+    'customers:write',
+    'products:read',
+    'products:write',
+  ],
+  squad: 'Core QA',
+};
+
+async function seedM2mApplication(
+  def: M2mAppSeed,
+  scopeByCode: Map<string, { id: string; code: string }>,
+) {
+  const clientSecretHash = await bcrypt.hash(def.clientSecret, 12);
+  const app = await prisma.application.upsert({
+    where: { clientId: def.clientId },
+    update: {
+      name: def.name,
+      clientSecretHash,
+      status: 'ACTIVE',
+    },
+    create: {
+      name: def.name,
+      clientId: def.clientId,
+      clientSecretHash,
+      status: 'ACTIVE',
+    },
+  });
+
+  for (const code of def.scopeCodes) {
+    const scope = scopeByCode.get(code);
+    if (!scope) {
+      throw new Error(`Scope "${code}" not found while seeding app ${def.clientId}`);
+    }
+    await prisma.applicationScope.upsert({
+      where: {
+        applicationId_scopeId: {
+          applicationId: app.id,
+          scopeId: scope.id,
+        },
+      },
+      update: {},
+      create: {
+        applicationId: app.id,
+        scopeId: scope.id,
+      },
+    });
+  }
+
+  console.log(
+    `✅ M2M app [${def.squad}]: ${def.clientId} (scopes: ${def.scopeCodes.join(', ')})`,
+  );
+  console.log(`   ⚠️  Demo secret only — rotate in production (see docs/PERMISSIONS_MATRIX.md §5)`);
+}
+
 async function main() {
+  console.log(`Seed mode: NODE_ENV=${process.env.NODE_ENV ?? 'undefined'}, updatePasswords=${updatePasswords}`);
+
   const permissions = await Promise.all(
     permissionDefs.map((p) =>
       prisma.permission.upsert({
@@ -61,6 +207,17 @@ async function main() {
   );
 
   console.log(`✅ ${permissions.length} permissions upserted`);
+
+  const defaultTenant = await prisma.tenant.upsert({
+    where: { slug: DEFAULT_TENANT_SLUG },
+    update: { name: 'Default Organization' },
+    create: {
+      id: DEFAULT_TENANT_ID,
+      name: 'Default Organization',
+      slug: DEFAULT_TENANT_SLUG,
+    },
+  });
+  console.log(`✅ Default tenant ensured: ${defaultTenant.slug} (${defaultTenant.id})`);
 
   const adminRole = await prisma.role.upsert({
     where: { name: 'admin' },
@@ -80,9 +237,14 @@ async function main() {
     create: { name: 'manager' },
   });
 
-  console.log('✅ Roles (admin, viewer, manager) upserted');
+  const suporteRole = await prisma.role.upsert({
+    where: { name: 'suporte' },
+    update: {},
+    create: { name: 'suporte' },
+  });
 
-  // Admin: Tudo
+  console.log('✅ Roles (admin, viewer, manager, suporte) upserted');
+
   for (const permission of permissions) {
     await prisma.rolePermission.upsert({
       where: {
@@ -100,7 +262,6 @@ async function main() {
   }
   console.log('✅ Admin linked to all permissions');
 
-  // Viewer: Tudo que termina em :read
   const viewerPerms = permissions.filter((p) => p.code.endsWith(':read'));
   for (const permission of viewerPerms) {
     await prisma.rolePermission.upsert({
@@ -119,7 +280,6 @@ async function main() {
   }
   console.log(`✅ Viewer linked to ${viewerPerms.length} read permissions`);
 
-  // Manager: IAM Read + Domain Read/Write (sem permissão de gerenciar IAM)
   const managerPerms = permissions.filter(
     (p) =>
       p.code.endsWith(':read') ||
@@ -144,6 +304,24 @@ async function main() {
     });
   }
   console.log(`✅ Manager linked to ${managerPerms.length} permissions`);
+
+  const suporteLinkedCodes = await linkRoleToPermissions(
+    suporteRole.id,
+    permissions,
+    SUPORTE_PERMISSION_CODES,
+  );
+  const forbiddenForSuporte = permissions
+    .filter((p) => p.code.startsWith('finance:') || p.code.startsWith('orders:'))
+    .map((p) => p.code);
+  const suporteHasForbidden = suporteLinkedCodes.some((c) =>
+    forbiddenForSuporte.includes(c),
+  );
+  if (suporteHasForbidden) {
+    throw new Error('Role suporte must not include finance:* or orders:* permissions');
+  }
+  console.log(
+    `✅ Suporte linked to ${suporteLinkedCodes.length} permissions: ${suporteLinkedCodes.join(', ')}`,
+  );
 
   // Criar usuários semente
   // const defaultPassword = 'Password123!';
@@ -208,12 +386,19 @@ async function main() {
   for (const admin of defaultAdmins) {
     const passwordHash = await bcrypt.hash(admin.password, 12);
     const adminUser = await prisma.user.upsert({
-      where: { email: admin.email },
+      where: {
+        tenantId_email: {
+          tenantId: defaultTenant.id,
+          email: admin.email,
+        },
+      },
       update: {
         passwordHash,
         status: 'ACTIVE',
+        tenantId: defaultTenant.id,
       },
       create: {
+        tenantId: defaultTenant.id,
         email: admin.email,
         name: admin.name,
         passwordHash,
@@ -237,6 +422,46 @@ async function main() {
 
     console.log(`✅ Admin user ensured: ${admin.email}`);
   }
+
+  const suportePassword = 'Suporte123!';
+  const suportePasswordHash = await bcrypt.hash(suportePassword, 12);
+  const suporteUser = await prisma.user.upsert({
+    where: {
+      tenantId_email: {
+        tenantId: defaultTenant.id,
+        email: 'suporte@example.com',
+      },
+    },
+    update: {
+      passwordHash: suportePasswordHash,
+      status: 'ACTIVE',
+      name: 'Agente Suporte Demo',
+      tenantId: defaultTenant.id,
+    },
+    create: {
+      tenantId: defaultTenant.id,
+      email: 'suporte@example.com',
+      name: 'Agente Suporte Demo',
+      passwordHash: suportePasswordHash,
+      status: 'ACTIVE',
+    },
+  });
+
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId: {
+        userId: suporteUser.id,
+        roleId: suporteRole.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: suporteUser.id,
+      roleId: suporteRole.id,
+    },
+  });
+
+  console.log('✅ Suporte user ensured: suporte@example.com / Suporte123!');
 
   // const viewerUser = await prisma.user.upsert({
   //   where: { email: 'viewer@example.com' },
@@ -268,31 +493,22 @@ async function main() {
   console.log('   - admin@example.com / Password123!');
   console.log('   - viewer@example.com / Password123!');
   
-  // Criar Aplicação Semente para Testes Manuais e E2E M2M
-  const testAppSecret = 'test-client-secret';
-  const testAppSecretHash = await bcrypt.hash(testAppSecret, 12);
-
-  const testApp = await prisma.application.upsert({
-    where: { clientId: 'test-client-id' },
-    update: { clientSecretHash: testAppSecretHash, status: 'ACTIVE' },
-    create: {
-      name: 'Test Application',
-      clientId: 'test-client-id',
-      clientSecretHash: testAppSecretHash,
-      status: 'ACTIVE',
-    },
-  });
-
-  // Criar Escopos Semente (M2M)
+  // Escopos M2M (OAuth client_credentials)
   const scopeDefs: { code: string; description: string }[] = [
+    { code: 'identity:read', description: 'Leitura de identidade via GET /v1/integration/users/:id (RF29)' },
+    { code: 'test:scope', description: 'Escopo de teste do ScopesGuard (dev/e2e)' },
     { code: 'read:all', description: 'Leitura total (M2M)' },
     { code: 'write:all', description: 'Escrita total (M2M)' },
     { code: 'orders:read', description: 'Leitura de pedidos' },
     { code: 'orders:write', description: 'Criação/alteração de pedidos' },
-    { code: 'customers:read', description: 'Leitura de clientes' },
-    { code: 'customers:write', description: 'Escrita de clientes' },
+    { code: 'customers:read', description: 'Leitura de clientes (CRM)' },
+    { code: 'customers:write', description: 'Escrita de clientes (CRM)' },
     { code: 'products:read', description: 'Leitura de produtos' },
     { code: 'products:write', description: 'Escrita de produtos' },
+    { code: 'finance:read', description: 'Leitura fiscal/financeira (Squad 2)' },
+    { code: 'finance:write', description: 'Escrita fiscal/financeira (Squad 2)' },
+    { code: 'tickets:read', description: 'Leitura de chamados (Squad 4)' },
+    { code: 'tickets:write', description: 'Escrita de chamados (Squad 4)' },
   ];
 
   const scopes = await Promise.all(
@@ -305,27 +521,29 @@ async function main() {
     ),
   );
 
-  console.log(`✅ ${scopes.length} scopes upserted`);
+  const scopeByCode = new Map(scopes.map((s) => [s.code, s]));
+  console.log(`✅ ${scopes.length} M2M scopes upserted`);
 
-  // Vincular escopos à aplicação de teste
-  for (const scope of scopes) {
-    await prisma.applicationScope.upsert({
-      where: {
-        applicationId_scopeId: {
-          applicationId: testApp.id,
-          scopeId: scope.id,
-        },
-      },
-      update: {},
-      create: {
-        applicationId: testApp.id,
-        scopeId: scope.id,
-      },
-    });
+  console.log('✅ Seeding M2M applications:');
+  for (const def of m2mAppDefs) {
+    await seedM2mApplication(def, scopes);
   }
+  await seedM2mApplication(e2eM2mAppDef, scopes);
 
-  console.log('✅ Test Application linked to all scopes');
-  console.log('   - clientId: test-client-id / clientSecret: test-client-secret');
+  if (!isProduction) {
+    console.log('\n📋 Local dev credentials (passwords from env or defaults in seed-data.ts):');
+    for (const def of adminUserDefs) {
+      console.log(`   - ${def.email} → env ${def.passwordEnvKey} or ${def.defaultPassword}`);
+    }
+    console.log(`   - ${viewerUserDef.email} → env ${viewerUserDef.passwordEnvKey} or ${viewerUserDef.defaultPassword}`);
+    for (const def of [...m2mAppDefs, e2eM2mAppDef]) {
+      console.log(`   - ${def.clientId} → env ${def.secretEnvKey} or ${def.defaultSecret}`);
+    }
+  } else {
+    console.log('\n📋 Production seed complete (credentials not logged; use cluster secrets).');
+    console.log('   Admin emails:', adminUserDefs.map((d) => d.email).join(', '));
+    console.log('   M2M client_ids:', [...m2mAppDefs, e2eM2mAppDef].map((d) => d.clientId).join(', '));
+  }
 
   console.log('\n🎉 Seed completed');
 }
@@ -337,4 +555,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });

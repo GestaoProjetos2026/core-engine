@@ -10,6 +10,7 @@ import { OAuthGrantType, OAuthTokenRequestDto } from './dto/oauth-token-request.
 import { OAuthTokenResponseDto } from './dto/oauth-token-response.dto';
 import { parseDurationToSeconds } from '../auth/auth-time.util';
 import { AuthService } from '../auth/auth.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class IntegrationService {
@@ -19,7 +20,13 @@ export class IntegrationService {
     @Inject(ApplicationsService) private readonly applicationsService: ApplicationsService,
     @Inject(AuthService) private readonly authService: AuthService,
     @Inject(JwtService) private readonly jwt: JwtService,
+    @Inject(UsersService) private readonly usersService: UsersService,
   ) {}
+
+  /** RF29 — public identity fields for M2M consumers (Squad 2 emitente, Squad 3 display name). */
+  async findUserIdentityById(id: string, tenantId: string) {
+    return this.usersService.findOne(id, tenantId);
+  }
 
   async issueToken(dto: OAuthTokenRequestDto): Promise<OAuthTokenResponseDto> {
     switch (dto.grant_type) {

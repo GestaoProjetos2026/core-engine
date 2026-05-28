@@ -84,6 +84,7 @@ async function bootstrap() {
         .setLicense('Internal — ERP Modular Cloud-Native', '')
         .addServer(process.env.DEV_SERVER_URL ?? 'http://20.246.82.149:8080', 'Development server')
         .addServer('http://localhost:3000', 'Local development')
+        .addServer('http://api.core-engine.40.82.176.176.nip.io', 'Production server')
         .addTag('Health', 'Service health and readiness probes (RF19)')
         .addTag('Auth', 'Authentication and token lifecycle: register, login, refresh, /me (RF01–RF08)')
         .addTag('Users', 'User management CRUD and status control (RF09)')
@@ -109,23 +110,22 @@ async function bootstrap() {
         },
         customSiteTitle: 'Core/Auth API Docs',
     });
-    const port = Number(process.env.PORT ?? 3000);
+    // Ignora o process.env.PORT para não conflitar com o Nginx, forçando a porta interna 3001
+    const port = 3001;
     // Direct Fastify route for the root path (bypasses NestJS global prefix)
     const fastifyInstance = app.getHttpAdapter().getInstance();
     fastifyInstance.get('/', (_request, reply) => {
-        reply.send({
-            success: true,
+        // Return a plain object; the ResponseEnvelopeInterceptor will wrap it
+        return {
             message: 'Core Engine & Auth API is running',
-            data: {
-                version: '1.0.0',
-                docs: '/v1/docs',
-                health: '/v1/health',
-            },
-            timestamp: new Date().toISOString(),
-            path: '/',
-        });
+            version: '1.0.0',
+            docs: '/v1/docs',
+            health: '/v1/health',
+        };
     });
-    await app.listen(port, '0.0.0.0');
+    // await app.listen(port, '0.0.0.0');
+    // await app.listen(process.env.PORT || 3000);
+    await app.listen(process.env.PORT || 3000, '0.0.0.0');
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

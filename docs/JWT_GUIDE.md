@@ -27,6 +27,7 @@ O Core emite dois tipos de token JWT, diferenciados pelo claim `type`.
   "sub": "550e8400-e29b-41d4-a716-446655440000",
   "email": "usuario@empresa.com",
   "type": "user_access",
+  "tenant_id": "00000000-0000-4000-8000-000000000001",
   "roles": ["admin", "manager"],
   "perms": ["users:write", "users:read", "roles:read"],
   "iat": 1744660800,
@@ -36,7 +37,8 @@ O Core emite dois tipos de token JWT, diferenciados pelo claim `type`.
 
 | Claim | Tipo | Descrição |
 |-------|------|-----------|
-| `sub` | `string` (UUID) | ID do usuário no banco. |
+| `sub` | `string` (UUID) | ID do usuário no banco. **Equivale a `user_id`** no checklist do CTO e ao campo `userId` em `GET /v1/auth/me`. |
+| `tenant_id` | `string` (UUID) | Tenant lógico do usuário (isolamento multi-tenant). **Equivale a `tenantId`** em `GET /v1/auth/me`. |
 | `email` | `string` | E-mail do usuário autenticado. |
 | `type` | `"user_access"` | Identifica token de usuário humano. |
 | `roles` | `string[]` | Nomes dos papéis efetivos do usuário. |
@@ -97,7 +99,7 @@ export class OrdersController {
   @Get()
   @RequirePermissions('orders:read')       // permissão exigida no token
   findAll(@Req() req) {
-    // req.user contém: { userId, email, roles, perms, type }
+    // req.user contém: { userId, tenantId, email, roles, perms, type }
     return this.ordersService.findAll();
   }
 }
