@@ -2,25 +2,12 @@
 # Upstreams substituídos em runtime via envsubst (imagem nginx oficial).
 # Variáveis: CORE_SVC_HOST, FISCAL_SVC_HOST, CRM_SVC_HOST, SERVICE_DESK_SVC_HOST
 
-upstream core_engine_upstream {
-    server ${CORE_SVC_HOST};
-}
-
-upstream fiscal_upstream {
-    server ${FISCAL_SVC_HOST};
-}
-
-upstream crm_upstream {
-    server ${CRM_SVC_HOST};
-}
-
-upstream service_desk_upstream {
-    server ${SERVICE_DESK_SVC_HOST};
-}
-
 server {
     listen 80;
     server_name localhost;
+
+    # Resolver interno do Docker para resolução DNS em runtime
+    resolver 127.0.0.11 valid=10s;
 
     # SPA (admin Core-Engine)
     location / {
@@ -37,7 +24,8 @@ server {
 
     # Squad 2 — Finance/Fiscal (exemplo)
     location /v1/fiscal/ {
-        proxy_pass http://fiscal_upstream;
+        set $fiscal_upstream http://${FISCAL_SVC_HOST};
+        proxy_pass $fiscal_upstream;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -50,7 +38,8 @@ server {
 
     # Squad 3 — CRM / Leads (exemplo)
     location /v1/crm/ {
-        proxy_pass http://crm_upstream;
+        set $crm_upstream http://${CRM_SVC_HOST};
+        proxy_pass $crm_upstream;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -63,7 +52,8 @@ server {
 
     # Squad 4 — Service Desk (exemplo)
     location /v1/service-desk/ {
-        proxy_pass http://service_desk_upstream;
+        set $service_desk_upstream http://${SERVICE_DESK_SVC_HOST};
+        proxy_pass $service_desk_upstream;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -76,7 +66,8 @@ server {
 
     # Core Engine — identidade, RBAC, OAuth, integração (único emissor de login humano)
     location /v1/ {
-        proxy_pass http://core_engine_upstream;
+        set $core_upstream http://${CORE_SVC_HOST};
+        proxy_pass $core_upstream;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
