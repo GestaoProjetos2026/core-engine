@@ -3,30 +3,28 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copia arquivos de definição de dependências
 COPY package*.json ./
-
-# Instala todas as dependências
 RUN npm install
 
-# Copia o restante do código fonte
 COPY . .
 
-# Variável de ambiente para o build (pode ser sobrescrita pelo GitHub Actions)
-ARG VITE_API_URL
+# Empty = same-origin requests via gateway (/v1 on port 80)
+ARG VITE_API_URL=
 ENV VITE_API_URL=$VITE_API_URL
 
-# Executa o build do projeto
 RUN npm run build
 
-# Stage 2: Serve with Nginx
+# Stage 2: Gateway (nginx) + SPA
 FROM nginx:alpine
 
-# Copia o build do estágio anterior
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copia a configuração do Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+
+ENV CORE_SVC_HOST=backend:3000
+ENV FISCAL_SVC_HOST=module-stubs:8080
+ENV CRM_SVC_HOST=module-stubs:8080
+ENV SERVICE_DESK_SVC_HOST=module-stubs:8080
 
 EXPOSE 80
 

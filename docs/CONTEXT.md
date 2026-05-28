@@ -6,13 +6,16 @@
 - `PRD.md` v2.1 | `Sprints.md`
 
 ## Ultima acao
-- **Sprint 8 task 13:** `TenantGuard`, header `X-Tenant-Id`, isolamento Prisma em `/v1/users` e M2M `GET /v1/integration/users/:id`, e2e isolamento, `INTEGRATION_GUIDE.md` §5.3.
+- **Sprint 8 task 14:** `frontend/nginx.conf.template`, stubs `infra/mock-modules`, compose `module-stubs`, `docs/GATEWAY.md`, `scripts/gateway-smoke.sh`.
 
 ## Estado
-- Sprint 8: tasks 1–13 `done`; tasks 14–17 `pending`.
+- Sprint 8: tasks 1–14 `done`; tasks 15–17 `pending`.
 
 ## Proximo foco
-- Task 14 (gateway multi-módulo) ou tasks 15–17 (seeds M2M, demo CTO).
+- Tasks 15–17 (seeds M2M por squad, `DEMO_CTO.md`, demo 29/05).
+
+## Gateway local
+- Entrada: `http://localhost` — Core `/v1/health`, módulo `/v1/crm/health`; smoke: `scripts/gateway-smoke.sh`
 
 ## Credenciais M2M (demo)
 - `test-client-id` / `test-client-secret` com escopo `identity:read` no seed.

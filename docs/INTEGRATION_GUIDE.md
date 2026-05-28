@@ -32,9 +32,10 @@ O **Core Engine & Auth** é a fonte única de verdade para identidade, autentica
 | **RBAC de usuário humano** | Usuários logados via browser/app | JWT `type: user_access` com claims `roles` e `perms` |
 | **Integração M2M** | Serviços, daemons, scripts automatizados | JWT `type: integration_access` com claim `scopes` via OAuth 2.0 `client_credentials` |
 
-**Base URL:** `http://localhost:3000` (desenvolvimento)  
+**Base URL (dev):** `http://localhost:3000` (backend direto) ou **`http://localhost`** (gateway Docker — recomendado para demo integrada)  
 **Prefixo de API:** `/v1`  
-**Swagger interativo:** `GET /v1/docs` (somente em ambiente de desenvolvimento)
+**Swagger interativo:** `GET /v1/docs` (somente em ambiente de desenvolvimento)  
+**Gateway multi-módulo:** ver [`docs/GATEWAY.md`](GATEWAY.md) (roteamento Core + squads 2–4, sem login duplicado)
 
 > **Regra de ouro:** Nenhum módulo deve manter sua própria matriz de permissões ou seu próprio mecanismo de login. Toda autorização vem dos claims do JWT emitido pelo Core.
 
