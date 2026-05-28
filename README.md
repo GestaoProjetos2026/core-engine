@@ -62,7 +62,7 @@ Aplicações podem obter tokens de integração via `POST /v1/oauth/token` usand
 | [`docs/WALKTHROUGH_MVP.md`](docs/WALKTHROUGH_MVP.md) | **Guia de Demonstração do MVP** |
 | [`docs/PERMISSIONS_MATRIX.md`](docs/PERMISSIONS_MATRIX.md) | Catálogo oficial de permissões e escopos |
 | [`docs/JWT_GUIDE.md`](docs/JWT_GUIDE.md) | Detalhes sobre Claims e validação de tokens |
-| [`docs/GATEWAY.md`](docs/GATEWAY.md) | Gateway multi-módulo (RF28): mapa de rotas, env vars, demo local |
+| [`docs/DEPLOY_SEED.md`](docs/DEPLOY_SEED.md) | Seed em produção (admins, M2M, secrets K8s) |
 
 ---
 

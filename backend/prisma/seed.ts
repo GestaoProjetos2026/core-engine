@@ -3,7 +3,14 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
 import * as bcrypt from 'bcrypt';
-import { DEFAULT_TENANT_ID, DEFAULT_TENANT_SLUG } from '../src/shared/constants/tenant';
+import {
+  adminUserDefs,
+  e2eM2mAppDef,
+  m2mAppDefs,
+  viewerUserDef,
+  type AdminUserDef,
+  type M2mAppDef,
+} from './seed-data';
 
 dotenv.config();
 
@@ -517,14 +524,25 @@ async function main() {
   const scopeByCode = new Map(scopes.map((s) => [s.code, s]));
   console.log(`✅ ${scopes.length} M2M scopes upserted`);
 
-  for (const appDef of SQUAD_M2M_APPS) {
-    await seedM2mApplication(appDef, scopeByCode);
+  console.log('✅ Seeding M2M applications:');
+  for (const def of m2mAppDefs) {
+    await seedM2mApplication(def, scopes);
   }
-  await seedM2mApplication(TEST_M2M_APP, scopeByCode);
+  await seedM2mApplication(e2eM2mAppDef, scopes);
 
-  console.log('\n📋 Demo M2M credentials (POST /v1/oauth/token, grant_type=client_credentials):');
-  for (const app of [...SQUAD_M2M_APPS, TEST_M2M_APP]) {
-    console.log(`   - ${app.clientId} / ${app.clientSecret}`);
+  if (!isProduction) {
+    console.log('\n📋 Local dev credentials (passwords from env or defaults in seed-data.ts):');
+    for (const def of adminUserDefs) {
+      console.log(`   - ${def.email} → env ${def.passwordEnvKey} or ${def.defaultPassword}`);
+    }
+    console.log(`   - ${viewerUserDef.email} → env ${viewerUserDef.passwordEnvKey} or ${viewerUserDef.defaultPassword}`);
+    for (const def of [...m2mAppDefs, e2eM2mAppDef]) {
+      console.log(`   - ${def.clientId} → env ${def.secretEnvKey} or ${def.defaultSecret}`);
+    }
+  } else {
+    console.log('\n📋 Production seed complete (credentials not logged; use cluster secrets).');
+    console.log('   Admin emails:', adminUserDefs.map((d) => d.email).join(', '));
+    console.log('   M2M client_ids:', [...m2mAppDefs, e2eM2mAppDef].map((d) => d.clientId).join(', '));
   }
 
   console.log('\n🎉 Seed completed');
