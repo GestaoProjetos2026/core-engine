@@ -8,9 +8,8 @@ COPY package*.json ./
 COPY prisma.config.mts ./ 
 COPY prisma ./prisma/
 
+# postinstall runs `prisma generate` (see package.json); prisma.config.mts has a build-time DATABASE_URL fallback
 RUN npm install
-
-RUN DATABASE_URL="postgresql://user_core_engine:SenhaCore123!@postgres-svc.infra-banco.svc.cluster.local:5432/infra_banco" npx prisma generate
 
 COPY . .
 

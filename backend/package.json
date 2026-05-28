@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.json && tsc prisma/seed.ts prisma/seed-data.ts prisma/constants.ts --esModuleInterop --skipLibCheck --outDir dist/prisma",
     "start": "node dist/src/main.js",
     "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
     "test": "vitest run --exclude \"dist/**\"",
     "prisma:seed": "node dist/prisma/seed.js",
     "prisma:seed:dev": "tsx prisma/seed.ts"
