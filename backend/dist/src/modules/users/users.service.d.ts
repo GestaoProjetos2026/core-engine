@@ -8,50 +8,15 @@ export declare class UsersService {
     private readonly prisma;
     private readonly audit;
     constructor(prisma: PrismaService, audit: AuditService);
-    create(createUserDto: CreateUserDto): Promise<{
-        id: string;
-        email: string;
-        name: string;
-        status: import(".prisma/client").$Enums.UserStatus;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
+    create(createUserDto: CreateUserDto): Promise<any>;
     findAll(query: ListUsersQueryDto): Promise<{
-        items: {
-            id: string;
-            email: string;
-            name: string;
-            status: import(".prisma/client").$Enums.UserStatus;
-            createdAt: Date;
-            updatedAt: Date;
-        }[];
-        total: number;
+        items: any;
+        total: any;
         page: number;
         limit: number;
     }>;
-    findOne(id: string): Promise<{
-        id: string;
-        email: string;
-        name: string;
-        status: import(".prisma/client").$Enums.UserStatus;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
-    update(id: string, updateUserDto: UpdateUserDto): Promise<{
-        id: string;
-        email: string;
-        name: string;
-        status: import(".prisma/client").$Enums.UserStatus;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
-    changeStatus(id: string, changeStatusDto: ChangeUserStatusDto): Promise<{
-        id: string;
-        email: string;
-        name: string;
-        status: import(".prisma/client").$Enums.UserStatus;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
+    findOne(id: string): Promise<any>;
+    update(id: string, updateUserDto: UpdateUserDto): Promise<any>;
+    changeStatus(id: string, changeStatusDto: ChangeUserStatusDto): Promise<any>;
 }
 //# sourceMappingURL=users.service.d.ts.map

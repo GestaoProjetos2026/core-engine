@@ -7,70 +7,18 @@ import { AssociateScopesDto } from './dto/associate-scopes.dto';
 export declare class ApplicationsController {
     private readonly applicationsService;
     constructor(applicationsService: ApplicationsService);
-    create(createApplicationDto: CreateApplicationDto): Promise<{
-        clientSecret: string;
-        id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.AppStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        clientId: string;
-    }>;
+    create(createApplicationDto: CreateApplicationDto): Promise<any>;
     findAll(query: ListApplicationsQueryDto): Promise<{
-        items: {
-            id: string;
-            name: string;
-            status: import(".prisma/client").$Enums.AppStatus;
-            createdAt: Date;
-            updatedAt: Date;
-            clientId: string;
-        }[];
-        total: number;
+        items: any;
+        total: any;
         page: number;
         limit: number;
     }>;
-    findOne(id: string): Promise<{
-        id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.AppStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        clientId: string;
-    }>;
-    update(id: string, updateApplicationDto: UpdateApplicationDto): Promise<{
-        id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.AppStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        clientId: string;
-    }>;
-    changeStatus(id: string, changeStatusDto: ChangeApplicationStatusDto): Promise<{
-        id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.AppStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        clientId: string;
-    }>;
-    regenerateSecret(id: string): Promise<{
-        clientSecret: string;
-        id: string;
-        name: string;
-        status: import(".prisma/client").$Enums.AppStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        clientId: string;
-    }>;
-    getScopes(id: string): Promise<{
-        description: string;
-        id: string;
-        code: string;
-    }[]>;
-    associateScopes(id: string, associateScopesDto: AssociateScopesDto): Promise<{
-        description: string;
-        id: string;
-        code: string;
-    }[]>;
+    findOne(id: string): Promise<any>;
+    update(id: string, updateApplicationDto: UpdateApplicationDto): Promise<any>;
+    changeStatus(id: string, changeStatusDto: ChangeApplicationStatusDto): Promise<any>;
+    regenerateSecret(id: string): Promise<any>;
+    getScopes(id: string): Promise<any>;
+    associateScopes(id: string, associateScopesDto: AssociateScopesDto): Promise<any>;
 }
 //# sourceMappingURL=applications.controller.d.ts.map
