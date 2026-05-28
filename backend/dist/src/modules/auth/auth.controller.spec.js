@@ -15,6 +15,7 @@ const auth_controller_1 = require("./auth.controller");
             const req = {
                 user: {
                     userId: 'u1',
+                    tenantId: '00000000-0000-4000-8000-000000000001',
                     email: 'test@b.com',
                     roles: ['admin'],
                     perms: ['user:read'],
@@ -24,6 +25,7 @@ const auth_controller_1 = require("./auth.controller");
             const result = controller.getMe(req);
             (0, vitest_1.expect)(result).toEqual({
                 userId: 'u1',
+                tenantId: '00000000-0000-4000-8000-000000000001',
                 email: 'test@b.com',
                 roles: ['admin'],
                 perms: ['user:read'],

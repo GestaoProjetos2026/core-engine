@@ -21,6 +21,7 @@ export declare class AuthService {
     private throwRefreshReused;
     private signAccessToken;
     private buildAccessPayload;
+    private resolveDefaultTenantId;
     private createRefreshToken;
     private insertRefreshTokenRow;
     private accessExpiresSeconds;

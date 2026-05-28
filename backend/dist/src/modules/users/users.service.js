@@ -25,11 +25,12 @@ let UsersService = class UsersService {
         this.prisma = prisma;
         this.audit = audit;
     }
-    async create(createUserDto) {
+    async create(createUserDto, tenantId) {
         const passwordHash = await bcrypt.hash(createUserDto.password, 12);
         try {
             const user = await this.prisma.user.create({
                 data: {
+                    tenantId,
                     email: createUserDto.email,
                     name: createUserDto.name,
                     passwordHash,
@@ -47,18 +48,17 @@ let UsersService = class UsersService {
             throw error;
         }
     }
-    async findAll(query) {
+    async findAll(query, tenantId) {
         try {
             const page = Math.max(1, Number(query.page || 1));
             const limit = Math.max(1, Math.min(100, Number(query.limit || 10)));
             const skip = (page - 1) * limit;
             const { email, status } = query;
-            const where = {};
+            const where = { tenantId };
             if (email && email.trim()) {
                 where.email = { contains: email.trim(), mode: 'insensitive' };
             }
             if (status) {
-                // Basic validation for status if it's passed but might not be in enum
                 const validStatuses = ['ACTIVE', 'INACTIVE'];
                 if (validStatuses.includes(status)) {
                     where.status = status;
@@ -71,6 +71,7 @@ let UsersService = class UsersService {
                     take: limit,
                     select: {
                         id: true,
+                        tenantId: true,
                         email: true,
                         name: true,
                         status: true,
@@ -92,23 +93,23 @@ let UsersService = class UsersService {
             console.error('[UsersService.findAll] Database error:', {
                 message: error instanceof Error ? error.message : error,
                 query,
-                stack: error instanceof Error ? error.stack : undefined
+                stack: error instanceof Error ? error.stack : undefined,
             });
             if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
-                // Return a more specific error if Prisma fails due to invalid query
                 throw new common_1.ConflictException({
                     code: 'DATABASE_ERROR',
-                    message: 'Error fetching users from database. Please check your filters.'
+                    message: 'Error fetching users from database. Please check your filters.',
                 });
             }
             throw error;
         }
     }
-    async findOne(id) {
-        const user = await this.prisma.user.findUnique({
-            where: { id },
+    async findOne(id, tenantId) {
+        const user = await this.prisma.user.findFirst({
+            where: { id, tenantId },
             select: {
                 id: true,
+                tenantId: true,
                 email: true,
                 name: true,
                 status: true,
@@ -121,13 +122,21 @@ let UsersService = class UsersService {
         }
         return user;
     }
-    async update(id, updateUserDto) {
+    async update(id, updateUserDto, tenantId) {
+        const existing = await this.prisma.user.findFirst({
+            where: { id, tenantId },
+            select: { id: true },
+        });
+        if (!existing) {
+            throw new common_1.NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Usuário não encontrado' });
+        }
         try {
             const user = await this.prisma.user.update({
                 where: { id },
                 data: updateUserDto,
                 select: {
                     id: true,
+                    tenantId: true,
                     email: true,
                     name: true,
                     status: true,
@@ -149,13 +158,21 @@ let UsersService = class UsersService {
             throw error;
         }
     }
-    async changeStatus(id, changeStatusDto) {
+    async changeStatus(id, changeStatusDto, tenantId) {
+        const existing = await this.prisma.user.findFirst({
+            where: { id, tenantId },
+            select: { id: true },
+        });
+        if (!existing) {
+            throw new common_1.NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Usuário não encontrado' });
+        }
         try {
             const user = await this.prisma.user.update({
                 where: { id },
                 data: { status: changeStatusDto.status },
                 select: {
                     id: true,
+                    tenantId: true,
                     email: true,
                     name: true,
                     status: true,

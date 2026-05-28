@@ -3,6 +3,7 @@ export type JwtPayload = {
     sub: string;
     email?: string;
     type: 'user_access' | 'integration_access';
+    tenant_id?: string;
     roles?: string[];
     perms?: string[];
     clientId?: string;
@@ -16,6 +17,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
     validate(payload: JwtPayload): Promise<{
         userId: string;
         email: string | undefined;
+        tenantId: string | undefined;
         roles: string[];
         perms: string[];
         type: "user_access" | "integration_access";

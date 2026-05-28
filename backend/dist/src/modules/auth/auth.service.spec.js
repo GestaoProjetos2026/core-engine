@@ -5,12 +5,16 @@ const client_1 = require("@prisma/client");
 const bcrypt_1 = require("bcrypt");
 const vitest_1 = require("vitest");
 const auth_service_1 = require("./auth.service");
+const tenant_1 = require("../../shared/constants/tenant");
 vitest_1.vi.mock('bcrypt', () => ({
     hash: vitest_1.vi.fn(),
     compare: vitest_1.vi.fn(),
 }));
 function makePrismaMock() {
     const prisma = {
+        tenant: {
+            findUnique: vitest_1.vi.fn().mockResolvedValue({ id: tenant_1.DEFAULT_TENANT_ID }),
+        },
         user: {
             create: vitest_1.vi.fn(),
             findUnique: vitest_1.vi.fn(),
@@ -85,6 +89,7 @@ function makePrismaMock() {
             createdAt: new Date(),
             user: {
                 id: 'u1',
+                tenantId: tenant_1.DEFAULT_TENANT_ID,
                 email: 'a@b.com',
                 passwordHash: 'p',
                 name: 'N',
@@ -117,6 +122,7 @@ function makePrismaMock() {
             createdAt: new Date(),
             user: {
                 id: 'u1',
+                tenantId: tenant_1.DEFAULT_TENANT_ID,
                 email: 'a@b.com',
                 passwordHash: 'p',
                 name: 'N',
@@ -148,6 +154,7 @@ function makePrismaMock() {
         const prisma = makePrismaMock();
         prisma.user.findUnique.mockResolvedValue({
             id: 'u-sup',
+            tenantId: tenant_1.DEFAULT_TENANT_ID,
             email: 'suporte@example.com',
             passwordHash: 'hash',
             name: 'Agente Suporte Demo',
@@ -183,6 +190,8 @@ function makePrismaMock() {
         (0, vitest_1.expect)(jwt.signAsync).toHaveBeenCalled();
         const payload = jwt.signAsync.mock.calls[0][0];
         (0, vitest_1.expect)(payload.type).toBe('user_access');
+        (0, vitest_1.expect)(payload.sub).toBe('u-sup');
+        (0, vitest_1.expect)(payload.tenant_id).toBe(tenant_1.DEFAULT_TENANT_ID);
         (0, vitest_1.expect)(payload.roles).toEqual(['suporte']);
         (0, vitest_1.expect)(payload.perms).toContain('customers:read');
         (0, vitest_1.expect)(payload.perms).toContain('tickets:read');
@@ -193,6 +202,7 @@ function makePrismaMock() {
         const prisma = makePrismaMock();
         prisma.user.findUnique.mockResolvedValue({
             id: 'u1',
+            tenantId: tenant_1.DEFAULT_TENANT_ID,
             email: 'a@b.com',
             passwordHash: 'hashed',
             name: 'A',

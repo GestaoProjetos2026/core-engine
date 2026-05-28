@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const users_controller_1 = require("./users.controller");
 const client_1 = require("@prisma/client");
 const vitest_1 = require("vitest");
+const tenant_1 = require("../../shared/constants/tenant");
 (0, vitest_1.describe)('UsersController', () => {
     let controller;
     let service;
@@ -19,24 +20,24 @@ const vitest_1 = require("vitest");
     });
     (0, vitest_1.it)('should create a user', async () => {
         mockUsersService.create.mockResolvedValue({ id: '1', email: 'test@test.com' });
-        const result = await controller.create({ email: 'test@test.com', name: 'Test', password: 'Password123' });
+        const result = await controller.create({ email: 'test@test.com', name: 'Test', password: 'Password123' }, tenant_1.DEFAULT_TENANT_ID);
         (0, vitest_1.expect)(result).toEqual({ id: '1', email: 'test@test.com' });
-        (0, vitest_1.expect)(service.create).toHaveBeenCalled();
+        (0, vitest_1.expect)(service.create).toHaveBeenCalledWith({ email: 'test@test.com', name: 'Test', password: 'Password123' }, tenant_1.DEFAULT_TENANT_ID);
     });
     (0, vitest_1.it)('should find all users', async () => {
         mockUsersService.findAll.mockResolvedValue({ items: [], total: 0, page: 1, limit: 10 });
-        const result = await controller.findAll({ page: 1, limit: 10 });
+        const result = await controller.findAll({ page: 1, limit: 10 }, tenant_1.DEFAULT_TENANT_ID);
         (0, vitest_1.expect)(result).toEqual({ items: [], total: 0, page: 1, limit: 10 });
-        (0, vitest_1.expect)(service.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 });
+        (0, vitest_1.expect)(service.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, tenant_1.DEFAULT_TENANT_ID);
     });
     (0, vitest_1.it)('should find one user', async () => {
         mockUsersService.findOne.mockResolvedValue({ id: '1', email: 'test@test.com' });
-        const result = await controller.findOne('1');
+        const result = await controller.findOne('1', tenant_1.DEFAULT_TENANT_ID);
         (0, vitest_1.expect)(result).toEqual({ id: '1', email: 'test@test.com' });
     });
     (0, vitest_1.it)('should change user status', async () => {
         mockUsersService.changeStatus.mockResolvedValue({ id: '1', status: 'INACTIVE' });
-        const result = await controller.changeStatus('1', { status: client_1.UserStatus.INACTIVE });
+        const result = await controller.changeStatus('1', { status: client_1.UserStatus.INACTIVE }, tenant_1.DEFAULT_TENANT_ID);
         (0, vitest_1.expect)(result).toEqual({ id: '1', status: 'INACTIVE' });
     });
 });

@@ -7,8 +7,10 @@ function makeContext(
   user: Record<string, unknown> | undefined,
   headers: Record<string, string> = {},
 ) {
-  const request: { user?: Record<string, unknown>; headers: Record<string, string>; tenantId?: string } =
-    { headers, user };
+  const request: { user?: Record<string, unknown>; headers: Record<string, string>; tenantId?: string } = {
+    headers,
+    ...(user !== undefined ? { user } : {}),
+  };
   return {
     switchToHttp: () => ({ getRequest: () => request }),
     request,

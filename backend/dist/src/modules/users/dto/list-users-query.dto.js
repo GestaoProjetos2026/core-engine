@@ -8,7 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ListUsersQueryDto = void 0;
 const class_validator_1 = require("class-validator");
@@ -48,6 +47,6 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)({ enum: client_1.UserStatus }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(client_1.UserStatus),
-    __metadata("design:type", typeof (_a = typeof client_1.UserStatus !== "undefined" && client_1.UserStatus) === "function" ? _a : Object)
+    __metadata("design:type", String)
 ], ListUsersQueryDto.prototype, "status", void 0);
 //# sourceMappingURL=list-users-query.dto.js.map

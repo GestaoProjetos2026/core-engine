@@ -12,6 +12,7 @@ export declare class AuthTokensDto {
 }
 export declare class UserProfileDto {
     userId: string;
+    tenantId: string;
     email: string;
     roles: string[];
     perms: string[];

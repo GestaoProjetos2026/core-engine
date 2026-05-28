@@ -21,6 +21,8 @@ const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const scopes_guard_1 = require("../auth/guards/scopes.guard");
 const integration_token_guard_1 = require("../auth/guards/integration-token.guard");
 const require_scopes_decorator_1 = require("../auth/decorators/require-scopes.decorator");
+const tenant_guard_1 = require("../auth/guards/tenant.guard");
+const current_tenant_decorator_1 = require("../auth/decorators/current-tenant.decorator");
 let IntegrationController = class IntegrationController {
     integrationService;
     constructor(integrationService) {
@@ -37,8 +39,8 @@ let IntegrationController = class IntegrationController {
     async testScope() {
         return { success: true, message: 'You have the required scope!' };
     }
-    async getUserIdentity(id) {
-        return this.integrationService.findUserIdentityById(id);
+    async getUserIdentity(id, tenantId) {
+        return this.integrationService.findUserIdentityById(id, tenantId);
     }
 };
 exports.IntegrationController = IntegrationController;
@@ -242,14 +244,19 @@ __decorate([
 ], IntegrationController.prototype, "testScope", null);
 __decorate([
     (0, common_1.Get)('integration/users/:id'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, integration_token_guard_1.IntegrationTokenGuard, scopes_guard_1.ScopesGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, integration_token_guard_1.IntegrationTokenGuard, tenant_guard_1.TenantGuard, scopes_guard_1.ScopesGuard),
     (0, require_scopes_decorator_1.RequireScopes)('identity:read'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({
         summary: 'Get user identity by UUID (M2M)',
-        description: 'RF29: Returns id, name, email and status for squads consuming Core identity (e.g. Fiscal emitente, CRM logged-in name). Requires JWT `integration_access` and scope `identity:read`. Human tokens are rejected.',
+        description: 'RF29: Returns id, name, email and status for squads consuming Core identity (e.g. Fiscal emitente, CRM logged-in name). Requires JWT `integration_access`, scope `identity:read`, and header `X-Tenant-Id`. Human tokens are rejected.',
     }),
     (0, swagger_1.ApiParam)({ name: 'id', type: String, description: 'User UUID (same as JWT claim `sub` for human users)' }),
+    (0, swagger_1.ApiHeader)({
+        name: 'X-Tenant-Id',
+        required: true,
+        description: 'Tenant UUID for row-level isolation (RF27)',
+    }),
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: 'User identity found',
@@ -294,8 +301,9 @@ __decorate([
         },
     }),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_tenant_decorator_1.CurrentTenant)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], IntegrationController.prototype, "getUserIdentity", null);
 exports.IntegrationController = IntegrationController = __decorate([

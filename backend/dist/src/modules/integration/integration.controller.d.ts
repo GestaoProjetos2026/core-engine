@@ -10,11 +10,12 @@ export declare class IntegrationController {
         success: boolean;
         message: string;
     }>;
-    getUserIdentity(id: string): Promise<{
+    getUserIdentity(id: string, tenantId: string): Promise<{
         id: string;
         email: string;
         name: string;
         status: import(".prisma/client").$Enums.UserStatus;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
     }>;

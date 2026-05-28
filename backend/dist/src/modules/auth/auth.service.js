@@ -23,7 +23,11 @@ const prisma_service_1 = require("../../server/prisma/prisma.service");
 const audit_service_1 = require("../audit/audit.service");
 const auth_time_util_1 = require("./auth-time.util");
 const password_policy_1 = require("./password-policy");
+const tenant_1 = require("../../shared/constants/tenant");
 const userAuthInclude = {
+    tenant: {
+        select: { id: true, name: true, slug: true },
+    },
     roles: {
         include: {
             role: {
@@ -54,9 +58,11 @@ let AuthService = AuthService_1 = class AuthService {
         }
         const rounds = this.bcryptRounds();
         const passwordHash = await (0, bcrypt_1.hash)(dto.password, rounds);
+        const tenantId = await this.resolveDefaultTenantId();
         try {
             const user = await this.prisma.user.create({
                 data: {
+                    tenantId,
                     email: dto.email,
                     name: dto.name,
                     passwordHash,
@@ -80,8 +86,14 @@ let AuthService = AuthService_1 = class AuthService {
         }
     }
     async login(dto) {
+        const tenantId = await this.resolveDefaultTenantId();
         const user = await this.prisma.user.findUnique({
-            where: { email: dto.email },
+            where: {
+                tenantId_email: {
+                    tenantId,
+                    email: dto.email,
+                },
+            },
             include: userAuthInclude,
         });
         const valid = user &&
@@ -186,9 +198,23 @@ let AuthService = AuthService_1 = class AuthService {
             sub: user.id,
             email: user.email,
             type: 'user_access',
+            tenant_id: user.tenantId,
             roles,
             perms: [...perms],
         };
+    }
+    async resolveDefaultTenantId() {
+        const tenant = await this.prisma.tenant.findUnique({
+            where: { slug: tenant_1.DEFAULT_TENANT_SLUG },
+            select: { id: true },
+        });
+        if (!tenant) {
+            throw new common_1.BadRequestException({
+                message: 'Default tenant is not configured. Run database seed.',
+                errorCode: 'TENANT_NOT_CONFIGURED',
+            });
+        }
+        return tenant.id;
     }
     async createRefreshToken(userId) {
         const { raw } = await this.insertRefreshTokenRow(userId, this.prisma);

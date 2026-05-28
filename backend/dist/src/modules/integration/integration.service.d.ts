@@ -12,11 +12,12 @@ export declare class IntegrationService {
     private readonly logger;
     constructor(applicationsService: ApplicationsService, authService: AuthService, jwt: JwtService, usersService: UsersService);
     /** RF29 — public identity fields for M2M consumers (Squad 2 emitente, Squad 3 display name). */
-    findUserIdentityById(id: string): Promise<{
+    findUserIdentityById(id: string, tenantId: string): Promise<{
         id: string;
         email: string;
         name: string;
         status: import(".prisma/client").$Enums.UserStatus;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
     }>;

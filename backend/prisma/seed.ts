@@ -8,9 +8,9 @@ import {
   e2eM2mAppDef,
   m2mAppDefs,
   viewerUserDef,
-  type AdminUserDef,
   type M2mAppDef,
 } from './seed-data';
+import { DEFAULT_TENANT_ID, DEFAULT_TENANT_SLUG } from '../src/shared/constants/tenant';
 
 dotenv.config();
 
@@ -95,63 +95,23 @@ async function linkRoleToPermissions(
   return selected.map((p) => p.code);
 }
 
-type M2mAppSeed = {
-  name: string;
-  clientId: string;
-  clientSecret: string;
-  scopeCodes: readonly string[];
-  squad: string;
-};
-
-/** Demo-only secrets (task 15). Rotate via POST /v1/applications/:id/regenerate-secret in production. */
-const SQUAD_M2M_APPS: M2mAppSeed[] = [
-  {
-    name: 'Finance Fiscal (Squad 2)',
-    clientId: 'finance-fiscal',
-    clientSecret: 'FinanceFiscal-Demo2026!',
-    scopeCodes: ['identity:read', 'finance:read'],
-    squad: 'Squad 2',
-  },
-  {
-    name: 'CRM Leads (Squad 3)',
-    clientId: 'crm-leads',
-    clientSecret: 'CrmLeads-Demo2026!',
-    scopeCodes: ['identity:read', 'customers:read'],
-    squad: 'Squad 3',
-  },
-  {
-    name: 'Service Desk (Squad 4)',
-    clientId: 'service-desk',
-    clientSecret: 'ServiceDesk-Demo2026!',
-    scopeCodes: ['identity:read', 'tickets:read'],
-    squad: 'Squad 4',
-  },
-];
-
-const TEST_M2M_APP: M2mAppSeed = {
-  name: 'Test Application (E2E / integração)',
-  clientId: 'test-client-id',
-  clientSecret: 'test-client-secret',
-  scopeCodes: [
-    'identity:read',
-    'read:all',
-    'write:all',
-    'test:scope',
-    'orders:read',
-    'orders:write',
-    'customers:read',
-    'customers:write',
-    'products:read',
-    'products:write',
-  ],
-  squad: 'Core QA',
-};
+function resolveM2mSecret(def: M2mAppDef): string {
+  const fromEnv = process.env[def.secretEnvKey]?.trim();
+  if (fromEnv) return fromEnv;
+  if (isProduction && def.clientId !== 'test-client-id') {
+    throw new Error(
+      `Missing required env ${def.secretEnvKey} for M2M app ${def.clientId} in production`,
+    );
+  }
+  return def.defaultSecret;
+}
 
 async function seedM2mApplication(
-  def: M2mAppSeed,
+  def: M2mAppDef,
   scopeByCode: Map<string, { id: string; code: string }>,
 ) {
-  const clientSecretHash = await bcrypt.hash(def.clientSecret, 12);
+  const clientSecret = resolveM2mSecret(def);
+  const clientSecretHash = await bcrypt.hash(clientSecret, 12);
   const app = await prisma.application.upsert({
     where: { clientId: def.clientId },
     update: {
@@ -187,10 +147,11 @@ async function seedM2mApplication(
     });
   }
 
-  console.log(
-    `✅ M2M app [${def.squad}]: ${def.clientId} (scopes: ${def.scopeCodes.join(', ')})`,
-  );
-  console.log(`   ⚠️  Demo secret only — rotate in production (see docs/PERMISSIONS_MATRIX.md §5)`);
+  const squadLabel = def.squad ?? def.name;
+  console.log(`✅ M2M app [${squadLabel}]: ${def.clientId} (scopes: ${def.scopeCodes.join(', ')})`);
+  if (!isProduction) {
+    console.log(`   ⚠️  Secret from env ${def.secretEnvKey} or default (demo only)`);
+  }
 }
 
 async function main() {
@@ -526,9 +487,9 @@ async function main() {
 
   console.log('✅ Seeding M2M applications:');
   for (const def of m2mAppDefs) {
-    await seedM2mApplication(def, scopes);
+    await seedM2mApplication(def, scopeByCode);
   }
-  await seedM2mApplication(e2eM2mAppDef, scopes);
+  await seedM2mApplication(e2eM2mAppDef, scopeByCode);
 
   if (!isProduction) {
     console.log('\n📋 Local dev credentials (passwords from env or defaults in seed-data.ts):');

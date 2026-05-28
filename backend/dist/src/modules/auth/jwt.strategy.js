@@ -29,8 +29,9 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
             });
         }
         return {
-            userId: payload.sub, // Will be app id if M2M
+            userId: payload.sub, // user UUID for user_access; application id for M2M
             email: payload.email,
+            tenantId: payload.tenant_id,
             roles: payload.roles ?? [],
             perms: payload.perms ?? [],
             type: payload.type,

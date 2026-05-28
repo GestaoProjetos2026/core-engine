@@ -8,15 +8,55 @@ export declare class UsersService {
     private readonly prisma;
     private readonly audit;
     constructor(prisma: PrismaService, audit: AuditService);
-    create(createUserDto: CreateUserDto): Promise<any>;
-    findAll(query: ListUsersQueryDto): Promise<{
-        items: any;
-        total: any;
+    create(createUserDto: CreateUserDto, tenantId: string): Promise<{
+        id: string;
+        email: string;
+        name: string;
+        status: import(".prisma/client").$Enums.UserStatus;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    findAll(query: ListUsersQueryDto, tenantId: string): Promise<{
+        items: {
+            id: string;
+            email: string;
+            name: string;
+            status: import(".prisma/client").$Enums.UserStatus;
+            tenantId: string;
+            createdAt: Date;
+            updatedAt: Date;
+        }[];
+        total: number;
         page: number;
         limit: number;
     }>;
-    findOne(id: string): Promise<any>;
-    update(id: string, updateUserDto: UpdateUserDto): Promise<any>;
-    changeStatus(id: string, changeStatusDto: ChangeUserStatusDto): Promise<any>;
+    findOne(id: string, tenantId: string): Promise<{
+        id: string;
+        email: string;
+        name: string;
+        status: import(".prisma/client").$Enums.UserStatus;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    update(id: string, updateUserDto: UpdateUserDto, tenantId: string): Promise<{
+        id: string;
+        email: string;
+        name: string;
+        status: import(".prisma/client").$Enums.UserStatus;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    changeStatus(id: string, changeStatusDto: ChangeUserStatusDto, tenantId: string): Promise<{
+        id: string;
+        email: string;
+        name: string;
+        status: import(".prisma/client").$Enums.UserStatus;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
 }
 //# sourceMappingURL=users.service.d.ts.map

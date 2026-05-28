@@ -62,6 +62,7 @@ __decorate([
 ], AuthTokensDto.prototype, "expiresIn", void 0);
 class UserProfileDto {
     userId;
+    tenantId;
     email;
     roles;
     perms;
@@ -69,9 +70,13 @@ class UserProfileDto {
 }
 exports.UserProfileDto = UserProfileDto;
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ description: 'User UUID (same as JWT claim `sub` / checklist `user_id`)' }),
     __metadata("design:type", String)
 ], UserProfileDto.prototype, "userId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Tenant UUID (same as JWT claim `tenant_id`)' }),
+    __metadata("design:type", String)
+], UserProfileDto.prototype, "tenantId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

@@ -34,8 +34,8 @@ let IntegrationService = IntegrationService_1 = class IntegrationService {
         this.usersService = usersService;
     }
     /** RF29 — public identity fields for M2M consumers (Squad 2 emitente, Squad 3 display name). */
-    async findUserIdentityById(id) {
-        return this.usersService.findOne(id);
+    async findUserIdentityById(id, tenantId) {
+        return this.usersService.findOne(id, tenantId);
     }
     async issueToken(dto) {
         switch (dto.grant_type) {

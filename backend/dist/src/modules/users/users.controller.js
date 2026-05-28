@@ -22,7 +22,10 @@ const change_user_status_dto_1 = require("./dto/change-user-status.dto");
 const list_users_query_dto_1 = require("./dto/list-users-query.dto");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const permissions_guard_1 = require("../auth/guards/permissions.guard");
+const tenant_guard_1 = require("../auth/guards/tenant.guard");
 const require_permissions_decorator_1 = require("../auth/decorators/require-permissions.decorator");
+const current_tenant_decorator_1 = require("../auth/decorators/current-tenant.decorator");
+const tenant_headers_1 = require("../../shared/constants/tenant-headers");
 const unauthorizedExample = {
     example: {
         success: false,
@@ -52,20 +55,20 @@ let UsersController = class UsersController {
     constructor(usersService) {
         this.usersService = usersService;
     }
-    async create(createUserDto) {
-        return this.usersService.create(createUserDto);
+    async create(createUserDto, tenantId) {
+        return this.usersService.create(createUserDto, tenantId);
     }
-    async findAll(query) {
-        return this.usersService.findAll(query);
+    async findAll(query, tenantId) {
+        return this.usersService.findAll(query, tenantId);
     }
-    async findOne(id) {
-        return this.usersService.findOne(id);
+    async findOne(id, tenantId) {
+        return this.usersService.findOne(id, tenantId);
     }
-    async update(id, updateUserDto) {
-        return this.usersService.update(id, updateUserDto);
+    async update(id, updateUserDto, tenantId) {
+        return this.usersService.update(id, updateUserDto, tenantId);
     }
-    async changeStatus(id, changeStatusDto) {
-        return this.usersService.changeStatus(id, changeStatusDto);
+    async changeStatus(id, changeStatusDto, tenantId) {
+        return this.usersService.changeStatus(id, changeStatusDto, tenantId);
     }
 };
 exports.UsersController = UsersController;
@@ -102,8 +105,9 @@ __decorate([
         },
     }),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_tenant_decorator_1.CurrentTenant)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto]),
+    __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto, String]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "create", null);
 __decorate([
@@ -120,9 +124,16 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number, description: 'Items per page' }),
     (0, swagger_1.ApiQuery)({ name: 'email', required: false, type: String, description: 'Filter by email' }),
     (0, swagger_1.ApiQuery)({ name: 'status', required: false, type: String, description: 'Filter by status' }),
+    (0, swagger_1.ApiQuery)({
+        name: tenant_headers_1.X_TENANT_ID_HEADER,
+        required: false,
+        type: String,
+        description: 'Tenant UUID; when omitted, the tenant_id from the JWT is used. Must match the token when provided (RF27).',
+    }),
     __param(0, (0, common_1.Query)()),
+    __param(1, (0, current_tenant_decorator_1.CurrentTenant)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [list_users_query_dto_1.ListUsersQueryDto]),
+    __metadata("design:paramtypes", [list_users_query_dto_1.ListUsersQueryDto, String]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "findAll", null);
 __decorate([
@@ -138,8 +149,9 @@ __decorate([
     (0, swagger_1.ApiForbiddenResponse)({ description: 'Token lacks `users:read` permission.', schema: forbiddenExample }),
     (0, swagger_1.ApiParam)({ name: 'id', required: true, type: String, description: 'User UUID' }),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_tenant_decorator_1.CurrentTenant)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "findOne", null);
 __decorate([
@@ -166,8 +178,9 @@ __decorate([
     }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_tenant_decorator_1.CurrentTenant)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_user_dto_1.UpdateUserDto]),
+    __metadata("design:paramtypes", [String, update_user_dto_1.UpdateUserDto, String]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "update", null);
 __decorate([
@@ -209,14 +222,15 @@ __decorate([
     }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_tenant_decorator_1.CurrentTenant)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, change_user_status_dto_1.ChangeUserStatusDto]),
+    __metadata("design:paramtypes", [String, change_user_status_dto_1.ChangeUserStatusDto, String]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "changeStatus", null);
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)('Users'),
     (0, swagger_1.ApiBearerAuth)('bearer'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, tenant_guard_1.TenantGuard, permissions_guard_1.PermissionsGuard),
     (0, common_1.Controller)('users'),
     __param(0, (0, common_1.Inject)(users_service_1.UsersService)),
     __metadata("design:paramtypes", [users_service_1.UsersService])
