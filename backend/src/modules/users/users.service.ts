@@ -44,11 +44,15 @@ export class UsersService {
       const limit = Math.max(1, Math.min(100, Number(query.limit || 10)));
       const skip = (page - 1) * limit;
 
-      const { email, status } = query;
+      const { email, name, status } = query;
       const where: Prisma.UserWhereInput = { tenantId };
 
       if (email && email.trim()) {
         where.email = { contains: email.trim(), mode: 'insensitive' };
+      }
+
+      if (name && name.trim()) {
+        where.name = { contains: name.trim(), mode: 'insensitive' };
       }
 
       if (status) {
@@ -71,6 +75,11 @@ export class UsersService {
             status: true,
             createdAt: true,
             updatedAt: true,
+            roles: {
+              select: {
+                roleId: true,
+              }
+            }
           },
           orderBy: { createdAt: 'desc' },
         }),
@@ -112,6 +121,11 @@ export class UsersService {
         status: true,
         createdAt: true,
         updatedAt: true,
+        roles: {
+          select: {
+            roleId: true,
+          }
+        }
       },
     });
 

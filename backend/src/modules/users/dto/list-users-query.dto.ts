@@ -23,6 +23,11 @@ export class ListUsersQueryDto {
   @IsString()
   email?: string;
 
+  @ApiPropertyOptional({ example: 'John Doe' })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
   @ApiPropertyOptional({ enum: UserStatus })
   @IsOptional()
   @IsEnum(UserStatus)

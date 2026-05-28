@@ -119,6 +119,7 @@ export class UsersController {
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
   @ApiQuery({ name: 'email', required: false, type: String, description: 'Filter by email' })
+  @ApiQuery({ name: 'name', required: false, type: String, description: 'Filter by name' })
   @ApiQuery({ name: 'status', required: false, type: String, description: 'Filter by status' })
   @ApiQuery({
     name: X_TENANT_ID_HEADER,

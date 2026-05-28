@@ -26,11 +26,13 @@ export interface User {
 /** Item retornado por `GET /v1/users` e rotas de usuário administrativo (RF09). */
 export interface AdminUserListItem {
   id: string;
+  tenantId: string;
   email: string;
   name: string;
   status: 'ACTIVE' | 'INACTIVE';
   createdAt: string;
   updatedAt: string;
+  roles?: { roleId: string }[];
 }
 
 export interface Permission {

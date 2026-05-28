@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '../lib/api';
-import type { AdminUserListItem, ApiResponse, PaginatedResponse } from '../lib/types';
+import type { AdminUserListItem, ApiResponse, PaginatedResponse, Role } from '../lib/types';
 import { Card } from '../components/ui/Card';
 import { Table } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Plus, UserCog, Power, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Plus, UserCog, Power, ChevronLeft, ChevronRight, X, Shield } from 'lucide-react';
 import { PageLoading } from '../components/ui/PageLoading';
 import { useToast } from '../context/ToastContext';
 import './AdminPages.css';
@@ -46,12 +46,17 @@ const UsersPage: React.FC = () => {
   const [limit, setLimit] = useState(10);
   const [emailFilter, setEmailFilter] = useState('');
   const [debouncedEmail, setDebouncedEmail] = useState('');
+  const [nameFilter, setNameFilter] = useState('');
+  const [debouncedName, setDebouncedName] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ACTIVE' | 'INACTIVE' | ''>('');
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState('');
 
-  const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null);
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'manageRoles' | null>(null);
   const [editingUser, setEditingUser] = useState<AdminUserListItem | null>(null);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<Set<string>>(new Set());
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [rolesLoading, setRolesLoading] = useState(false);
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPassword, setFormPassword] = useState('');
@@ -64,8 +69,13 @@ const UsersPage: React.FC = () => {
   }, [emailFilter]);
 
   useEffect(() => {
+    const id = window.setTimeout(() => setDebouncedName(nameFilter.trim()), 400);
+    return () => window.clearTimeout(id);
+  }, [nameFilter]);
+
+  useEffect(() => {
     setPage(1);
-  }, [debouncedEmail, statusFilter]);
+  }, [debouncedEmail, debouncedName, statusFilter]);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -73,6 +83,7 @@ const UsersPage: React.FC = () => {
     try {
       const params: Record<string, string | number> = { page, limit };
       if (debouncedEmail) params.email = debouncedEmail;
+      if (debouncedName) params.name = debouncedName;
       if (statusFilter) params.status = statusFilter;
 
       const response = (await api.get<ApiResponse<PaginatedResponse<AdminUserListItem>>>('/v1/users', {
@@ -103,12 +114,25 @@ const UsersPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, debouncedEmail, statusFilter]);
+  }, [page, limit, debouncedEmail, debouncedName, statusFilter]);
+
+  const fetchRoles = useCallback(async () => {
+    setRolesLoading(true);
+    try {
+      const response = await api.get<ApiResponse<Role[]>>('/v1/roles') as unknown as ApiResponse<Role[]>;
+      setRoles(Array.isArray(response.data) ? response.data : ((response.data as any).items || []));
+    } catch (error) {
+      console.error('Failed to fetch roles', error);
+    } finally {
+      setRolesLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUsers();
-  }, [fetchUsers]);
+    fetchRoles();
+  }, [fetchUsers, fetchRoles]);
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -129,6 +153,15 @@ const UsersPage: React.FC = () => {
     setFormName(user.name);
     setFormEmail(user.email);
     setFormPassword('');
+    setFormErrors({});
+  };
+
+  const openManageRoles = (user: AdminUserListItem) => {
+    setListError('');
+    setModalMode('manageRoles');
+    setEditingUser(user);
+    const existingIds = user.roles?.map(r => r.roleId) || [];
+    setSelectedRoleIds(new Set(existingIds));
     setFormErrors({});
   };
 
@@ -205,6 +238,37 @@ const UsersPage: React.FC = () => {
     }
   };
 
+  const submitManageRoles = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setSaving(true);
+    setFormErrors({});
+    try {
+      const currentIds = editingUser.roles?.map(r => r.roleId) || [];
+      const targetIds = Array.from(selectedRoleIds);
+
+      const toAdd = targetIds.filter(id => !currentIds.includes(id));
+      const toRemove = currentIds.filter(id => !targetIds.includes(id));
+
+      for (const roleId of toAdd) {
+        await api.post(`/v1/roles/${roleId}/users`, { userIds: [editingUser.id] });
+      }
+      for (const roleId of toRemove) {
+        await api.delete(`/v1/roles/${roleId}/users/${editingUser.id}`);
+      }
+
+      closeModal();
+      await fetchUsers();
+      showToast('User roles updated successfully.', 'success');
+    } catch (err) {
+      const msg = parseApiError(err);
+      setFormErrors({ form: msg });
+      showToast(msg, 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const toggleStatus = async (user: AdminUserListItem) => {
     const newStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     try {
@@ -240,6 +304,21 @@ const UsersPage: React.FC = () => {
       <div className="admin-filters">
         <Card>
           <div className="admin-filters__row">
+            <div className="admin-filter-field admin-filter-field--search">
+              <Input
+                label="Search by name"
+                type="search"
+                placeholder="Filter contains…"
+                value={nameFilter}
+                onChange={(e) => setNameFilter(e.target.value)}
+                autoComplete="off"
+              />
+              {nameFilter && (
+                <button type="button" className="admin-filter-clear" onClick={() => setNameFilter('')} aria-label="Clear name search">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
             <div className="admin-filter-field admin-filter-field--search">
               <Input
                 label="Search by email"
@@ -308,6 +387,9 @@ const UsersPage: React.FC = () => {
                   <td className="admin-td-muted">{formatDate(user.createdAt)}</td>
                   <td>
                     <div className="admin-row-actions">
+                      <Button variant="ghost" size="sm" type="button" title="Manage roles" onClick={() => openManageRoles(user)}>
+                        <Shield size={16} />
+                      </Button>
                       <Button variant="ghost" size="sm" type="button" title="Edit user" onClick={() => openEdit(user)}>
                         <UserCog size={16} />
                       </Button>
@@ -395,6 +477,70 @@ const UsersPage: React.FC = () => {
                   </Button>
                   <Button type="submit" isLoading={saving}>
                     {modalMode === 'create' ? 'Create user' : 'Save changes'}
+                  </Button>
+                </div>
+              </form>
+            </Card>
+          </div>
+        </div>
+      )}
+      
+      {modalMode === 'manageRoles' && editingUser && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="admin-modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeModal();
+          }}
+        >
+          <div className="admin-modal-panel admin-modal-panel--wide" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="admin-modal-close" aria-label="Close" onClick={closeModal}>
+              <X size={20} />
+            </button>
+            <Card className="modal-card">
+              <h2 className="modal-title">Manage Roles: {editingUser.name}</h2>
+              <p className="modal-desc">Assign or remove roles for this user.</p>
+
+              {formErrors.form && <div className="admin-alert admin-alert--error">{formErrors.form}</div>}
+
+              <form onSubmit={submitManageRoles}>
+                {rolesLoading ? (
+                  <PageLoading message="Loading roles…" />
+                ) : (
+                  <div className="checkbox-grid" style={{ marginBottom: '20px' }}>
+                    {roles.map((role) => (
+                      <label
+                        key={role.id}
+                        className={`checkbox-item ${selectedRoleIds.has(role.id) ? 'checkbox-item--selected' : ''}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedRoleIds.has(role.id)}
+                          onChange={(e) => {
+                            const next = new Set(selectedRoleIds);
+                            if (e.target.checked) next.add(role.id);
+                            else next.delete(role.id);
+                            setSelectedRoleIds(next);
+                          }}
+                        />
+                        <div>
+                          <div className="checkbox-item__code">{role.name}</div>
+                        </div>
+                      </label>
+                    ))}
+                    {roles.length === 0 && (
+                      <div className="role-perms-empty">No roles available. Create some first.</div>
+                    )}
+                  </div>
+                )}
+
+                <div className="modal-form-actions">
+                  <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" isLoading={saving}>
+                    Save Roles
                   </Button>
                 </div>
               </form>
