@@ -1,7 +1,7 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-Implementar task 16 sprint 8.
+Implementar task 17 sprint 8.
 
 Passos obrigatorios:
 1) Localize e leia o documento normativo principal do produto.
