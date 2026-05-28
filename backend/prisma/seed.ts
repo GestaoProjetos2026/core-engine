@@ -26,6 +26,7 @@ const adapter = new PrismaPg(pool, { schema });
 const prisma = new PrismaClient({ adapter });
 
 const isProduction = process.env.NODE_ENV === 'production';
+const allowDemoSecretsInProd = process.env.ALLOW_DEMO_SECRETS_IN_PROD === 'true';
 const updatePasswords =
   process.env.SEED_UPDATE_PASSWORDS === 'true' ||
   (!isProduction && process.env.SEED_UPDATE_PASSWORDS !== 'false');
@@ -99,6 +100,12 @@ function resolveM2mSecret(def: M2mAppDef): string {
   const fromEnv = process.env[def.secretEnvKey]?.trim();
   if (fromEnv) return fromEnv;
   if (isProduction && def.clientId !== 'test-client-id') {
+    if (allowDemoSecretsInProd) {
+      console.warn(
+        `⚠️ Missing env ${def.secretEnvKey} for ${def.clientId} in production; using demo default secret temporarily`,
+      );
+      return def.defaultSecret;
+    }
     throw new Error(
       `Missing required env ${def.secretEnvKey} for M2M app ${def.clientId} in production`,
     );
@@ -155,7 +162,9 @@ async function seedM2mApplication(
 }
 
 async function main() {
-  console.log(`Seed mode: NODE_ENV=${process.env.NODE_ENV ?? 'undefined'}, updatePasswords=${updatePasswords}`);
+  console.log(
+    `Seed mode: NODE_ENV=${process.env.NODE_ENV ?? 'undefined'}, updatePasswords=${updatePasswords}, allowDemoSecretsInProd=${allowDemoSecretsInProd}`,
+  );
 
   const permissions = await Promise.all(
     permissionDefs.map((p) =>

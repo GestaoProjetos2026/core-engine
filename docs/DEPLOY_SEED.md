@@ -48,6 +48,7 @@ Padrão sugerido em dev (ver `backend/prisma/seed-data.ts`): `Admin{Persona}2026
 | `SEED_ON_STARTUP` | `true` | `false` desliga seed no startup |
 | `SEED_STRICT` | implícito com `NODE_ENV=production` | Falha o container se o seed falhar |
 | `SEED_UPDATE_PASSWORDS` | `false` | `true` força reset de hashes em redeploy |
+| `ALLOW_DEMO_SECRETS_IN_PROD` | `false` | **Temporário**: com `true`, permite fallback para `defaultSecret` das apps M2M quando `SEED_M2M_SECRET_*` faltar em produção |
 
 Também necessários: `DATABASE_URL`, `JWT_SECRET`, `REDIS_URL`.
 
@@ -86,6 +87,20 @@ O JWT deve ter `type: integration_access` e `scopes` com o catálogo completo vi
 1. `SEED_ON_STARTUP=false` no deployment.
 2. Revogar ou desativar contas demo via admin (`PATCH /v1/users/:id/status`).
 3. Rotacionar `JWT_SECRET` e secrets M2M se houve exposição.
+
+## Pendência operacional (Squad 5 / ArgoCD)
+
+Se usar `ALLOW_DEMO_SECRETS_IN_PROD=true` para desbloquear deploy, abrir pendência para criação/rotação dos secrets reais no cluster:
+
+- `SEED_M2M_SECRET_CORE`
+- `SEED_M2M_SECRET_HOTMAIL`
+- `SEED_M2M_SECRET_CRM`
+- `SEED_M2M_SECRET_FISCAL`
+- `SEED_M2M_SECRET_DESK`
+- `SEED_M2M_SECRET_DEVOPS`
+- `SEED_M2M_SECRET_FINANCE_FISCAL`
+- `SEED_M2M_SECRET_CRM_LEADS`
+- `SEED_M2M_SECRET_SERVICE_DESK`
 
 ## Referências
 

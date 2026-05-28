@@ -98,6 +98,7 @@ if (process.env.DATABASE_URL) {
 var adapter = new adapter_pg_1.PrismaPg(pool, { schema: schema });
 var prisma = new client_1.PrismaClient({ adapter: adapter });
 var isProduction = process.env.NODE_ENV === 'production';
+var allowDemoSecretsInProd = process.env.ALLOW_DEMO_SECRETS_IN_PROD === 'true';
 var updatePasswords = process.env.SEED_UPDATE_PASSWORDS === 'true' ||
     (!isProduction && process.env.SEED_UPDATE_PASSWORDS !== 'false');
 var permissionDefs = [
@@ -179,6 +180,10 @@ function resolveM2mSecret(def) {
     if (fromEnv)
         return fromEnv;
     if (isProduction && def.clientId !== 'test-client-id') {
+        if (allowDemoSecretsInProd) {
+            console.warn("\u26A0\uFE0F Missing env ".concat(def.secretEnvKey, " for ").concat(def.clientId, " in production; using demo default secret temporarily"));
+            return def.defaultSecret;
+        }
         throw new Error("Missing required env ".concat(def.secretEnvKey, " for M2M app ").concat(def.clientId, " in production"));
     }
     return def.defaultSecret;
@@ -256,7 +261,7 @@ function main() {
         return __generator(this, function (_j) {
             switch (_j.label) {
                 case 0:
-                    console.log("Seed mode: NODE_ENV=".concat((_h = process.env.NODE_ENV) !== null && _h !== void 0 ? _h : 'undefined', ", updatePasswords=").concat(updatePasswords));
+                    console.log("Seed mode: NODE_ENV=".concat((_h = process.env.NODE_ENV) !== null && _h !== void 0 ? _h : 'undefined', ", updatePasswords=").concat(updatePasswords, ", allowDemoSecretsInProd=").concat(allowDemoSecretsInProd));
                     return [4 /*yield*/, Promise.all(permissionDefs.map(function (p) {
                             return prisma.permission.upsert({
                                 where: { code: p.code },
