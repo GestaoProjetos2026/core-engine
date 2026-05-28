@@ -1086,7 +1086,7 @@ Estimativa: 5 SP
 Label: gateway, nginx, infra, squad-5, sprint-8
 
 15) Seed de aplicações M2M por squad e escopos de identidade
-Status: pending
+Status: done
 
 Pertence a: Module 5 — Banco de Dados / Module 2 — Integração
 Título: Registrar clientes M2M (`finance-fiscal`, `crm-leads`, etc.)

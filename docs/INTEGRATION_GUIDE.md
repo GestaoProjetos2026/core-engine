@@ -342,13 +342,13 @@ Squads **2** (emitente na emissão fiscal) e **3** (nome do usuário logado) dev
 #### cURL
 
 ```bash
-# 1) Obter token M2M com escopo identity:read
-TOKEN=$(curl -s -X POST http://localhost:3000/v1/oauth/token \
+# 1) Obter token M2M (ex.: Squad 3 — crm-leads; ver docs/PERMISSIONS_MATRIX.md §3)
+TOKEN=$(curl -s -X POST http://localhost/v1/oauth/token \
   -H "Content-Type: application/json" \
   -d '{
     "grant_type": "client_credentials",
-    "client_id": "test-client-id",
-    "client_secret": "test-client-secret",
+    "client_id": "crm-leads",
+    "client_secret": "CrmLeads-Demo2026!",
     "scope": "identity:read"
   }' | jq -r '.data.access_token')
 
