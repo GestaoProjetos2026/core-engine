@@ -1058,7 +1058,7 @@ Estimativa: 8 SP
 Label: multi-tenant, jwt, database, sprint-8
 
 13) Multi-tenant: propagação em headers e isolamento de consultas
-Status: pending
+Status: done
 
 Pertence a: Module 6 — Common / Module 1 — Auth
 Título: Propagar `X-Tenant-Id` e filtrar dados por tenant

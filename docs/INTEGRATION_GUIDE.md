@@ -353,7 +353,8 @@ TOKEN=$(curl -s -X POST http://localhost:3000/v1/oauth/token \
 
 # 2) Buscar usuário pelo UUID (sub do JWT humano no CRM)
 curl -s http://localhost:3000/v1/integration/users/550e8400-e29b-41d4-a716-446655440000 \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer $TOKEN" \
+  -H "X-Tenant-Id: 00000000-0000-4000-8000-000000000001"
 ```
 
 #### Resposta (200)
@@ -461,7 +462,36 @@ def login(email: str, password: str) -> dict:
 }
 ```
 
-### 5.3. Obtendo o perfil e permissões do usuário
+### 5.3. Contexto de tenant (`X-Tenant-Id`) — RF27
+
+Rotas administrativas do Core (ex.: `GET /v1/users`) filtram dados pelo **tenant** do token. Squads que chamam o Core em nome de um usuário humano devem propagar o mesmo contexto:
+
+| Cenário | Header `X-Tenant-Id` | Comportamento |
+|---------|----------------------|---------------|
+| Omitido | — | O Core usa o `tenant_id` do JWT (`user_access`). |
+| Presente e igual ao JWT | UUID do tenant | Aceito; reforça o contexto para gateways e logs. |
+| Presente e diferente do JWT | UUID divergente | **403** `TENANT_MISMATCH`. |
+| Token M2M em `GET /v1/integration/users/:id` | **Obrigatório** | Sem header → **400** `TENANT_HEADER_REQUIRED`. |
+
+**Exemplo — listar usuários (admin):**
+
+```bash
+curl -X GET "http://localhost:3000/v1/users?page=1&limit=10" \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "X-Tenant-Id: 00000000-0000-4000-8000-000000000001"
+```
+
+**Exemplo — identidade M2M (Squad 2/3):**
+
+```bash
+curl -X GET "http://localhost:3000/v1/integration/users/<user-uuid>" \
+  -H "Authorization: Bearer <integration_access_token>" \
+  -H "X-Tenant-Id: 00000000-0000-4000-8000-000000000001"
+```
+
+> O UUID do tenant default de demonstração está no seed (`prisma/seed.ts`) e em `docs/JWT_GUIDE.md` (claim `tenant_id`).
+
+### 5.4. Obtendo o perfil e permissões do usuário
 
 ```bash
 curl -X GET http://localhost:3000/v1/auth/me \
@@ -482,7 +512,7 @@ curl -X GET http://localhost:3000/v1/auth/me \
 }
 ```
 
-### 5.4. Renovação do token (refresh com rotação)
+### 5.5. Renovação do token (refresh com rotação)
 
 O `accessToken` expira em **15 minutos** por padrão. Implemente renovação proativa antes do vencimento.
 

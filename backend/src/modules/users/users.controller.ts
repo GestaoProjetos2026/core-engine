@@ -29,7 +29,10 @@ import { ChangeUserStatusDto } from './dto/change-user-status.dto';
 import { ListUsersQueryDto } from './dto/list-users-query.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { TenantGuard } from '../auth/guards/tenant.guard';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
+import { CurrentTenant } from '../auth/decorators/current-tenant.decorator';
+import { X_TENANT_ID_HEADER } from '../../shared/constants/tenant-headers';
 
 const unauthorizedExample = {
   example: {
@@ -60,7 +63,7 @@ const notFoundExample = {
 
 @ApiTags('Users')
 @ApiBearerAuth('bearer')
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, PermissionsGuard)
 @Controller('users')
 export class UsersController {
   constructor(@Inject(UsersService) private readonly usersService: UsersService) {}
@@ -97,8 +100,11 @@ export class UsersController {
       required: ['email', 'name', 'password'],
     },
   })
-  async create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  async create(
+    @Body() createUserDto: CreateUserDto,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.usersService.create(createUserDto, tenantId);
   }
 
   @Get()
@@ -114,8 +120,15 @@ export class UsersController {
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
   @ApiQuery({ name: 'email', required: false, type: String, description: 'Filter by email' })
   @ApiQuery({ name: 'status', required: false, type: String, description: 'Filter by status' })
-  async findAll(@Query() query: ListUsersQueryDto) {
-    return this.usersService.findAll(query);
+  @ApiQuery({
+    name: X_TENANT_ID_HEADER,
+    required: false,
+    type: String,
+    description:
+      'Tenant UUID; when omitted, the tenant_id from the JWT is used. Must match the token when provided (RF27).',
+  })
+  async findAll(@Query() query: ListUsersQueryDto, @CurrentTenant() tenantId: string) {
+    return this.usersService.findAll(query, tenantId);
   }
 
   @Get(':id')
@@ -129,8 +142,8 @@ export class UsersController {
   @ApiUnauthorizedResponse({ description: 'Missing or invalid token.', schema: unauthorizedExample })
   @ApiForbiddenResponse({ description: 'Token lacks `users:read` permission.', schema: forbiddenExample })
   @ApiParam({ name: 'id', required: true, type: String, description: 'User UUID' })
-  async findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+  async findOne(@Param('id') id: string, @CurrentTenant() tenantId: string) {
+    return this.usersService.findOne(id, tenantId);
   }
 
   @Patch(':id')
@@ -154,8 +167,12 @@ export class UsersController {
       },
     },
   })
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.usersService.update(id, updateUserDto, tenantId);
   }
 
   @Patch(':id/status')
@@ -198,7 +215,8 @@ export class UsersController {
   async changeStatus(
     @Param('id') id: string,
     @Body() changeStatusDto: ChangeUserStatusDto,
+    @CurrentTenant() tenantId: string,
   ) {
-    return this.usersService.changeStatus(id, changeStatusDto);
+    return this.usersService.changeStatus(id, changeStatusDto, tenantId);
   }
 }

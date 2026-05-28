@@ -24,8 +24,8 @@ export class IntegrationService {
   ) {}
 
   /** RF29 — public identity fields for M2M consumers (Squad 2 emitente, Squad 3 display name). */
-  async findUserIdentityById(id: string) {
-    return this.usersService.findOne(id);
+  async findUserIdentityById(id: string, tenantId: string) {
+    return this.usersService.findOne(id, tenantId);
   }
 
   async issueToken(dto: OAuthTokenRequestDto): Promise<OAuthTokenResponseDto> {

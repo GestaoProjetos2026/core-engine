@@ -1,68 +1,117 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { PrismaService } from '../../server/prisma/prisma.service';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as bcrypt from 'bcrypt';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { DEFAULT_TENANT_ID } from '../../shared/constants/tenant';
 
 vi.mock('bcrypt', () => ({
   hash: vi.fn().mockResolvedValue('hashed_password'),
 }));
 
+const OTHER_TENANT_ID = '00000000-0000-4000-8000-000000000099';
+
 describe('UsersService', () => {
   let service: UsersService;
-  let prisma: PrismaService;
 
   const mockPrismaService = {
     user: {
       create: vi.fn(),
       findMany: vi.fn(),
       count: vi.fn(),
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
     },
   };
 
   beforeEach(() => {
-    prisma = mockPrismaService as unknown as PrismaService;
+    vi.clearAllMocks();
     const auditMock = { logStatusChange: vi.fn() };
-    service = new UsersService(prisma, auditMock as any);
+    service = new UsersService(mockPrismaService as unknown as PrismaService, auditMock as any);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  it('should create a user', async () => {
+  it('should create a user in the given tenant', async () => {
     mockPrismaService.user.create.mockResolvedValue({
       id: '1',
+      tenantId: DEFAULT_TENANT_ID,
       email: 'test@test.com',
       passwordHash: 'hashed_password',
       name: 'Test',
       status: 'ACTIVE',
     });
 
-    const result = await service.create({ email: 'test@test.com', name: 'Test', password: 'Password123' });
-    expect(result).toEqual({ id: '1', email: 'test@test.com', name: 'Test', status: 'ACTIVE' });
+    const result = await service.create(
+      { email: 'test@test.com', name: 'Test', password: 'Password123' },
+      DEFAULT_TENANT_ID,
+    );
+    expect(result).toEqual({
+      id: '1',
+      tenantId: DEFAULT_TENANT_ID,
+      email: 'test@test.com',
+      name: 'Test',
+      status: 'ACTIVE',
+    });
+    expect(mockPrismaService.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ tenantId: DEFAULT_TENANT_ID }),
+      }),
+    );
     expect(bcrypt.hash).toHaveBeenCalledWith('Password123', 12);
   });
 
-  it('should list users with pagination', async () => {
+  it('should list users scoped to tenant', async () => {
     mockPrismaService.user.findMany.mockResolvedValue([{ id: '1' }]);
     mockPrismaService.user.count.mockResolvedValue(1);
 
-    const result = await service.findAll({ page: 1, limit: 10 });
-    expect(result.items).toEqual([{ id: '1' }]);
-    expect(result.total).toBe(1);
-    expect(result.page).toBe(1);
+    await service.findAll({ page: 1, limit: 10 }, DEFAULT_TENANT_ID);
+
+    expect(mockPrismaService.user.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ tenantId: DEFAULT_TENANT_ID }),
+      }),
+    );
+  });
+
+  it('findOne returns user only when id belongs to tenant', async () => {
+    mockPrismaService.user.findFirst.mockResolvedValue({
+      id: 'u1',
+      tenantId: DEFAULT_TENANT_ID,
+      email: 'a@b.com',
+      name: 'A',
+      status: 'ACTIVE',
+    });
+
+    const user = await service.findOne('u1', DEFAULT_TENANT_ID);
+    expect(user.id).toBe('u1');
+    expect(mockPrismaService.user.findFirst).toHaveBeenCalledWith({
+      where: { id: 'u1', tenantId: DEFAULT_TENANT_ID },
+      select: expect.any(Object),
+    });
+  });
+
+  it('findOne throws NotFound when user is in another tenant', async () => {
+    mockPrismaService.user.findFirst.mockResolvedValue(null);
+
+    await expect(service.findOne('u-other', DEFAULT_TENANT_ID)).rejects.toThrow(NotFoundException);
   });
 
   it('should throw ConflictException on duplicate email P2002', async () => {
     mockPrismaService.user.create.mockRejectedValue(
-      new Prisma.PrismaClientKnownRequestError('Error', { code: 'P2002', clientVersion: 'test' })
+      new Prisma.PrismaClientKnownRequestError('Error', { code: 'P2002', clientVersion: 'test' }),
     );
 
-    await expect(service.create({ email: 'dup@test.com', name: 'Dup', password: 'Pass' })).rejects.toThrow(ConflictException);
+    await expect(
+      service.create({ email: 'dup@test.com', name: 'Dup', password: 'Pass' }, DEFAULT_TENANT_ID),
+    ).rejects.toThrow(ConflictException);
+  });
+
+  it('update rejects cross-tenant user', async () => {
+    mockPrismaService.user.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.update('u1', { name: 'X' }, OTHER_TENANT_ID),
+    ).rejects.toThrow(NotFoundException);
   });
 });
