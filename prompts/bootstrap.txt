@@ -1,7 +1,7 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-O botão para gerenciar usuarios não está aparecendo na tela de UsersPage.tsx
+Implementar task 16 sprint 8.
 
 Passos obrigatorios:
 1) Localize e leia o documento normativo principal do produto.
