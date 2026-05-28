@@ -1125,7 +1125,7 @@ Estimativa: 2 SP
 Label: delivery, cto, demo, sprint-8
 
 Resumo Sprint 8
-Frontend ADR-001 concluído (tasks 1–9). Em andamento até **29/05/2026**: papel **suporte**, **multi-tenant** (claim + header + isolamento), **gateway multi-módulo**, API M2M de usuários (Squads 2–3), seeds M2M, roteiro e demo CTO (tasks 10–17).
+Frontend ADR-001 concluído (tasks 1–9). Alicerce CTO **implementado** (tasks 10–15: suporte, identidade M2M, multi-tenant, gateway, seeds M2M). **Pendente:** roteiro e demo CTO (tasks 16–17), após validação em deploy.
 
 ---
 
@@ -1139,4 +1139,4 @@ Resumo geral (Sprints 2 a 8 até 29/05/2026)
 | 5 | 25/04–08/05 | Segurança, observabilidade, hardening e encerramento MVP backend | Encerrada |
 | 6 | 09/05–15/05 | Frontend administrativo (auth, CRUD, RBAC, M2M); **RNF08** (política de senha) implementada | Encerrada |
 | 7 | 16/05–22/05 | Guia de integração, snippet e homologação com squads | Encerrada |
-| 8 | 23/05–29/05 | ADR-001 no admin (done) + Alicerce: `suporte`, multi-tenant, gateway, API M2M, demo CTO | Em andamento |
+| 8 | 23/05–29/05 | ADR-001 (done) + Alicerce 10–15 (done); demo CTO 16–17 após deploy | Em andamento |
