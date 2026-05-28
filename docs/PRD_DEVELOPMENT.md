@@ -115,7 +115,13 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 
 ---
 
-### Sessão 27/05/2026 — Planejamento e normativo (sem código de features 10–17)
+### Sessão 27/05/2026 — Sprint 8 task 10 (RBAC suporte)
+
+- **`backend/prisma/seed.ts`:** papel `suporte` com permissões operacionais (`customers:read`, `tickets:*`, `dashboard:read`, `health:read`); catálogo `finance:read` / `finance:write` para Squad 2 **sem** vínculo ao `suporte`; usuário demo `suporte@example.com` / `Suporte123!`; validação no seed que `suporte` não recebe `finance:*` nem `orders:*`.
+- **`docs/PERMISSIONS_MATRIX.md`:** documentação do papel, permissões fiscais e credenciais de demo.
+- **`auth.service.spec.ts`:** teste garantindo JWT de login `suporte` sem `finance:*` no payload.
+
+### Sessão 27/05/2026 — Planejamento e normativo (PRD v2.1)
 
 - **`PRD.md` v2.1:** amendamento para alinhar checklist CTO e Sprint 8 — multi-tenant lógico (RF25–RF27), identidade M2M (RF29), gateway (RF28), papel `suporte` (RF30), §5.7–5.8, CA10–CA14, modelo `Tenant`, claims `tenant_id`, §14.7 gateway.
 - **`Sprints/Sprints.md`:** Sprint 8 estendida até 29/05; tasks 10–17; Sprint 9 fundida na 8; Sprints 5–7 encerradas.

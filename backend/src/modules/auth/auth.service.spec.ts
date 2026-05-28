@@ -1,9 +1,15 @@
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserStatus } from '@prisma/client';
+import { compare } from 'bcrypt';
 import { describe, expect, it, vi } from 'vitest';
 import { AuthService } from './auth.service';
 import type { PrismaService } from '../../server/prisma/prisma.service';
+
+vi.mock('bcrypt', () => ({
+  hash: vi.fn(),
+  compare: vi.fn(),
+}));
 
 function makePrismaMock() {
   const prisma = {
@@ -157,6 +163,57 @@ describe('AuthService', () => {
     expect(out.refreshToken.length).toBeGreaterThan(20);
     expect(jwt.signAsync).toHaveBeenCalledOnce();
     expect(prisma.refreshToken.updateMany).toHaveBeenCalled();
+  });
+
+  it('login JWT for suporte role excludes finance permissions', async () => {
+    const prisma = makePrismaMock();
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'u-sup',
+      email: 'suporte@example.com',
+      passwordHash: 'hash',
+      name: 'Agente Suporte Demo',
+      status: UserStatus.ACTIVE,
+      roles: [
+        {
+          role: {
+            name: 'suporte',
+            permissions: [
+              { permission: { code: 'customers:read' } },
+              { permission: { code: 'tickets:read' } },
+              { permission: { code: 'tickets:write' } },
+              { permission: { code: 'dashboard:read' } },
+            ],
+          },
+        },
+      ],
+    });
+    prisma.refreshToken.create.mockResolvedValue({
+      id: 'rt1',
+      tokenHash: 'h',
+      userId: 'u-sup',
+      expiresAt: new Date(Date.now() + 86_400_000),
+      revokedAt: null,
+      replacedById: null,
+      createdAt: new Date(),
+    });
+    vi.mocked(compare).mockResolvedValue(true);
+    const jwt = { signAsync: vi.fn().mockResolvedValue('access.jwt') };
+    const auditMock = { logLoginSuccess: vi.fn(), logLoginFailure: vi.fn(), logTokenRefresh: vi.fn() };
+    const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService, auditMock as any);
+
+    await service.login({ email: 'suporte@example.com', password: 'Suporte123!' });
+
+    const payload = jwt.signAsync.mock.calls[0][0] as {
+      roles: string[];
+      perms: string[];
+      type: string;
+    };
+    expect(payload.type).toBe('user_access');
+    expect(payload.roles).toEqual(['suporte']);
+    expect(payload.perms).toContain('customers:read');
+    expect(payload.perms).toContain('tickets:read');
+    expect(payload.perms.some((p) => p.startsWith('finance:'))).toBe(false);
+    expect(payload.perms.some((p) => p.startsWith('orders:'))).toBe(false);
   });
 
   it('login rejects inactive user like invalid credentials', async () => {

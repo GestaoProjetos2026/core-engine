@@ -1016,7 +1016,7 @@ Estimativa: 1 SP
 Label: delivery, frontend, sprint-8
 
 10) Papel `suporte` e usuário demo (integração Squad 4)
-Status: pending
+Status: done
 
 Pertence a: Module 5 — Banco de Dados / Module 1 — Auth
 Título: Criar role `suporte` com RBAC restrito

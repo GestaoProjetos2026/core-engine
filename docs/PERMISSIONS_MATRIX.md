@@ -33,6 +33,14 @@ Utilizadas em conjunto com o decorador `@RequirePermissions('code')` no backend.
 | `products:write` | Gerenciar catálogo de produtos | Catálogo |
 | `inventory:read` | Visualizar estoque | Logística |
 | `inventory:write` | Movimentar estoque | Logística |
+| **Fiscal (Squad 2)** | | |
+| `finance:read` | Visualizar dados financeiros e faturamento | Squad 2 / Fiscal |
+| `finance:write` | Emitir e alterar documentos fiscais | Squad 2 / Fiscal |
+| **Service Desk (Squad 4)** | | |
+| `tickets:read` | Visualizar chamados de suporte | Squad 4 |
+| `tickets:write` | Criar e atualizar chamados | Squad 4 |
+
+> **Squad 2 (Fiscal):** rotas financeiras devem exigir `finance:read` ou `finance:write` no JWT. O papel **`suporte`** **não** recebe essas permissões no seed.
 
 ## 2. Escopos (OAuth 2.0 — Integrações M2M)
 
@@ -67,3 +75,14 @@ Para solicitar novas permissões ou escopos:
 | `admin` | Administrador total do sistema | Todas as permissões |
 | `viewer` | Acesso de leitura | Todas as permissões `:read` |
 | `manager` | Gestor de negócio | Leituras IAM + Escrita/Leitura de domínios (orders, customers, etc.) |
+| `suporte` | Agente Service Desk (demo Squad 4) | `customers:read`, `tickets:read`, `tickets:write`, `dashboard:read`, `health:read` — **sem** `finance:*` nem `orders:*` |
+
+### Usuário de demonstração — `suporte`
+
+| Campo | Valor |
+|-------|--------|
+| E-mail | `suporte@example.com` |
+| Senha | `Suporte123!` |
+| Papel | `suporte` |
+
+Após `npm run prisma:seed` no `backend/`, o login em `POST /v1/auth/login` deve retornar JWT com `roles: ["suporte"]` e `perms` **sem** códigos `finance:*`. A Squad 2 deve retornar **403** em rotas protegidas por `finance:read` / `finance:write` quando validar o token do Core.

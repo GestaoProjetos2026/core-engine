@@ -47,7 +47,47 @@ const permissionDefs: { code: string; description: string }[] = [
   { code: 'products:write', description: 'Gerenciar catálogo de produtos' },
   { code: 'inventory:read', description: 'Visualizar estoque' },
   { code: 'inventory:write', description: 'Movimentar estoque' },
+
+  // Squad 2 — Fiscal (não concedidas ao papel suporte)
+  { code: 'finance:read', description: 'Visualizar dados financeiros e faturamento (Squad 2)' },
+  { code: 'finance:write', description: 'Emitir e alterar documentos fiscais (Squad 2)' },
+
+  // Squad 4 — Service Desk
+  { code: 'tickets:read', description: 'Visualizar chamados de suporte' },
+  { code: 'tickets:write', description: 'Criar e atualizar chamados de suporte' },
 ];
+
+const SUPORTE_PERMISSION_CODES = [
+  'customers:read',
+  'tickets:read',
+  'tickets:write',
+  'dashboard:read',
+  'health:read',
+] as const;
+
+async function linkRoleToPermissions(
+  roleId: string,
+  permissionList: { id: string; code: string }[],
+  codes: readonly string[],
+) {
+  const selected = permissionList.filter((p) => codes.includes(p.code));
+  for (const permission of selected) {
+    await prisma.rolePermission.upsert({
+      where: {
+        roleId_permissionId: {
+          roleId,
+          permissionId: permission.id,
+        },
+      },
+      update: {},
+      create: {
+        roleId,
+        permissionId: permission.id,
+      },
+    });
+  }
+  return selected.map((p) => p.code);
+}
 
 async function main() {
   const permissions = await Promise.all(
@@ -80,7 +120,13 @@ async function main() {
     create: { name: 'manager' },
   });
 
-  console.log('✅ Roles (admin, viewer, manager) upserted');
+  const suporteRole = await prisma.role.upsert({
+    where: { name: 'suporte' },
+    update: {},
+    create: { name: 'suporte' },
+  });
+
+  console.log('✅ Roles (admin, viewer, manager, suporte) upserted');
 
   // Admin: Tudo
   for (const permission of permissions) {
@@ -144,6 +190,24 @@ async function main() {
     });
   }
   console.log(`✅ Manager linked to ${managerPerms.length} permissions`);
+
+  const suporteLinkedCodes = await linkRoleToPermissions(
+    suporteRole.id,
+    permissions,
+    SUPORTE_PERMISSION_CODES,
+  );
+  const forbiddenForSuporte = permissions
+    .filter((p) => p.code.startsWith('finance:') || p.code.startsWith('orders:'))
+    .map((p) => p.code);
+  const suporteHasForbidden = suporteLinkedCodes.some((c) =>
+    forbiddenForSuporte.includes(c),
+  );
+  if (suporteHasForbidden) {
+    throw new Error('Role suporte must not include finance:* or orders:* permissions');
+  }
+  console.log(
+    `✅ Suporte linked to ${suporteLinkedCodes.length} permissions: ${suporteLinkedCodes.join(', ')}`,
+  );
 
   // Criar usuários semente
   // const defaultPassword = 'Password123!';
@@ -237,6 +301,39 @@ async function main() {
 
     console.log(`✅ Admin user ensured: ${admin.email}`);
   }
+
+  const suportePassword = 'Suporte123!';
+  const suportePasswordHash = await bcrypt.hash(suportePassword, 12);
+  const suporteUser = await prisma.user.upsert({
+    where: { email: 'suporte@example.com' },
+    update: {
+      passwordHash: suportePasswordHash,
+      status: 'ACTIVE',
+      name: 'Agente Suporte Demo',
+    },
+    create: {
+      email: 'suporte@example.com',
+      name: 'Agente Suporte Demo',
+      passwordHash: suportePasswordHash,
+      status: 'ACTIVE',
+    },
+  });
+
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId: {
+        userId: suporteUser.id,
+        roleId: suporteRole.id,
+      },
+    },
+    update: {},
+    create: {
+      userId: suporteUser.id,
+      roleId: suporteRole.id,
+    },
+  });
+
+  console.log('✅ Suporte user ensured: suporte@example.com / Suporte123!');
 
   // const viewerUser = await prisma.user.upsert({
   //   where: { email: 'viewer@example.com' },

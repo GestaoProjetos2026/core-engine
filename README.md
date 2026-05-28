@@ -33,9 +33,11 @@ npm run dev
 ```
 
 ### 3. Acessos Iniciais (Seed)
-- **Admin:** `admin@example.com` / `Password123!`
-- **Viewer:** `viewer@example.com` / `Password123!`
+- **Admin:** `admin@hotmail.com` / `Admin12345!`
+- **Suporte (Squad 4 demo):** `suporte@example.com` / `Suporte123!` — papel `suporte`, sem permissões `finance:*`
 - **App M2M:** `test-client-id` / `test-client-secret`
+
+Detalhes de papéis e permissões: [`docs/PERMISSIONS_MATRIX.md`](docs/PERMISSIONS_MATRIX.md)
 
 ---
 
