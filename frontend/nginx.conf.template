@@ -1,0 +1,94 @@
+# RF28 — Gateway multi-módulo (entrada única: SPA + API /v1)
+# Upstreams substituídos em runtime via envsubst (imagem nginx oficial).
+# Variáveis: CORE_SVC_HOST, FISCAL_SVC_HOST, CRM_SVC_HOST, SERVICE_DESK_SVC_HOST
+
+upstream core_engine_upstream {
+    server ${CORE_SVC_HOST};
+}
+
+upstream fiscal_upstream {
+    server ${FISCAL_SVC_HOST};
+}
+
+upstream crm_upstream {
+    server ${CRM_SVC_HOST};
+}
+
+upstream service_desk_upstream {
+    server ${SERVICE_DESK_SVC_HOST};
+}
+
+server {
+    listen 80;
+    server_name localhost;
+
+    # SPA (admin Core-Engine)
+    location / {
+        root /usr/share/nginx/html;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Regra de ouro: squads consumidoras não expõem login local
+    location ~ ^/v1/(fiscal|crm|service-desk)/.*/(auth/login|login)$ {
+        default_type application/json;
+        return 403 '{"success":false,"error":{"code":"AUTH_LOGIN_FORBIDDEN","message":"Login is only allowed via Core POST /v1/auth/login"},"timestamp":"$time_iso8601","path":"$request_uri"}';
+    }
+
+    # Squad 2 — Finance/Fiscal (exemplo)
+    location /v1/fiscal/ {
+        proxy_pass http://fiscal_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Authorization $http_authorization;
+        proxy_set_header X-Tenant-Id $http_x_tenant_id;
+        proxy_set_header X-Request-Id $http_x_request_id;
+    }
+
+    # Squad 3 — CRM / Leads (exemplo)
+    location /v1/crm/ {
+        proxy_pass http://crm_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Authorization $http_authorization;
+        proxy_set_header X-Tenant-Id $http_x_tenant_id;
+        proxy_set_header X-Request-Id $http_x_request_id;
+    }
+
+    # Squad 4 — Service Desk (exemplo)
+    location /v1/service-desk/ {
+        proxy_pass http://service_desk_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Authorization $http_authorization;
+        proxy_set_header X-Tenant-Id $http_x_tenant_id;
+        proxy_set_header X-Request-Id $http_x_request_id;
+    }
+
+    # Core Engine — identidade, RBAC, OAuth, integração (único emissor de login humano)
+    location /v1/ {
+        proxy_pass http://core_engine_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Authorization $http_authorization;
+        proxy_set_header X-Tenant-Id $http_x_tenant_id;
+        proxy_set_header X-Request-Id $http_x_request_id;
+    }
+
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        root /usr/share/nginx/html;
+    }
+}

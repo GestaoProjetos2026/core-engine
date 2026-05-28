@@ -1072,7 +1072,7 @@ Estimativa: 5 SP
 Label: multi-tenant, isolation, headers, sprint-8
 
 14) Gateway multi-módulo (roteamento para squads)
-Status: pending
+Status: done
 
 Pertence a: Module 7 — Infraestrutura
 Título: Configurar proxy/gateway para APIs do ecossistema

@@ -140,7 +140,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 ## 🏗️ Débitos Técnicos e Próximos Passos (Pós-MVP)
 
 1. **Sprint 8 tasks 10–17:** implementação do Alicerce (código ainda não reflete PRD v2.1).
-2. **PRD v2.1 vs código:** migrations `Tenant`, endpoint `/v1/integration/users/:id`, middleware `X-Tenant-Id` — pendentes.
+2. **PRD v2.1 vs código:** alinhado em tasks 12–14 (`Tenant`, identidade M2M, `X-Tenant-Id`, `docs/GATEWAY.md`).
 3. **Migração para Node.js LTS:** Node 25 em Windows apresentou instabilidades; preferir Node 22 (LTS) em produção.
 4. **`docs/JWT_GUIDE.md`:** atualizar exemplo de claims com `tenant_id` após implementação da task 12.
 
