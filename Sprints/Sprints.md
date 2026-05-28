@@ -1030,7 +1030,7 @@ Estimativa: 3 SP
 Label: rbac, seed, suporte, squad-4, sprint-8
 
 11) API de identidade M2M para squads consumidoras (Squad 2 e 3)
-Status: pending
+Status: done
 
 Pertence a: Module 6 — APIs / Module 2 — Integração
 Título: Expor leitura de usuário por UUID para integração server-to-server

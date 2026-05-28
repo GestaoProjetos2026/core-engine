@@ -382,6 +382,7 @@ async function main() {
 
   // Criar Escopos Semente (M2M)
   const scopeDefs: { code: string; description: string }[] = [
+    { code: 'identity:read', description: 'Leitura de identidade de usuários via API M2M (Core)' },
     { code: 'read:all', description: 'Leitura total (M2M)' },
     { code: 'write:all', description: 'Escrita total (M2M)' },
     { code: 'orders:read', description: 'Leitura de pedidos' },

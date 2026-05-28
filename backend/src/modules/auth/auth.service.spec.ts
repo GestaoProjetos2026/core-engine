@@ -196,14 +196,15 @@ describe('AuthService', () => {
       replacedById: null,
       createdAt: new Date(),
     });
-    vi.mocked(compare).mockResolvedValue(true);
+    vi.mocked(compare).mockImplementation(async () => true);
     const jwt = { signAsync: vi.fn().mockResolvedValue('access.jwt') };
     const auditMock = { logLoginSuccess: vi.fn(), logLoginFailure: vi.fn(), logTokenRefresh: vi.fn() };
     const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService, auditMock as any);
 
     await service.login({ email: 'suporte@example.com', password: 'Suporte123!' });
 
-    const payload = jwt.signAsync.mock.calls[0][0] as {
+    expect(jwt.signAsync).toHaveBeenCalled();
+    const payload = jwt.signAsync.mock.calls[0]![0] as {
       roles: string[];
       perms: string[];
       type: string;

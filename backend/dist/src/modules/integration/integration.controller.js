@@ -19,6 +19,7 @@ const integration_service_1 = require("./integration.service");
 const oauth_token_request_dto_1 = require("./dto/oauth-token-request.dto");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const scopes_guard_1 = require("../auth/guards/scopes.guard");
+const integration_token_guard_1 = require("../auth/guards/integration-token.guard");
 const require_scopes_decorator_1 = require("../auth/decorators/require-scopes.decorator");
 let IntegrationController = class IntegrationController {
     integrationService;
@@ -35,6 +36,9 @@ let IntegrationController = class IntegrationController {
     }
     async testScope() {
         return { success: true, message: 'You have the required scope!' };
+    }
+    async getUserIdentity(id) {
+        return this.integrationService.findUserIdentityById(id);
     }
 };
 exports.IntegrationController = IntegrationController;
@@ -236,6 +240,64 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], IntegrationController.prototype, "testScope", null);
+__decorate([
+    (0, common_1.Get)('integration/users/:id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, integration_token_guard_1.IntegrationTokenGuard, scopes_guard_1.ScopesGuard),
+    (0, require_scopes_decorator_1.RequireScopes)('identity:read'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Get user identity by UUID (M2M)',
+        description: 'RF29: Returns id, name, email and status for squads consuming Core identity (e.g. Fiscal emitente, CRM logged-in name). Requires JWT `integration_access` and scope `identity:read`. Human tokens are rejected.',
+    }),
+    (0, swagger_1.ApiParam)({ name: 'id', type: String, description: 'User UUID (same as JWT claim `sub` for human users)' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'User identity found',
+        schema: {
+            example: {
+                success: true,
+                data: {
+                    id: '550e8400-e29b-41d4-a716-446655440000',
+                    email: 'agente@empresa.com',
+                    name: 'Agente CRM',
+                    status: 'ACTIVE',
+                    createdAt: '2026-05-01T10:00:00.000Z',
+                    updatedAt: '2026-05-01T10:00:00.000Z',
+                },
+                timestamp: '2026-05-27T12:00:00.000Z',
+                path: '/v1/integration/users/550e8400-e29b-41d4-a716-446655440000',
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 403,
+        description: 'Forbidden — missing scope, human token, or invalid token type',
+        schema: {
+            example: {
+                success: false,
+                error: { code: 'AUTHZ_FORBIDDEN', message: 'Insufficient scopes. Required: identity:read' },
+                timestamp: '2026-05-27T12:00:00.000Z',
+                path: '/v1/integration/users/:id',
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'User not found',
+        schema: {
+            example: {
+                success: false,
+                error: { code: 'RESOURCE_NOT_FOUND', message: 'Usuário não encontrado' },
+                timestamp: '2026-05-27T12:00:00.000Z',
+                path: '/v1/integration/users/:id',
+            },
+        },
+    }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], IntegrationController.prototype, "getUserIdentity", null);
 exports.IntegrationController = IntegrationController = __decorate([
     (0, swagger_1.ApiTags)('Integration'),
     (0, common_1.Controller)(),

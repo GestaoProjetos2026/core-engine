@@ -17,6 +17,7 @@ const auth_service_1 = require("./auth.service");
 const jwt_strategy_1 = require("./jwt.strategy");
 const permissions_guard_1 = require("./guards/permissions.guard");
 const scopes_guard_1 = require("./guards/scopes.guard");
+const integration_token_guard_1 = require("./guards/integration-token.guard");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -35,8 +36,8 @@ exports.AuthModule = AuthModule = __decorate([
             rate_limit_module_1.RateLimitModule,
         ],
         controllers: [auth_controller_1.AuthController],
-        providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, permissions_guard_1.PermissionsGuard, scopes_guard_1.ScopesGuard],
-        exports: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, permissions_guard_1.PermissionsGuard, scopes_guard_1.ScopesGuard],
+        providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, permissions_guard_1.PermissionsGuard, scopes_guard_1.ScopesGuard, integration_token_guard_1.IntegrationTokenGuard],
+        exports: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, permissions_guard_1.PermissionsGuard, scopes_guard_1.ScopesGuard, integration_token_guard_1.IntegrationTokenGuard],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

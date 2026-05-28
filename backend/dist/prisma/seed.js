@@ -457,6 +457,7 @@ function main() {
                 case 29:
                     testApp = _e.sent();
                     scopeDefs = [
+                        { code: 'identity:read', description: 'Leitura de identidade de usuários via API M2M (Core)' },
                         { code: 'read:all', description: 'Leitura total (M2M)' },
                         { code: 'write:all', description: 'Escrita total (M2M)' },
                         { code: 'orders:read', description: 'Leitura de pedidos' },

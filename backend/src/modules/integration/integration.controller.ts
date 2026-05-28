@@ -1,10 +1,29 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Post, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiBody, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Inject,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBody,
+  ApiConsumes,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { IntegrationService } from './integration.service';
 import { OAuthTokenRequestDto } from './dto/oauth-token-request.dto';
 import { OAuthTokenResponseDto } from './dto/oauth-token-response.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ScopesGuard } from '../auth/guards/scopes.guard';
+import { IntegrationTokenGuard } from '../auth/guards/integration-token.guard';
 import { RequireScopes } from '../auth/decorators/require-scopes.decorator';
 
 @ApiTags('Integration')
@@ -207,5 +226,62 @@ export class IntegrationController {
   })
   async testScope() {
     return { success: true, message: 'You have the required scope!' };
+  }
+
+  @Get('integration/users/:id')
+  @UseGuards(JwtAuthGuard, IntegrationTokenGuard, ScopesGuard)
+  @RequireScopes('identity:read')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get user identity by UUID (M2M)',
+    description:
+      'RF29: Returns id, name, email and status for squads consuming Core identity (e.g. Fiscal emitente, CRM logged-in name). Requires JWT `integration_access` and scope `identity:read`. Human tokens are rejected.',
+  })
+  @ApiParam({ name: 'id', type: String, description: 'User UUID (same as JWT claim `sub` for human users)' })
+  @ApiResponse({
+    status: 200,
+    description: 'User identity found',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          email: 'agente@empresa.com',
+          name: 'Agente CRM',
+          status: 'ACTIVE',
+          createdAt: '2026-05-01T10:00:00.000Z',
+          updatedAt: '2026-05-01T10:00:00.000Z',
+        },
+        timestamp: '2026-05-27T12:00:00.000Z',
+        path: '/v1/integration/users/550e8400-e29b-41d4-a716-446655440000',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden — missing scope, human token, or invalid token type',
+    schema: {
+      example: {
+        success: false,
+        error: { code: 'AUTHZ_FORBIDDEN', message: 'Insufficient scopes. Required: identity:read' },
+        timestamp: '2026-05-27T12:00:00.000Z',
+        path: '/v1/integration/users/:id',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+    schema: {
+      example: {
+        success: false,
+        error: { code: 'RESOURCE_NOT_FOUND', message: 'Usuário não encontrado' },
+        timestamp: '2026-05-27T12:00:00.000Z',
+        path: '/v1/integration/users/:id',
+      },
+    },
+  })
+  async getUserIdentity(@Param('id') id: string) {
+    return this.integrationService.findUserIdentityById(id);
   }
 }

@@ -115,6 +115,13 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 
 ---
 
+### Sessão 27/05/2026 — Sprint 8 task 11 (API identidade M2M)
+
+- **`GET /v1/integration/users/:id`:** `IntegrationTokenGuard` + `ScopesGuard` + escopo `identity:read`; rejeita token humano.
+- **Seed:** escopo `identity:read` no catálogo M2M.
+- **Docs:** `INTEGRATION_GUIDE.md` §4.6, `PERMISSIONS_MATRIX.md`.
+- **Testes:** `integration.e2e.spec.ts` (200/403/404), `integration-token.guard.spec.ts`.
+
 ### Sessão 27/05/2026 — Sprint 8 task 10 (RBAC suporte)
 
 - **`backend/prisma/seed.ts`:** papel `suporte` com permissões operacionais (`customers:read`, `tickets:*`, `dashboard:read`, `health:read`); catálogo `finance:read` / `finance:write` para Squad 2 **sem** vínculo ao `suporte`; usuário demo `suporte@example.com` / `Suporte123!`; validação no seed que `suporte` não recebe `finance:*` nem `orders:*`.

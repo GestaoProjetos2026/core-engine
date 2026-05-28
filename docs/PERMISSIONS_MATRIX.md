@@ -48,6 +48,7 @@ Utilizados no fluxo `client_credentials` e validados via `@RequireScopes('code')
 
 | Código | Descrição | Nível de Acesso |
 |--------|-----------|-----------------|
+| `identity:read` | Leitura de identidade via `GET /v1/integration/users/:id` | Core/Auth |
 | `read:all` | Leitura total em todas as APIs permitidas | Global |
 | `write:all` | Escrita total em todas as APIs permitidas | Global |
 | `orders:read` | Leitura de pedidos | Funcional |

@@ -1,42 +1,22 @@
 # CONTEXT.md
 
-> Memoria curta da ultima sessao. Atualize este arquivo no fechamento de cada sessao de trabalho.
+> Memoria curta da ultima sessao.
 
-## Referencias obrigatorias da sessao
-- Fonte normativa principal: `PRD.md` (v2.1)
-- Fonte oficial de backlog: `Sprints.md`
+## Referencias
+- `PRD.md` v2.1 | `Sprints.md`
 
-## Ultima acao realizada
-- **Sprint 8 task 10 concluida:** role `suporte`, permissoes `finance:*` / `tickets:*` no seed, usuario `suporte@example.com`, `PERMISSIONS_MATRIX.md`, teste unitario JWT sem `finance:*`.
+## Ultima acao
+- **Sprint 8 task 11:** `GET /v1/integration/users/:id` (M2M + `identity:read`), `IntegrationTokenGuard`, seed, e2e, `INTEGRATION_GUIDE.md`.
 
-## Arquivos modificados recentemente
-- `backend/prisma/seed.ts`
-- `docs/PERMISSIONS_MATRIX.md`
-- `backend/src/modules/auth/auth.service.spec.ts`
-- `Sprints/Sprints.md` (task 10 `done`)
-
-## Estado atual
-- **Sprint 8:** tasks 1–10 `done`; tasks 11–17 `pending`.
-- Aplicar seed com Postgres: `cd backend && npm run prisma:seed`.
-
-## Pendencias (tasks 11–17)
-- **11** — `GET /v1/integration/users/:id` (M2M)
-- **12–13** — multi-tenant
-- **14** — gateway
-- **15** — seeds M2M por squad
-- **16–17** — demo CTO
-
-## Riscos e atencoes
-- Seed local falhou sem DB (`ECONNREFUSED`) — subir `docker compose` antes do seed.
-- Squad 2 deve proteger rotas com `@RequirePermissions('finance:read')` etc.
+## Estado
+- Sprint 8: tasks 1–11 `done`; tasks 12–17 `pending`.
 
 ## Proximo foco
-- **Task 11** — endpoint M2M de identidade + escopo no seed.
+- Tasks 12–13 (multi-tenant) ou task 14 (gateway).
 
-## Tasks concluidas na sessao
-- **Sprint 8 task 10** — Papel `suporte` e usuario demo.
+## Credenciais M2M (demo)
+- `test-client-id` / `test-client-secret` com escopo `identity:read` no seed.
 
 ## Pronto para proxima sessao
-1. `docker compose up -d` e `npm run prisma:seed` no `backend/`.
-2. Validar login: `suporte@example.com` / `Suporte123!` → `GET /v1/auth/me`.
-3. Implementar task 11.
+1. `npm run prisma:seed` (escopo `identity:read` na app de teste).
+2. Testar: token M2M + `GET /v1/integration/users/{uuid}`.
