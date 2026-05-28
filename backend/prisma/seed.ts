@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../node_modules/.prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
@@ -26,7 +26,7 @@ const adapter = new PrismaPg(pool, { schema });
 const prisma = new PrismaClient({ adapter });
 
 const isProduction = process.env.NODE_ENV === 'production';
-const allowDemoSecretsInProd = process.env.ALLOW_DEMO_SECRETS_IN_PROD === 'true';
+const strictM2mSecretsInProd = process.env.SEED_STRICT_M2M_SECRETS === 'true';
 const updatePasswords =
   process.env.SEED_UPDATE_PASSWORDS === 'true' ||
   (!isProduction && process.env.SEED_UPDATE_PASSWORDS !== 'false');
@@ -100,15 +100,15 @@ function resolveM2mSecret(def: M2mAppDef): string {
   const fromEnv = process.env[def.secretEnvKey]?.trim();
   if (fromEnv) return fromEnv;
   if (isProduction && def.clientId !== 'test-client-id') {
-    if (allowDemoSecretsInProd) {
-      console.warn(
-        `⚠️ Missing env ${def.secretEnvKey} for ${def.clientId} in production; using demo default secret temporarily`,
+    if (strictM2mSecretsInProd) {
+      throw new Error(
+        `Missing required env ${def.secretEnvKey} for M2M app ${def.clientId} in production`,
       );
-      return def.defaultSecret;
     }
-    throw new Error(
-      `Missing required env ${def.secretEnvKey} for M2M app ${def.clientId} in production`,
+    console.warn(
+      `⚠️ Missing env ${def.secretEnvKey} for ${def.clientId} in production; using demo default secret`,
     );
+    return def.defaultSecret;
   }
   return def.defaultSecret;
 }
@@ -163,7 +163,7 @@ async function seedM2mApplication(
 
 async function main() {
   console.log(
-    `Seed mode: NODE_ENV=${process.env.NODE_ENV ?? 'undefined'}, updatePasswords=${updatePasswords}, allowDemoSecretsInProd=${allowDemoSecretsInProd}`,
+    `Seed mode: NODE_ENV=${process.env.NODE_ENV ?? 'undefined'}, updatePasswords=${updatePasswords}, strictM2mSecretsInProd=${strictM2mSecretsInProd}`,
   );
 
   const permissions = await Promise.all(
@@ -178,7 +178,7 @@ async function main() {
 
   console.log(`✅ ${permissions.length} permissions upserted`);
 
-  const defaultTenant = await prisma.tenant.upsert({
+  const defaultTenant = await (prisma as any).tenant.upsert({
     where: { slug: DEFAULT_TENANT_SLUG },
     update: { name: 'Default Organization' },
     create: {

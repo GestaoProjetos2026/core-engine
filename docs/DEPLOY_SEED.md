@@ -48,7 +48,7 @@ Padrão sugerido em dev (ver `backend/prisma/seed-data.ts`): `Admin{Persona}2026
 | `SEED_ON_STARTUP` | `true` | `false` desliga seed no startup |
 | `SEED_STRICT` | implícito com `NODE_ENV=production` | Falha o container se o seed falhar |
 | `SEED_UPDATE_PASSWORDS` | `false` | `true` força reset de hashes em redeploy |
-| `ALLOW_DEMO_SECRETS_IN_PROD` | `false` | **Temporário**: com `true`, permite fallback para `defaultSecret` das apps M2M quando `SEED_M2M_SECRET_*` faltar em produção |
+| `SEED_STRICT_M2M_SECRETS` | `false` | `true` força erro quando faltar `SEED_M2M_SECRET_*` em produção; `false` permite fallback para `defaultSecret` |
 
 Também necessários: `DATABASE_URL`, `JWT_SECRET`, `REDIS_URL`.
 
@@ -90,7 +90,7 @@ O JWT deve ter `type: integration_access` e `scopes` com o catálogo completo vi
 
 ## Pendência operacional (Squad 5 / ArgoCD)
 
-Se usar `ALLOW_DEMO_SECRETS_IN_PROD=true` para desbloquear deploy, abrir pendência para criação/rotação dos secrets reais no cluster:
+Com `SEED_STRICT_M2M_SECRETS=false` o deploy desbloqueia usando fallback demo. Ainda assim, abrir pendência para criação/rotação dos secrets reais no cluster:
 
 - `SEED_M2M_SECRET_CORE`
 - `SEED_M2M_SECRET_HOTMAIL`
