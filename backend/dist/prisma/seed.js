@@ -78,7 +78,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var client_1 = require("../node_modules/.prisma/client");
+var client_1 = require("@prisma/client");
 var adapter_pg_1 = require("@prisma/adapter-pg");
 var pg_1 = require("pg");
 var dotenv = __importStar(require("dotenv"));
