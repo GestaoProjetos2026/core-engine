@@ -6,6 +6,7 @@ export type JwtPayload = {
   sub: string;
   email?: string;
   type: 'user_access' | 'integration_access';
+  tenant_id?: string;
   roles?: string[];
   perms?: string[];
   clientId?: string;
@@ -31,8 +32,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     return {
-      userId: payload.sub, // Will be app id if M2M
+      userId: payload.sub, // user UUID for user_access; application id for M2M
       email: payload.email,
+      tenantId: payload.tenant_id,
       roles: payload.roles ?? [],
       perms: payload.perms ?? [],
       type: payload.type,

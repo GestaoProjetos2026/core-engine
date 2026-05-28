@@ -32,8 +32,11 @@ export class AuthTokensDto {
 }
 
 export class UserProfileDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'User UUID (same as JWT claim `sub` / checklist `user_id`)' })
   userId!: string;
+
+  @ApiProperty({ description: 'Tenant UUID (same as JWT claim `tenant_id`)' })
+  tenantId!: string;
 
   @ApiProperty()
   email!: string;

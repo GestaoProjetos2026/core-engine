@@ -7,6 +7,7 @@ import { ListUsersQueryDto } from './dto/list-users-query.dto';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
+import { DEFAULT_TENANT_SLUG } from '../../shared/constants/tenant';
 
 @Injectable()
 export class UsersService {
@@ -16,10 +17,22 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { slug: DEFAULT_TENANT_SLUG },
+      select: { id: true },
+    });
+    if (!tenant) {
+      throw new ConflictException({
+        code: 'TENANT_NOT_CONFIGURED',
+        message: 'Default tenant is not configured. Run database seed.',
+      });
+    }
+
     const passwordHash = await bcrypt.hash(createUserDto.password, 12);
     try {
       const user = await this.prisma.user.create({
         data: {
+          tenantId: tenant.id,
           email: createUserDto.email,
           name: createUserDto.name,
           passwordHash,
@@ -65,6 +78,7 @@ export class UsersService {
           take: limit,
           select: {
             id: true,
+            tenantId: true,
             email: true,
             name: true,
             status: true,
@@ -106,6 +120,7 @@ export class UsersService {
       where: { id },
       select: {
         id: true,
+        tenantId: true,
         email: true,
         name: true,
         status: true,

@@ -1044,7 +1044,7 @@ Estimativa: 5 SP
 Label: integration, m2m, users, squad-2, squad-3, sprint-8
 
 12) Multi-tenant: modelo de dados e claim `tenant_id`
-Status: pending
+Status: done
 
 Pertence a: Module 5 — Banco de Dados / Module 1 — Auth
 Título: Introduzir tenant no domínio e no JWT de usuário

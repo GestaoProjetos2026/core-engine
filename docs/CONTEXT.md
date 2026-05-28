@@ -6,13 +6,13 @@
 - `PRD.md` v2.1 | `Sprints.md`
 
 ## Ultima acao
-- **Sprint 8 task 11:** `GET /v1/integration/users/:id` (M2M + `identity:read`), `IntegrationTokenGuard`, seed, e2e, `INTEGRATION_GUIDE.md`.
+- **Sprint 8 task 12:** modelo `Tenant`, migração Prisma, claim `tenant_id` no JWT (`user_access`), `GET /v1/auth/me` com `tenantId`, seed tenant default, `JWT_GUIDE.md`.
 
 ## Estado
-- Sprint 8: tasks 1–11 `done`; tasks 12–17 `pending`.
+- Sprint 8: tasks 1–12 `done`; tasks 13–17 `pending`.
 
 ## Proximo foco
-- Tasks 12–13 (multi-tenant) ou task 14 (gateway).
+- Task 13 (`X-Tenant-Id` + isolamento de consultas) ou task 14 (gateway).
 
 ## Credenciais M2M (demo)
 - `test-client-id` / `test-client-secret` com escopo `identity:read` no seed.
