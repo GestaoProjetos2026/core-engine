@@ -17,6 +17,7 @@ describe('AuthController', () => {
       const req = {
         user: {
           userId: 'u1',
+          tenantId: '00000000-0000-4000-8000-000000000001',
           email: 'test@b.com',
           roles: ['admin'],
           perms: ['user:read'],
@@ -28,6 +29,7 @@ describe('AuthController', () => {
 
       expect(result).toEqual({
         userId: 'u1',
+        tenantId: '00000000-0000-4000-8000-000000000001',
         email: 'test@b.com',
         roles: ['admin'],
         perms: ['user:read'],

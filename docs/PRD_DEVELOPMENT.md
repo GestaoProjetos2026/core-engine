@@ -83,27 +83,30 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 ---
 
 ### Sprint 8: Entrega integrada (ADR-001 + Alicerce CTO) — 23/05 a 29/05/2026
-**Status**: 🚀 Em andamento (tasks 1–9 concluídas; tasks 10–17 pendentes)
-- **Task 1**: Tokens CSS globais em `frontend/src/index.css` (primitivas, semânticas, tipografia, espaçamento, radius, sombras, aliases legados, `:focus-visible`). ✔️ (Commit [#512] CORECOREEN-75)
-- **Task 2**: AppShell — `Layout.tsx` / `Layout.css` (sidebar 240px, item ativo brand, topbar 56px). ✔️ (Commit [#513] CORECOREEN-76)
-- **Task 3**: Componentes UI — `Button`, `Input`, `Card`, `Badge`, `Table` alinhados ao ADR-001. ✔️ (Commit [#514] CORECOREEN-77)
-- **Task 4**: Páginas CRUD — `UsersPage`, `RolesPage`, `ApplicationsPage` + `AdminPages.css` (modais elevados, sem estilos inline legados). ✔️ (Commit [#515] CORECOREEN-78)
-- **Task 5**: Auth e Dashboard — `LoginPage.css`, `RegisterPage`, `ProfilePage.css`, `DashboardPage` (metric cards overline/28px), `PrivateRoute` loading ADR. ✔️ (Commit [#516] CORECOREEN-79)
-- **Task 6**: `ToastProvider` + `Toast.css` (§9.8), `PageLoading`, toasts em CRUD/auth, remoção de `alert()`. ✔️ (Commit [#517] CORECOREEN-80)
-- **Tasks 7–9**: Bug bash UI/UX, auditoria de segurança/performance e encerramento do escopo frontend — ✔️ concluídas.
+**Status**: 🚀 Em andamento — tasks **1–15** concluídas; tasks **16–17** pendentes (após validação em deploy)
 
-**Pendente (tasks 10–17 — Alicerce CTO):**
-- **Task 10**: Role `suporte` + usuário demo.
-- **Task 11**: `GET /v1/integration/users/:id` (M2M; distinto de `GET /v1/users/:id` para humano).
-- **Tasks 12–13**: Multi-tenant (`Tenant`, `tenant_id` no JWT, `X-Tenant-Id`).
-- **Task 14**: Gateway multi-módulo + `docs/GATEWAY.md`.
-- **Task 15**: Seed apps M2M por squad.
-- **Task 16**: `docs/DEMO_CTO.md`.
-- **Task 17**: Demo CTO 29/05/2026.
+**Frontend ADR-001 (tasks 1–9)** ✔️
+- **Task 1**: Tokens CSS — `frontend/src/index.css`. ✔️ ([#512])
+- **Task 2**: AppShell — `Layout.tsx` / `Layout.css`. ✔️ ([#513])
+- **Task 3**: UI — `Button`, `Input`, `Card`, `Badge`, `Table`. ✔️ ([#514])
+- **Task 4**: CRUD admin — `UsersPage`, `RolesPage`, `ApplicationsPage`, `AdminPages.css`. ✔️ ([#515])
+- **Task 5**: Auth/Dashboard ADR. ✔️ ([#516])
+- **Task 6**: `ToastProvider`, `PageLoading`. ✔️ ([#517])
+- **Tasks 7–9**: Bug bash, auditoria, encerramento frontend. ✔️
 
-**Arquivos-chave (tasks 1–9):** `docs/PadraoFront/Padronizacao.md`, `frontend/src/pages/AdminPages.css`, `frontend/src/context/ToastContext.tsx`, `frontend/src/components/ui/PageLoading.tsx`.
+**Alicerce CTO (tasks 10–15)** ✔️ *(código entregue; homologação em deploy pendente)*
+- **Task 10**: Papel `suporte` + `suporte@example.com`; `PERMISSIONS_MATRIX.md`; teste JWT sem `finance:*`.
+- **Task 11**: `GET /v1/integration/users/:id`; `IntegrationTokenGuard`; escopo `identity:read`; e2e.
+- **Task 12**: Modelo `Tenant`, migração, claim `tenant_id`, `/auth/me` com `tenantId`, `JWT_GUIDE.md`.
+- **Task 13**: `TenantGuard`, `X-Tenant-Id`, isolamento em `UsersService`; e2e `users-tenant.e2e.spec.ts`.
+- **Task 14**: `frontend/nginx.conf.template`, `infra/mock-modules`, `docs/GATEWAY.md`, `docker-compose` gateway.
+- **Task 15**: Apps M2M `finance-fiscal`, `crm-leads`, `service-desk`; escopos; `PERMISSIONS_MATRIX.md` §3.
 
-**Build:** `npm run build` no diretório `frontend/` validado ao longo das tasks 1–9.
+**Pendente (pós-deploy):**
+- **Task 16**: `docs/DEMO_CTO.md` — roteiro checklist CTO (5 passos).
+- **Task 17**: Apresentação CTO **29/05/2026**.
+
+**Arquivos-chave (10–15):** `backend/prisma/schema.prisma`, `backend/src/modules/auth/guards/tenant.guard.ts`, `backend/src/modules/integration/integration.controller.ts`, `frontend/nginx.conf.template`, `docs/GATEWAY.md`, `docs/PERMISSIONS_MATRIX.md`.
 
 ---
 
@@ -114,6 +117,22 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 3**: Workshop de Homologação com squads consumidores. ✔️ (Concluído).
 
 ---
+
+### Sessão 27/05/2026 — Encerramento Alicerce (tasks 12–15)
+
+- **Task 12 — Multi-tenant base:** `Tenant` + `User.tenantId`; migração `20260527220000_add_tenant`; JWT `tenant_id`; `GET /v1/auth/me` → `tenantId`; seed tenant `default`.
+- **Task 13 — Isolamento:** `TenantGuard` + `@CurrentTenant()`; filtro Prisma em usuários; M2M exige `X-Tenant-Id`; códigos `TENANT_*` em `INTEGRATION_API_CONTRACT.md`.
+- **Task 14 — Gateway:** nginx template com upstreams `CORE_SVC_HOST`, `FISCAL_SVC_HOST`, `CRM_SVC_HOST`, `SERVICE_DESK_SVC_HOST`; stubs `infra/mock-modules`; bloqueio `*/login` em módulos; `scripts/gateway-smoke.sh`.
+- **Task 15 — M2M por squad:** `seedM2mApplication()`; apps demo documentadas; escopos `finance:read`, `tickets:read` no catálogo M2M.
+- **Incidente resolvido:** testes `TenantGuard` — mock de `ExecutionContext` deve expor `switchToHttp()`, não chamar `switchToHttp()` como função isolada.
+- **Não validado em deploy nesta sessão:** migrate/seed/e2e contra Postgres remoto — ficou como gate para tasks 16–17.
+
+### Sessão 27/05/2026 — Sprint 8 task 11 (API identidade M2M)
+
+- **`GET /v1/integration/users/:id`:** `IntegrationTokenGuard` + `ScopesGuard` + escopo `identity:read`; rejeita token humano.
+- **Seed:** escopo `identity:read` no catálogo M2M.
+- **Docs:** `INTEGRATION_GUIDE.md` §4.6, `PERMISSIONS_MATRIX.md`.
+- **Testes:** `integration.e2e.spec.ts` (200/403/404), `integration-token.guard.spec.ts`.
 
 ### Sessão 27/05/2026 — Sprint 8 task 10 (RBAC suporte)
 
@@ -132,10 +151,11 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 
 ## 🏗️ Débitos Técnicos e Próximos Passos (Pós-MVP)
 
-1. **Sprint 8 tasks 10–17:** implementação do Alicerce (código ainda não reflete PRD v2.1).
-2. **PRD v2.1 vs código:** migrations `Tenant`, endpoint `/v1/integration/users/:id`, middleware `X-Tenant-Id` — pendentes.
-3. **Migração para Node.js LTS:** Node 25 em Windows apresentou instabilidades; preferir Node 22 (LTS) em produção.
-4. **`docs/JWT_GUIDE.md`:** atualizar exemplo de claims com `tenant_id` após implementação da task 12.
+1. **Sprint 8 tasks 16–17:** `DEMO_CTO.md` e apresentação 29/05 — **após** smoke em deploy.
+2. **Homologação deploy:** `prisma migrate deploy`, seed, `gateway-smoke.sh`, fluxo M2M + tenant isolation.
+3. **Validação squads 2–4:** tech leads confirmam endpoints (task 16 — critério de aceitação).
+4. **Migração Node.js LTS:** preferir Node 22 em produção (instabilidade Node 25 no Windows com Prisma).
+5. **CI/cobertura ≥80%:** débito ecossistema Squad 5.
 
 
 ---
@@ -153,7 +173,7 @@ Durante o desenvolvimento das Sprints 1 a 4, diversas tomadas de decisão crucia
     - **Gestão de Ambiente Local**: Resolução de conflitos de porta (`EADDRINUSE`) e sincronização de roteamento global (`/v1/dashboard`) entre Frontend e Backend.
 - **Workaround de Swagger**: Remoção temporária da propriedade `type` nos decoradores `@ApiResponse` dos novos módulos para mitigar um erro crítico de "Circular Dependency" no motor do Swagger/Fastify no ambiente de desenvolvimento Node 25.
 - **Sprint 6 — UI de usuários (RF09 no admin)**: Listagem via `GET /v1/users`; validação de senha no admin e backend alinhadas ao **RNF08**.
-- **Sessão 27/05/2026 — PRD v2.1**: escopo normativo ampliado para entrega integrada CTO; implementação segue backlog Sprint 8 tasks 10–17.
+- **Sessão 27/05/2026 — PRD v2.1 + Alicerce:** tasks 10–15 implementadas; tasks 16–17 aguardam deploy.
 - **Sprint 6 — UI de aplicações M2M (RF14–RF16)**: CRUD e regeneração de secret no admin; exibição única do `client_secret` com confirmação explícita do operador; associação de escopos substitui vínculos existentes (`POST /v1/applications/:id/scopes` com `scopeIds`).
 - **Sprint 8 — Migração ADR-001 (frontend/)**: Substituição da paleta legada (cinza/pêssego) por tokens azul profundo (`#001233`, brand `#0466c8`). Estratégia de aliases CSS legados em `index.css` para migração incremental. `AdminPages.css` centraliza layout admin (filtros, modais, paginação, tabs). Feedback global via `ToastProvider` e `PageLoading` substituindo `alert()` e textos “Loading…” soltos.
 

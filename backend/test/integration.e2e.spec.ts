@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { ApiExceptionFilter } from '../src/server/common/api-exception.filter';
 import { ResponseEnvelopeInterceptor } from '../src/server/common/response-envelope.interceptor';
 import { describe, beforeAll, afterAll, it, expect } from 'vitest';
+import { DEFAULT_TENANT_ID } from '../src/shared/constants/tenant';
 
 // Helper: parses the response body and extracts `data` from the envelope,
 // falling back to the raw body for endpoints that return raw responses
@@ -60,11 +61,22 @@ describe('Integration (e2e)', () => {
       create: { code: 'test:scope', description: 'Test Scope' },
     });
 
+    const identityScope = await prisma.scope.upsert({
+      where: { code: 'identity:read' },
+      update: {},
+      create: { code: 'identity:read', description: 'Identity read (M2M)' },
+    });
+
     const dbApp = await prisma.application.findUnique({ where: { clientId: testApp.clientId } });
     await prisma.applicationScope.upsert({
       where: { applicationId_scopeId: { applicationId: dbApp!.id, scopeId: scope.id } },
       update: {},
       create: { applicationId: dbApp!.id, scopeId: scope.id },
+    });
+    await prisma.applicationScope.upsert({
+      where: { applicationId_scopeId: { applicationId: dbApp!.id, scopeId: identityScope.id } },
+      update: {},
+      create: { applicationId: dbApp!.id, scopeId: identityScope.id },
     });
   });
 
@@ -212,6 +224,141 @@ describe('Integration (e2e)', () => {
       });
 
       expect(response.statusCode).toBe(401);
+    });
+  });
+
+  describe('GET /integration/users/:id (RF29)', () => {
+    const identityUserEmail = 'identity-m2m-e2e@example.com';
+    const identityUserPassword = 'TestPassword1!x';
+    let targetUserId: string;
+    let identityReadToken: string;
+    let humanAccessToken: string;
+    let tokenWithoutIdentityScope: string;
+
+    beforeAll(async () => {
+      const passwordHash = await bcrypt.hash(identityUserPassword, 12);
+      const user = await prisma.user.upsert({
+        where: {
+          tenantId_email: {
+            tenantId: DEFAULT_TENANT_ID,
+            email: identityUserEmail,
+          },
+        },
+        update: { passwordHash, status: 'ACTIVE', name: 'M2M Identity Target' },
+        create: {
+          tenantId: DEFAULT_TENANT_ID,
+          email: identityUserEmail,
+          name: 'M2M Identity Target',
+          passwordHash,
+          status: 'ACTIVE',
+        },
+      });
+      targetUserId = user.id;
+
+      const tokenRes = await app.inject({
+        method: 'POST',
+        url: '/oauth/token',
+        payload: {
+          grant_type: 'client_credentials',
+          client_id: testApp.clientId,
+          client_secret: testApp.clientSecret,
+          scope: 'identity:read',
+        },
+      });
+      identityReadToken = parseEnvelope(tokenRes.payload).access_token;
+
+      const scopedOnlyRes = await app.inject({
+        method: 'POST',
+        url: '/oauth/token',
+        payload: {
+          grant_type: 'client_credentials',
+          client_id: testApp.clientId,
+          client_secret: testApp.clientSecret,
+          scope: 'test:scope',
+        },
+      });
+      tokenWithoutIdentityScope = parseEnvelope(scopedOnlyRes.payload).access_token;
+
+      const loginRes = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        payload: {
+          email: identityUserEmail,
+          password: identityUserPassword,
+        },
+      });
+      expect(loginRes.statusCode).toBe(200);
+      humanAccessToken = parseEnvelope(loginRes.payload).accessToken;
+    });
+
+    afterAll(async () => {
+      await prisma.user.deleteMany({ where: { email: identityUserEmail } });
+    });
+
+    it('returns 400 without X-Tenant-Id header', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: `/integration/users/${targetUserId}`,
+        headers: { authorization: `Bearer ${identityReadToken}` },
+      });
+
+      expect(response.statusCode).toBe(400);
+      const body = JSON.parse(response.payload);
+      expect(body.error.code).toBe('TENANT_HEADER_REQUIRED');
+    });
+
+    it('returns 200 with M2M token, identity:read scope and X-Tenant-Id', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: `/integration/users/${targetUserId}`,
+        headers: {
+          authorization: `Bearer ${identityReadToken}`,
+          'x-tenant-id': DEFAULT_TENANT_ID,
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const body = JSON.parse(response.payload);
+      expect(body.success).toBe(true);
+      expect(body.data.id).toBe(targetUserId);
+      expect(body.data.email).toBe(identityUserEmail);
+      expect(body.data.name).toBe('M2M Identity Target');
+      expect(body.data.passwordHash).toBeUndefined();
+    });
+
+    it('returns 403 with human access token', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: `/integration/users/${targetUserId}`,
+        headers: { authorization: `Bearer ${humanAccessToken}` },
+      });
+
+      expect(response.statusCode).toBe(403);
+      const body = JSON.parse(response.payload);
+      expect(body.error.code).toBe('AUTHZ_FORBIDDEN');
+    });
+
+    it('returns 403 with M2M token without identity:read scope', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: `/integration/users/${targetUserId}`,
+        headers: { authorization: `Bearer ${tokenWithoutIdentityScope}` },
+      });
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('returns 404 for unknown user id in tenant', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/integration/users/00000000-0000-4000-8000-000000000000',
+        headers: {
+          authorization: `Bearer ${identityReadToken}`,
+          'x-tenant-id': DEFAULT_TENANT_ID,
+        },
+      });
+
+      expect(response.statusCode).toBe(404);
     });
   });
 });

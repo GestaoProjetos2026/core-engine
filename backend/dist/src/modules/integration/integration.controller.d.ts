@@ -10,5 +10,13 @@ export declare class IntegrationController {
         success: boolean;
         message: string;
     }>;
+    getUserIdentity(id: string): Promise<{
+        id: string;
+        email: string;
+        name: string;
+        status: import(".prisma/client").$Enums.UserStatus;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
 }
 //# sourceMappingURL=integration.controller.d.ts.map

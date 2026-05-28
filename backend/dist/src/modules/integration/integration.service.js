@@ -20,15 +20,22 @@ const applications_service_1 = require("../applications/applications.service");
 const oauth_token_request_dto_1 = require("./dto/oauth-token-request.dto");
 const auth_time_util_1 = require("../auth/auth-time.util");
 const auth_service_1 = require("../auth/auth.service");
+const users_service_1 = require("../users/users.service");
 let IntegrationService = IntegrationService_1 = class IntegrationService {
     applicationsService;
     authService;
     jwt;
+    usersService;
     logger = new common_1.Logger(IntegrationService_1.name);
-    constructor(applicationsService, authService, jwt) {
+    constructor(applicationsService, authService, jwt, usersService) {
         this.applicationsService = applicationsService;
         this.authService = authService;
         this.jwt = jwt;
+        this.usersService = usersService;
+    }
+    /** RF29 — public identity fields for M2M consumers (Squad 2 emitente, Squad 3 display name). */
+    async findUserIdentityById(id) {
+        return this.usersService.findOne(id);
     }
     async issueToken(dto) {
         switch (dto.grant_type) {
@@ -111,8 +118,10 @@ exports.IntegrationService = IntegrationService = IntegrationService_1 = __decor
     __param(0, (0, common_1.Inject)(applications_service_1.ApplicationsService)),
     __param(1, (0, common_1.Inject)(auth_service_1.AuthService)),
     __param(2, (0, common_1.Inject)(jwt_1.JwtService)),
+    __param(3, (0, common_1.Inject)(users_service_1.UsersService)),
     __metadata("design:paramtypes", [applications_service_1.ApplicationsService,
         auth_service_1.AuthService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        users_service_1.UsersService])
 ], IntegrationService);
 //# sourceMappingURL=integration.service.js.map

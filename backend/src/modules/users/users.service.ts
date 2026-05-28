@@ -15,11 +15,12 @@ export class UsersService {
     @Inject(AuditService) private readonly audit: AuditService,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto, tenantId: string) {
     const passwordHash = await bcrypt.hash(createUserDto.password, 12);
     try {
       const user = await this.prisma.user.create({
         data: {
+          tenantId,
           email: createUserDto.email,
           name: createUserDto.name,
           passwordHash,
@@ -37,21 +38,20 @@ export class UsersService {
     }
   }
 
-  async findAll(query: ListUsersQueryDto) {
+  async findAll(query: ListUsersQueryDto, tenantId: string) {
     try {
       const page = Math.max(1, Number(query.page || 1));
       const limit = Math.max(1, Math.min(100, Number(query.limit || 10)));
       const skip = (page - 1) * limit;
 
       const { email, status } = query;
-      const where: Prisma.UserWhereInput = {};
-      
+      const where: Prisma.UserWhereInput = { tenantId };
+
       if (email && email.trim()) {
         where.email = { contains: email.trim(), mode: 'insensitive' };
       }
-      
+
       if (status) {
-        // Basic validation for status if it's passed but might not be in enum
         const validStatuses = ['ACTIVE', 'INACTIVE'];
         if (validStatuses.includes(status)) {
           where.status = status;
@@ -65,6 +65,7 @@ export class UsersService {
           take: limit,
           select: {
             id: true,
+            tenantId: true,
             email: true,
             name: true,
             status: true,
@@ -86,26 +87,26 @@ export class UsersService {
       console.error('[UsersService.findAll] Database error:', {
         message: error instanceof Error ? error.message : error,
         query,
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       });
-      
+
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        // Return a more specific error if Prisma fails due to invalid query
-        throw new ConflictException({ 
-          code: 'DATABASE_ERROR', 
-          message: 'Error fetching users from database. Please check your filters.' 
+        throw new ConflictException({
+          code: 'DATABASE_ERROR',
+          message: 'Error fetching users from database. Please check your filters.',
         });
       }
-      
+
       throw error;
     }
   }
 
-  async findOne(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
+  async findOne(id: string, tenantId: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { id, tenantId },
       select: {
         id: true,
+        tenantId: true,
         email: true,
         name: true,
         status: true,
@@ -121,13 +122,22 @@ export class UsersService {
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto, tenantId: string) {
+    const existing = await this.prisma.user.findFirst({
+      where: { id, tenantId },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Usuário não encontrado' });
+    }
+
     try {
       const user = await this.prisma.user.update({
         where: { id },
         data: updateUserDto,
         select: {
           id: true,
+          tenantId: true,
           email: true,
           name: true,
           status: true,
@@ -149,13 +159,22 @@ export class UsersService {
     }
   }
 
-  async changeStatus(id: string, changeStatusDto: ChangeUserStatusDto) {
+  async changeStatus(id: string, changeStatusDto: ChangeUserStatusDto, tenantId: string) {
+    const existing = await this.prisma.user.findFirst({
+      where: { id, tenantId },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new NotFoundException({ code: 'RESOURCE_NOT_FOUND', message: 'Usuário não encontrado' });
+    }
+
     try {
       const user = await this.prisma.user.update({
         where: { id },
         data: { status: changeStatusDto.status },
         select: {
           id: true,
+          tenantId: true,
           email: true,
           name: true,
           status: true,

@@ -48,6 +48,7 @@ Utilizados no fluxo `client_credentials` e validados via `@RequireScopes('code')
 
 | Código | Descrição | Nível de Acesso |
 |--------|-----------|-----------------|
+| `identity:read` | Leitura de identidade via `GET /v1/integration/users/:id` | Core/Auth |
 | `read:all` | Leitura total em todas as APIs permitidas | Global |
 | `write:all` | Escrita total em todas as APIs permitidas | Global |
 | `orders:read` | Leitura de pedidos | Funcional |
@@ -56,8 +57,51 @@ Utilizados no fluxo `client_credentials` e validados via `@RequireScopes('code')
 | `customers:write` | Escrita de clientes | Funcional |
 | `products:read` | Leitura de produtos | Funcional |
 | `products:write` | Escrita de produtos | Funcional |
+| `finance:read` | Leitura fiscal/financeira (Squad 2) | Squad 2 |
+| `finance:write` | Escrita fiscal/financeira | Squad 2 |
+| `tickets:read` | Leitura de chamados Service Desk | Squad 4 |
+| `tickets:write` | Escrita de chamados Service Desk | Squad 4 |
+| `test:scope` | Validação do ScopesGuard (dev/e2e) | Core/Auth |
 
-## 3. Contrato para Squads Consumidores
+## 3. Aplicações M2M de demonstração (Sprint 8 — task 15)
+
+Credenciais criadas por `backend/prisma/seed.ts`. **Somente para dev/demo** — não usar em produção.
+
+| Squad | `client_id` | `client_secret` (demo) | Escopos concedidos | Uso principal |
+|-------|-------------|------------------------|-------------------|---------------|
+| **2 — Fiscal** | `finance-fiscal` | `FinanceFiscal-Demo2026!` | `identity:read`, `finance:read` | Emitente fiscal + `GET /v1/integration/users/:id` |
+| **3 — CRM** | `crm-leads` | `CrmLeads-Demo2026!` | `identity:read`, `customers:read` | Nome do usuário (`sub`) + API CRM |
+| **4 — Service Desk** | `service-desk` | `ServiceDesk-Demo2026!` | `identity:read`, `tickets:read` | Chamados + identidade M2M |
+| **QA / E2E** | `test-client-id` | `test-client-secret` | Catálogo amplo + `test:scope` | Testes automatizados |
+
+### Obter token
+
+```bash
+curl -s -X POST http://localhost/v1/oauth/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "grant_type": "client_credentials",
+    "client_id": "crm-leads",
+    "client_secret": "CrmLeads-Demo2026!",
+    "scope": "identity:read"
+  }'
+```
+
+### Identidade M2M (`GET /v1/integration/users/:id`)
+
+```bash
+curl -s "http://localhost/v1/integration/users/<user-uuid>" \
+  -H "Authorization: Bearer <access_token>" \
+  -H "X-Tenant-Id: 00000000-0000-4000-8000-000000000001"
+```
+
+### Rotação de `client_secret` em produção
+
+1. Não commitar secrets reais — usar secret manager (Vault, K8s Secret).
+2. `POST /v1/applications/:id/regenerate-secret` (JWT humano com `applications:write`).
+3. Atualizar variável de ambiente da squad consumidora e invalidar o secret anterior.
+
+## 4. Contrato para Squads Consumidores
 
 Para solicitar novas permissões ou escopos:
 1. Abra um PR ou Issue no repositório `erp-core-auth`.
@@ -68,7 +112,7 @@ Para solicitar novas permissões ou escopos:
 > [!NOTE]
 > O Core Engine não gerencia a lógica de negócio dos outros módulos, apenas a **emissão e validação do token** contendo as claims de acesso.
 
-## 4. Papéis Padrão (Seed)
+## 5. Papéis Padrão (Seed)
 
 | Papel | Descrição | Permissões Inclusas |
 |-------|-----------|----------------------|

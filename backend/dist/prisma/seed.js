@@ -280,6 +280,9 @@ function main() {
                     _e.label = 14;
                 case 14:
                     if (!(_b < managerPerms_1.length)) return [3 /*break*/, 17];
+                    _h.label = 13;
+                case 13:
+                    if (!(_b < managerPerms_1.length)) return [3 /*break*/, 16];
                     permission = managerPerms_1[_b];
                     return [4 /*yield*/, prisma.rolePermission.upsert({
                             where: {
@@ -466,6 +469,7 @@ function main() {
                 case 29:
                     testApp = _e.sent();
                     scopeDefs = [
+                        { code: 'identity:read', description: 'Leitura de identidade de usuários via API M2M (Core)' },
                         { code: 'read:all', description: 'Leitura total (M2M)' },
                         { code: 'write:all', description: 'Escrita total (M2M)' },
                         { code: 'orders:read', description: 'Leitura de pedidos' },

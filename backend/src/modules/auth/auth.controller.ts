@@ -212,6 +212,7 @@ export class AuthController {
 
     return {
       userId: user.userId,
+      tenantId: user.tenantId,
       email: user.email,
       roles: user.roles,
       perms: user.perms,

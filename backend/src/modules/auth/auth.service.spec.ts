@@ -5,6 +5,7 @@ import { compare } from 'bcrypt';
 import { describe, expect, it, vi } from 'vitest';
 import { AuthService } from './auth.service';
 import type { PrismaService } from '../../server/prisma/prisma.service';
+import { DEFAULT_TENANT_ID } from '../../shared/constants/tenant';
 
 vi.mock('bcrypt', () => ({
   hash: vi.fn(),
@@ -13,6 +14,9 @@ vi.mock('bcrypt', () => ({
 
 function makePrismaMock() {
   const prisma = {
+    tenant: {
+      findUnique: vi.fn().mockResolvedValue({ id: DEFAULT_TENANT_ID }),
+    },
     user: {
       create: vi.fn(),
       findUnique: vi.fn(),
@@ -100,6 +104,7 @@ describe('AuthService', () => {
       createdAt: new Date(),
       user: {
         id: 'u1',
+        tenantId: DEFAULT_TENANT_ID,
         email: 'a@b.com',
         passwordHash: 'p',
         name: 'N',
@@ -135,6 +140,7 @@ describe('AuthService', () => {
       createdAt: new Date(),
       user: {
         id: 'u1',
+        tenantId: DEFAULT_TENANT_ID,
         email: 'a@b.com',
         passwordHash: 'p',
         name: 'N',
@@ -169,6 +175,7 @@ describe('AuthService', () => {
     const prisma = makePrismaMock();
     prisma.user.findUnique.mockResolvedValue({
       id: 'u-sup',
+      tenantId: DEFAULT_TENANT_ID,
       email: 'suporte@example.com',
       passwordHash: 'hash',
       name: 'Agente Suporte Demo',
@@ -196,19 +203,24 @@ describe('AuthService', () => {
       replacedById: null,
       createdAt: new Date(),
     });
-    vi.mocked(compare).mockResolvedValue(true);
+    vi.mocked(compare).mockImplementation(async () => true);
     const jwt = { signAsync: vi.fn().mockResolvedValue('access.jwt') };
     const auditMock = { logLoginSuccess: vi.fn(), logLoginFailure: vi.fn(), logTokenRefresh: vi.fn() };
     const service = new AuthService(prisma as unknown as PrismaService, jwt as unknown as JwtService, auditMock as any);
 
     await service.login({ email: 'suporte@example.com', password: 'Suporte123!' });
 
-    const payload = jwt.signAsync.mock.calls[0][0] as {
+    expect(jwt.signAsync).toHaveBeenCalled();
+    const payload = jwt.signAsync.mock.calls[0]![0] as {
       roles: string[];
       perms: string[];
       type: string;
+      tenant_id: string;
+      sub: string;
     };
     expect(payload.type).toBe('user_access');
+    expect(payload.sub).toBe('u-sup');
+    expect(payload.tenant_id).toBe(DEFAULT_TENANT_ID);
     expect(payload.roles).toEqual(['suporte']);
     expect(payload.perms).toContain('customers:read');
     expect(payload.perms).toContain('tickets:read');
@@ -220,6 +232,7 @@ describe('AuthService', () => {
     const prisma = makePrismaMock();
     prisma.user.findUnique.mockResolvedValue({
       id: 'u1',
+      tenantId: DEFAULT_TENANT_ID,
       email: 'a@b.com',
       passwordHash: 'hashed',
       name: 'A',
