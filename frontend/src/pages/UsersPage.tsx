@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../lib/api';
 import type { AdminUserListItem, ApiResponse, PaginatedResponse, Role } from '../lib/types';
 import { Card } from '../components/ui/Card';
@@ -6,7 +7,7 @@ import { Table } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Plus, UserCog, Power, ChevronLeft, ChevronRight, X, Shield } from 'lucide-react';
+import { Plus, UserCog, Power, ChevronLeft, ChevronRight, X, Shield, Settings } from 'lucide-react';
 import { PageLoading } from '../components/ui/PageLoading';
 import { useToast } from '../context/ToastContext';
 import './AdminPages.css';
@@ -295,10 +296,18 @@ const UsersPage: React.FC = () => {
           <h1>User Management</h1>
           <p>Create and manage user accounts (RF09 — admin API).</p>
         </div>
-        <Button type="button" onClick={openCreate}>
-          <Plus size={20} />
-          New User
-        </Button>
+        <div className="page-header__actions">
+          <Link to="/roles">
+            <Button variant="secondary" type="button">
+              <Settings size={18} />
+              Gerenciar Papéis
+            </Button>
+          </Link>
+          <Button type="button" onClick={openCreate}>
+            <Plus size={20} />
+            Adicionar Usuário
+          </Button>
+        </div>
       </header>
 
       <div className="admin-filters">

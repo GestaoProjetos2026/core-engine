@@ -20,7 +20,7 @@ const Layout: React.FC = () => {
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
     { icon: <UserIcon size={20} />, label: 'Profile', path: '/profile' },
-    { icon: <Users size={20} />, label: 'Users', path: '/users' },
+    { icon: <Users size={20} />, label: 'Gerenciar Usuários', path: '/users' },
     { icon: <ShieldCheck size={20} />, label: 'Roles & Perms', path: '/roles' },
     { icon: <ExternalLink size={20} />, label: 'Applications', path: '/applications' },
   ];

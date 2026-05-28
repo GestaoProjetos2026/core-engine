@@ -1,12 +1,13 @@
 Voce esta iniciando uma nova sessao neste projeto.
 
 Objetivo desta etapa:
-2) Ler docs/PadraoFront/ e criar novas tasks de alteração no /Frontend/ para a sprint 8.
+O botão para gerenciar usuarios não está aparecendo na tela de UsersPage.tsx
+
 Passos obrigatorios:
 1) Localize e leia o documento normativo principal do produto.
    - Neste repositorio, trate `PRD.md` como fonte normativa atual (visao, escopo, arquitetura e regras).
 2) Leia `Sprints.md` como fonte oficial de backlog, execucao e priorizacao.
-3) Leia `docs/CONTEXT.md` para recuperar a memoria curta da ultima sessao e `docs/PRD_DEVELOPMENT.md` para obter o historico consolidado do que foi desenvolvido.
+3) Leia `docs/CONTEXT.md` para recuperar a memoria curta da ultima sessao.
 4) Analise a estrutura atual do repositorio e stack real implementada.
 5) Identifique o item de sprint mais aderente para a continuidade (sem inventar backlog).
 6) Gere um resumo de impacto tecnico contendo:
@@ -18,7 +19,7 @@ Passos obrigatorios:
 
 Regras:
 - `PRD.md` = contrato normativo do produto.
-- `Sprints.md` = contrato oficial de execucao do backlog.
+- `SprintsV2.md` = contrato oficial de execucao do backlog.
 - Nao mover itens de sprint.
 - Nao inventar tarefas novas.
 - Nao assumir implementacao pronta sem validar no codigo.

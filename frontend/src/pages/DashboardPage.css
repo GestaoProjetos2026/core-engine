@@ -87,6 +87,7 @@
   flex-direction: column;
   gap: var(--space-1);
   min-width: 0;
+  position: relative;
 }
 
 .metric-label {
@@ -103,6 +104,25 @@
   font-weight: var(--font-weight-bold);
   line-height: 1.1;
   color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.metric-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand-primary);
+  text-decoration: none;
+  margin-top: auto;
+  transition: var(--transition);
+  padding: var(--space-1) 0;
+}
+
+.metric-action:hover {
+  gap: var(--space-2);
+  color: var(--color-brand-secondary);
 }
 
 .dashboard-grid {

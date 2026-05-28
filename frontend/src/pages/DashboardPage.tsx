@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/ui/Card';
-import { Users, Shield, Key, Activity } from 'lucide-react';
+import { Users, Shield, Key, Activity, ArrowRight } from 'lucide-react';
 import api from '../lib/api';
 import type { ApiResponse, DashboardStats } from '../lib/types';
 import './DashboardPage.css';
@@ -13,6 +14,8 @@ interface MetricCardConfig {
   value: string | number;
   icon: React.ComponentType<{ size?: number }>;
   tone: MetricTone;
+  path?: string;
+  actionLabel?: string;
 }
 
 const DashboardPage: React.FC = () => {
@@ -40,9 +43,9 @@ const DashboardPage: React.FC = () => {
   const healthTone: MetricTone = stats?.systemHealth === 'Optimal' ? 'success' : 'danger';
 
   const statCards: MetricCardConfig[] = [
-    { label: 'Total Users', value: stats?.totalUsers ?? 0, icon: Users, tone: 'brand' },
-    { label: 'Active Roles', value: stats?.totalRoles ?? 0, icon: Shield, tone: 'brand' },
-    { label: 'M2M Apps', value: stats?.totalApplications ?? 0, icon: Key, tone: 'info' },
+    { label: 'Total Users', value: stats?.totalUsers ?? 0, icon: Users, tone: 'brand', path: '/users', actionLabel: 'Gerenciar usuários' },
+    { label: 'Active Roles', value: stats?.totalRoles ?? 0, icon: Shield, tone: 'brand', path: '/roles', actionLabel: 'Gerenciar papéis' },
+    { label: 'M2M Apps', value: stats?.totalApplications ?? 0, icon: Key, tone: 'info', path: '/applications', actionLabel: 'Gerenciar apps' },
     { label: 'System Health', value: stats?.systemHealth ?? 'Checking...', icon: Activity, tone: healthTone },
   ];
 
@@ -64,6 +67,12 @@ const DashboardPage: React.FC = () => {
               <div className="metric-card__body">
                 <span className="metric-label">{stat.label}</span>
                 <span className="metric-value">{loading ? '…' : stat.value}</span>
+                {stat.path && (
+                  <Link to={stat.path} className="metric-action">
+                    {stat.actionLabel}
+                    <ArrowRight size={14} />
+                  </Link>
+                )}
               </div>
             </Card>
           );
