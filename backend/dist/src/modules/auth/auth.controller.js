@@ -147,9 +147,8 @@ __decorate([
         schema: {
             type: 'object',
             properties: {
-                // email: { type: 'string', example: 'admin@example.com' },
-                email: { type: 'string', example: 'admin@hotmail.com' },
-                password: { type: 'string', example: 'Password123!' },
+                email: { type: 'string', example: 'admin@example.com' },
+                password: { type: 'string', example: 'AdminCore2026!' },
             },
             required: ['email', 'password'],
         },

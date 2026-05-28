@@ -68,12 +68,22 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var client_1 = require("@prisma/client");
 var adapter_pg_1 = require("@prisma/adapter-pg");
 var pg_1 = require("pg");
 var dotenv = __importStar(require("dotenv"));
 var bcrypt = __importStar(require("bcrypt"));
+var seed_data_1 = require("./seed-data");
 dotenv.config();
 var pool = new pg_1.Pool(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : undefined);
 var schema = 'core_engine';
@@ -86,8 +96,10 @@ if (process.env.DATABASE_URL) {
 }
 var adapter = new adapter_pg_1.PrismaPg(pool, { schema: schema });
 var prisma = new client_1.PrismaClient({ adapter: adapter });
+var isProduction = process.env.NODE_ENV === 'production';
+var updatePasswords = process.env.SEED_UPDATE_PASSWORDS === 'true' ||
+    (!isProduction && process.env.SEED_UPDATE_PASSWORDS !== 'false');
 var permissionDefs = [
-    // Identity & Access Management (IAM)
     { code: 'users:read', description: 'Visualizar lista e detalhes de usuários' },
     { code: 'users:write', description: 'Criar, atualizar e excluir usuários' },
     { code: 'roles:read', description: 'Visualizar papéis de acesso' },
@@ -95,16 +107,13 @@ var permissionDefs = [
     { code: 'roles:manage', description: 'Vincular usuários e permissões a papéis' },
     { code: 'permissions:read', description: 'Visualizar catálogo de permissões' },
     { code: 'permissions:write', description: 'Gerenciar permissões do sistema' },
-    // Integration & M2M
     { code: 'applications:read', description: 'Visualizar aplicações integradas' },
     { code: 'applications:write', description: 'Gerenciar aplicações e segredos' },
     { code: 'scopes:read', description: 'Visualizar catálogo de escopos' },
     { code: 'scopes:write', description: 'Gerenciar escopos e vínculos' },
-    // Observability & System
     { code: 'audit:read', description: 'Visualizar logs de auditoria e eventos críticos' },
     { code: 'health:read', description: 'Visualizar status de saúde do sistema' },
     { code: 'dashboard:read', description: 'Visualizar resumo e métricas do dashboard' },
-    // Domain Placeholders (Consumer Squads / ERP Modules)
     { code: 'orders:read', description: 'Visualizar pedidos (Módulo Vendas)' },
     { code: 'orders:write', description: 'Gerenciar pedidos (Módulo Vendas)' },
     { code: 'customers:read', description: 'Visualizar clientes (Módulo CRM)' },
@@ -271,6 +280,9 @@ function main() {
                     _e.label = 14;
                 case 14:
                     if (!(_b < managerPerms_1.length)) return [3 /*break*/, 17];
+                    _h.label = 13;
+                case 13:
+                    if (!(_b < managerPerms_1.length)) return [3 /*break*/, 16];
                     permission = managerPerms_1[_b];
                     return [4 /*yield*/, prisma.rolePermission.upsert({
                             where: {
@@ -520,6 +532,9 @@ main()
         switch (_a.label) {
             case 0: return [4 /*yield*/, prisma.$disconnect()];
             case 1:
+                _a.sent();
+                return [4 /*yield*/, pool.end()];
+            case 2:
                 _a.sent();
                 return [2 /*return*/];
         }

@@ -14,17 +14,20 @@ O **Core Engine & Auth** é o núcleo de Identidade e Integração Segura do eco
 
 ### 2. Instalação e Setup
 ```bash
+cd backend
+
 # Instalar dependências
 npm install
 
 # Configurar variáveis de ambiente
 cp .env.example .env
 
-# Subir infra (PostgreSQL + Redis)
-# Nota: PostgreSQL mapeado para a porta 5433 no host
+# Na raiz do repo: subir infra (PostgreSQL + Redis)
+cd ..
 docker compose up -d
 
 # Sincronizar banco e popular dados iniciais
+cd backend
 npx prisma db push
 npm run prisma:seed
 

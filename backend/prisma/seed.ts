@@ -18,8 +18,12 @@ if (process.env.DATABASE_URL) {
 const adapter = new PrismaPg(pool, { schema });
 const prisma = new PrismaClient({ adapter });
 
+const isProduction = process.env.NODE_ENV === 'production';
+const updatePasswords =
+  process.env.SEED_UPDATE_PASSWORDS === 'true' ||
+  (!isProduction && process.env.SEED_UPDATE_PASSWORDS !== 'false');
+
 const permissionDefs: { code: string; description: string }[] = [
-  // Identity & Access Management (IAM)
   { code: 'users:read', description: 'Visualizar lista e detalhes de usuários' },
   { code: 'users:write', description: 'Criar, atualizar e excluir usuários' },
   { code: 'roles:read', description: 'Visualizar papéis de acesso' },
@@ -27,19 +31,13 @@ const permissionDefs: { code: string; description: string }[] = [
   { code: 'roles:manage', description: 'Vincular usuários e permissões a papéis' },
   { code: 'permissions:read', description: 'Visualizar catálogo de permissões' },
   { code: 'permissions:write', description: 'Gerenciar permissões do sistema' },
-
-  // Integration & M2M
   { code: 'applications:read', description: 'Visualizar aplicações integradas' },
   { code: 'applications:write', description: 'Gerenciar aplicações e segredos' },
   { code: 'scopes:read', description: 'Visualizar catálogo de escopos' },
   { code: 'scopes:write', description: 'Gerenciar escopos e vínculos' },
-
-  // Observability & System
   { code: 'audit:read', description: 'Visualizar logs de auditoria e eventos críticos' },
   { code: 'health:read', description: 'Visualizar status de saúde do sistema' },
   { code: 'dashboard:read', description: 'Visualizar resumo e métricas do dashboard' },
-
-  // Domain Placeholders (Consumer Squads / ERP Modules)
   { code: 'orders:read', description: 'Visualizar pedidos (Módulo Vendas)' },
   { code: 'orders:write', description: 'Gerenciar pedidos (Módulo Vendas)' },
   { code: 'customers:read', description: 'Visualizar clientes (Módulo CRM)' },
@@ -189,6 +187,8 @@ async function seedM2mApplication(
 }
 
 async function main() {
+  console.log(`Seed mode: NODE_ENV=${process.env.NODE_ENV ?? 'undefined'}, updatePasswords=${updatePasswords}`);
+
   const permissions = await Promise.all(
     permissionDefs.map((p) =>
       prisma.permission.upsert({
@@ -238,7 +238,6 @@ async function main() {
 
   console.log('✅ Roles (admin, viewer, manager, suporte) upserted');
 
-  // Admin: Tudo
   for (const permission of permissions) {
     await prisma.rolePermission.upsert({
       where: {
@@ -256,7 +255,6 @@ async function main() {
   }
   console.log('✅ Admin linked to all permissions');
 
-  // Viewer: Tudo que termina em :read
   const viewerPerms = permissions.filter((p) => p.code.endsWith(':read'));
   for (const permission of viewerPerms) {
     await prisma.rolePermission.upsert({
@@ -275,7 +273,6 @@ async function main() {
   }
   console.log(`✅ Viewer linked to ${viewerPerms.length} read permissions`);
 
-  // Manager: IAM Read + Domain Read/Write (sem permissão de gerenciar IAM)
   const managerPerms = permissions.filter(
     (p) =>
       p.code.endsWith(':read') ||
@@ -540,4 +537,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });
