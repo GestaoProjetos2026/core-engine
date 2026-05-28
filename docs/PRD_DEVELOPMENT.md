@@ -97,6 +97,7 @@ Este arquivo deve ser atualizado sistematicamente ao fim de cada nova feature, t
 - **Task 11**: `GET /v1/integration/users/:id` (M2M; distinto de `GET /v1/users/:id` para humano).
 - **Tasks 12–13**: Multi-tenant (`Tenant`, `tenant_id` no JWT, `X-Tenant-Id`).
 - **Task 14**: Gateway multi-módulo + `docs/GATEWAY.md`.
+- **Task 15**: Apps M2M por squad (`finance-fiscal`, `crm-leads`, `service-desk`) + `PERMISSIONS_MATRIX.md` §3.
 - **Task 15**: Seed apps M2M por squad.
 - **Task 16**: `docs/DEMO_CTO.md`.
 - **Task 17**: Demo CTO 29/05/2026.
