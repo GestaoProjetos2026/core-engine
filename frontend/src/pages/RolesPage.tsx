@@ -155,22 +155,16 @@ const RolesPage: React.FC = () => {
     setSaving(true);
     setFormErrors({});
     try {
-      const currentIds = managingRole.permissions?.map(p => p.permission.id) || [];
       const targetIds = Array.from(selectedPermissionIds);
-
-      const toAdd = targetIds.filter(id => !currentIds.includes(id));
-      const toRemove = currentIds.filter(id => !targetIds.includes(id));
-
-      if (toAdd.length > 0) {
-        await api.post(`/v1/roles/${managingRole.id}/permissions`, { permissionIds: toAdd });
-      }
-      for (const id of toRemove) {
-        await api.delete(`/v1/roles/${managingRole.id}/permissions/${id}`);
-      }
+      
+      // Chamada única para o novo endpoint de sincronização em massa
+      await api.post(`/v1/roles/${managingRole.id}/permissions/sync`, { 
+        permissionIds: targetIds 
+      });
 
       closeModal();
       await fetchRoles();
-      showToast('Role permissions updated.', 'success');
+      showToast('Role permissions updated successfully.', 'success');
     } catch (err) {
       const msg = parseApiError(err);
       setFormErrors({ form: msg });

@@ -161,6 +161,38 @@ export class RolesService {
     }
   }
 
+  async syncPermissions(roleId: string, dto: AssignRolePermissionsDto) {
+    const role = await this.prisma.role.findUnique({ where: { id: roleId } });
+    if (!role) {
+      throw new NotFoundException({
+        code: 'RESOURCE_NOT_FOUND',
+        message: `Role with ID ${roleId} not found`,
+      });
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Remover todas as permissões atuais do cargo
+      await tx.rolePermission.deleteMany({
+        where: { roleId },
+      });
+
+      // 2. Adicionar as novas permissões
+      if (dto.permissionIds.length > 0) {
+        const data = dto.permissionIds.map((permissionId) => ({
+          roleId,
+          permissionId,
+        }));
+
+        await tx.rolePermission.createMany({
+          data,
+          skipDuplicates: true,
+        });
+      }
+
+      return { success: true, count: dto.permissionIds.length };
+    });
+  }
+
   async delete(id: string) {
     try {
       await this.prisma.role.delete({ where: { id } });

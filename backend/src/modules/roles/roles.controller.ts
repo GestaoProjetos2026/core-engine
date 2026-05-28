@@ -143,6 +143,28 @@ export class RolesController {
     return this.rolesService.assignPermissions(id, dto);
   }
 
+  @Post(':id/permissions/sync') // I'll use /sync for clarity or PUT :id/permissions
+  @HttpCode(200)
+  @RequirePermissions('roles:manage')
+  @ApiOperation({
+    summary: 'Sync permissions with a role (overwrite)',
+    description: 'Overwrites all permissions for a role with the provided list. Requires permission `roles:manage`.',
+  })
+  @ApiResponse({ status: 200, description: 'Permissions synced successfully.' })
+  @ApiParam({ name: 'id', required: true, type: String, description: 'Role UUID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        permissionIds: { type: 'array', items: { type: 'string' }, example: ['uuid1', 'uuid2'] },
+      },
+      required: ['permissionIds'],
+    },
+  })
+  async syncPermissions(@Param('id') id: string, @Body() dto: AssignRolePermissionsDto) {
+    return this.rolesService.syncPermissions(id, dto);
+  }
+
   @Delete(':id/users/:userId')
   @HttpCode(200)
   @RequirePermissions('roles:manage')
