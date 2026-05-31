@@ -110,6 +110,78 @@ Entrada única local:
 
 ---
 
+## Variáveis de Ambiente
+
+O backend usa `backend/.env`, criado a partir de `backend/.env.example`. O frontend pode usar `frontend/.env` para definir a URL da API consumida pelo Vite.
+
+### Backend (`backend/.env`)
+
+| Variável | Exemplo | Para que serve |
+| :--- | :--- | :--- |
+| `DATABASE_URL` | `postgresql://admin:admin123@localhost:5432/erp_core?schema=public` | String de conexão do PostgreSQL usada pelo Prisma, pela API e pelo seed. O parâmetro `schema` define o schema usado pelo Prisma adapter. |
+| `PORT` | `3000` | Porta HTTP em que a API NestJS/Fastify sobe. |
+| `NODE_ENV` | `development` ou `production` | Define comportamento de ambiente, como logs mais legíveis fora de produção e regras do seed. |
+| `DEV_SERVER_URL` | `http://localhost:3000` | URL exibida como servidor de desenvolvimento na documentação Swagger. |
+| `JWT_SECRET` | `super-secret-key-change-in-production` | Chave usada para assinar e validar JWTs humanos e M2M. Deve ser forte e secreta em produção. |
+| `JWT_EXPIRES_IN` | `15m` | Tempo de expiração do access token JWT. |
+| `REFRESH_TOKEN_EXPIRES_IN` | `7d` | Tempo de expiração do refresh token humano. |
+| `BCRYPT_ROUNDS` | `12` | Custo do hash bcrypt para senhas e segredos. Valores maiores aumentam segurança e custo de CPU. |
+| `REDIS_URL` | `redis://localhost:6379` | URL do Redis usada por healthcheck e rate limit/lockout. |
+| `THROTTLE_TTL` | `60` | Janela, em segundos, usada pelo rate limit. |
+| `THROTTLE_LIMIT` | `5` | Quantidade de tentativas permitidas dentro da janela de rate limit. |
+| `LOCKOUT_FAILURES` | `5` | Número de falhas de login que aciona bloqueio temporário. |
+| `LOCKOUT_TTL` | `1800` | Duração, em segundos, do bloqueio temporário após falhas repetidas. |
+| `REDIS_HOST` | `localhost` | Mantida no `.env.example`, mas o código atual usa `REDIS_URL`. |
+| `REDIS_PORT` | `6379` | Mantida no `.env.example`, mas o código atual usa `REDIS_URL`. |
+
+### Seed e credenciais iniciais
+
+Estas variáveis controlam o seed executado em desenvolvimento ou no startup de produção.
+
+| Variável | Exemplo | Para que serve |
+| :--- | :--- | :--- |
+| `SEED_ON_STARTUP` | `true` | Indica se o seed deve rodar no startup do container, quando suportado pelo Dockerfile/entrypoint. |
+| `SEED_STRICT` | `false` | Modo operacional para falhar o startup se o seed falhar. Usado principalmente em produção. |
+| `SEED_UPDATE_PASSWORDS` | `false` | Quando `true`, força atualização dos hashes de senha/segredos durante o seed. Útil para rotação controlada. |
+| `SEED_STRICT_M2M_SECRETS` | `false` | Quando `true`, falha em produção se faltar algum segredo M2M obrigatório. Quando `false`, permite fallback demo. |
+| `SEED_PASSWORD_ADMIN_CORE` | segredo real | Senha do usuário `admin@example.com` em seed de produção. |
+| `SEED_PASSWORD_ADMIN_HOTMAIL` | segredo real | Senha do usuário `admin@hotmail.com` em seed de produção. |
+| `SEED_PASSWORD_ADMIN_CRM` | segredo real | Senha do usuário `admincrm@example.com` em seed de produção. |
+| `SEED_PASSWORD_ADMIN_FISCAL` | segredo real | Senha do usuário `adminfiscal@example.com` em seed de produção. |
+| `SEED_PASSWORD_ADMIN_DESK` | segredo real | Senha do usuário `admdesk@example.com` em seed de produção. |
+| `SEED_PASSWORD_ADMIN_DEVOPS` | segredo real | Senha do usuário `admindevops@example.com` em seed de produção. |
+| `SEED_PASSWORD_VIEWER` | segredo real | Senha do usuário `viewer@example.com` em seed de produção. |
+| `SEED_M2M_SECRET_CORE` | segredo real | Secret do client M2M `erp-core-client`. |
+| `SEED_M2M_SECRET_HOTMAIL` | segredo real | Secret do client M2M `erp-hotmail-client`. |
+| `SEED_M2M_SECRET_CRM` | segredo real | Secret do client M2M `erp-crm-client`. |
+| `SEED_M2M_SECRET_FISCAL` | segredo real | Secret do client M2M `erp-fiscal-client`. |
+| `SEED_M2M_SECRET_DESK` | segredo real | Secret do client M2M `erp-desk-client`. |
+| `SEED_M2M_SECRET_DEVOPS` | segredo real | Secret do client M2M `erp-devops-client`. |
+| `SEED_M2M_SECRET_FINANCE_FISCAL` | segredo real | Secret do client demo/integração `finance-fiscal`. |
+| `SEED_M2M_SECRET_CRM_LEADS` | segredo real | Secret do client demo/integração `crm-leads`. |
+| `SEED_M2M_SECRET_SERVICE_DESK` | segredo real | Secret do client demo/integração `service-desk`. |
+
+Em desenvolvimento, quando essas variáveis de seed não são definidas, o projeto usa os valores demo descritos em [`docs/PERMISSIONS_MATRIX.md`](docs/PERMISSIONS_MATRIX.md). Em produção, configure valores reais via secret manager, ArgoCD ou Kubernetes Secrets.
+
+### Frontend (`frontend/.env`)
+
+| Variável | Exemplo | Para que serve |
+| :--- | :--- | :--- |
+| `VITE_API_URL` | `http://localhost:3000` | Base URL usada pelo Axios no frontend. Se ficar vazia no build Docker, o frontend chama `/v1` no mesmo host e deixa o Nginx encaminhar para o Core. |
+
+### Gateway no Docker Compose
+
+Estas variáveis são usadas pelo container `frontend` para montar o `nginx.conf` em runtime.
+
+| Variável | Default local | Para que serve |
+| :--- | :--- | :--- |
+| `CORE_SVC_HOST` | `backend:3000` | Host interno do Core Auth para rotas `/v1/auth`, `/v1/oauth`, `/v1/users`, etc. |
+| `FISCAL_SVC_HOST` | `module-stubs:8080` | Host interno do módulo Fiscal para `/v1/fiscal/*`. |
+| `CRM_SVC_HOST` | `module-stubs:8080` | Host interno do módulo CRM para `/v1/crm/*`. |
+| `SERVICE_DESK_SVC_HOST` | `module-stubs:8080` | Host interno do Service Desk para `/v1/service-desk/*`. |
+
+---
+
 ## Acessos Iniciais
 
 Após o seed:
